@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Door Runner</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- MAIN MENU -->
+    <div id="main-menu" style="position:absolute; top:0; left:0; width:100%; height:100%; 
+        background:rgba(0,0,0,0.8); display:flex; flex-direction:column; justify-content:center; 
+        align-items:center; z-index:1000; color:#fff; font-size:32px;">
+        
+        <h1>Door Runner</h1>
+        <button id="startBtn" style="padding:15px 30px; margin:10px; font-size:24px; cursor:pointer; border-radius:8px;">Start Game</button>
+        <button id="settingsBtn" style="padding:15px 30px; margin:10px; font-size:24px; cursor:pointer; border-radius:8px;">Settings</button>
+        <div id="settingsPanel" style="display:none; flex-direction:column; align-items:center; margin-top:20px; color:#fff; font-size:20px;">
+                    <div class="parent">
+            <div class="div1" style="margin-top:12px; color:#6b4f1d; font-size:1.1rem; background:#fffbe6; border-radius:8px; padding:8px 16px; box-shadow:0 1px 4px #a67c52;">
+                Controls: <b>Space</b> to jump, <b>P</b> to pause, <b>M</b> to go to main menu
+            </div>
+            <div class="div2" style="margin-top:12px; color:#6b4f1d; font-size:1.1rem; background:#fffbe6; border-radius:8px; padding:8px 16px; box-shadow:0 1px 4px #a67c52;">
+                Reach <b>the door</b> to move to the next level, Avoid <b>the spikes</b> to stay alive
+            </div>
+            <div class="div3" style="margin-top:12px; color:#6b4f1d; font-size:1.1rem; background:#fffbe6; border-radius:8px; padding:8px 16px; box-shadow:0 1px 4px #a67c52;">
+                Make it as far as you can <b>without dying</b>, levels are <b>randomly generated</b>!
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <!-- GAME CONTAINER -->
+    <div id="platformer-container" style="display:flex; flex-direction:column; align-items:center; margin:32px 0;">
+        <canvas id="platformer-canvas" width="800" height="400" 
+            style="border:3px solid #654321; background:#e3c08d; border-radius:12px; box-shadow:0 2px 12px #a67c52;">
+        </canvas>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
