@@ -15,8 +15,6 @@ const spikes = [];
 const spikeWidth = 20;
 const spikeHeight = 20;
 
-const walls = [];
-
 const player = { x: 30, y: 334, w: 35, h: 35, vx: 0, vy: 0, onGround: false };
 let levelNumber = 1;
 let moveSpeed = 4.5;
@@ -72,7 +70,6 @@ function placeSpikePattern(baseX, baseY, patternType, count = 3, spacing = 25) {
 function randomLevel() {
     platforms.length = 0;
     spikes.length = 0;
-    walls.length = 0;
 
     // Full ground
     platforms.push({ x: 0, y: 376, w: worldWidth, h: 24 });
@@ -119,30 +116,14 @@ function randomLevel() {
         const patternType = Math.random() < 0.5 ? 'line' : (Math.random() < 0.5 ? 'staggered' : 'gap');
         const isGround = Math.random() < 0.7;
         let baseX;
+
+        // Retry if spike would spawn near start or door
         do {
             baseX = 100 + Math.random() * (worldWidth - 200);
         } while ((baseX > startX - 50 && baseX < startX + 150) || (baseX > door.x - 60 && baseX < door.x + 80));
 
         let baseY = isGround ? 376 - spikeHeight : platforms[Math.floor(Math.random() * platforms.length)].y - spikeHeight;
         placeSpikePattern(baseX, baseY, patternType, 3 + Math.floor(Math.random() * 3), 25 + Math.random() * 10);
-    }
-
-    // Walls
-    const numWalls = Math.min(2 + Math.floor(difficulty / 2), 6);
-    for (let i = 0; i < numWalls; i++) {
-        let wallX;
-        do {
-            wallX = 300 + Math.random() * (worldWidth - 500);
-        } while ((wallX > startX - 50 && wallX < startX + 150) || (wallX > door.x - 100 && wallX < door.x + 120));
-
-        const wallHeight = 60 + Math.random() * 80;
-        const wall = {
-            x: wallX,
-            y: 376 - wallHeight,
-            w: 20 + Math.random() * 15,
-            h: wallHeight
-        };
-        walls.push(wall);
     }
 }
 
@@ -190,34 +171,6 @@ function update() {
         }
     }
 
-    // Wall collision (only kill from the sides)
-    for (const wall of walls) {
-        if (rectsCollide(player, wall)) {
-            const playerBottom = player.y + player.h;
-            const wallTop = wall.y;
-            const playerRight = player.x + player.w;
-            const wallLeft = wall.x;
-            const playerLeft = player.x;
-            const wallRight = wall.x + wall.w;
-
-            const fromTop = playerBottom - wallTop < 10 && player.vy >= 0;
-            const fromLeft = playerRight > wallLeft && player.x < wallLeft && playerBottom > wallTop + 5;
-            const fromRight = playerLeft < wallRight && playerRight > wallRight && playerBottom > wallTop + 5;
-
-            if (fromTop) {
-                // Land safely on top
-                player.y = wall.y - player.h;
-                player.vy = 0;
-                player.onGround = true;
-            } else if (fromLeft || fromRight) {
-                // Hit from the side — die
-                levelNumber = 1;
-                randomLevel();
-                return;
-            }
-        }
-    }
-
     // Door collision
     if (rectsCollide(player, door)) {
         levelNumber++;
@@ -244,15 +197,11 @@ function draw() {
     ctx.fillStyle = '#654321';
     for (const plat of platforms) ctx.fillRect(plat.x - cameraX, plat.y, plat.w, plat.h);
 
-    // Walls
-    ctx.fillStyle = '#555';
-    for (const wall of walls) ctx.fillRect(wall.x - cameraX, wall.y, wall.w, wall.h);
-
     // Door
     ctx.fillStyle = '#e67e22';
     ctx.fillRect(door.x - cameraX, door.y, door.w, door.h);
     ctx.fillStyle = '#fff';
-    ctx.fillRect(door.x + door.w / 2 - 2 - cameraX, door.y + door.h - 8, 4, 4);
+    ctx.fillRect(door.x + door.w / 2 - 2, door.y + door.h - 8, 4, 4);
 
     // Player
     ctx.fillStyle = '#3498db';
