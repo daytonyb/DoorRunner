@@ -86,20 +86,15 @@ function randomLevel() {
     let currentX = startX, currentY = startY;
 
     for (let i = 0; i < numPlatforms; i++) {
-        // Horizontal gap grows with difficulty
         const gap = 100 + Math.random() * 80 + difficulty * 5;
         let nextX = Math.min(currentX + gap, worldWidth - 100);
-
-        // Vertical variation
-        let nextY = currentY + (Math.random() * 40-20);
-        if (Math.random() < 0.3) nextY -= 50; // tricky jump
+        let nextY = currentY + (Math.random() * 40 - 20);
+        if (Math.random() < 0.3) nextY -= 50;
         nextY = Math.max(250, Math.min(nextY, 360));
 
-        // Platform width
         const pw = Math.max(30, 50 - difficulty + Math.random() * 50);
         const platform = { x: nextX, y: nextY, w: pw, h: 14 };
 
-        // 15% chance to be a moving platform
         if (Math.random() < 0.15) {
             platform.vx = (Math.random() < 0.5 ? -1 : 1) * (1 + difficulty * 0.2);
             platform.range = 50 + Math.random() * 50;
@@ -120,7 +115,13 @@ function randomLevel() {
     for (let i = 0; i < numPatterns; i++) {
         const patternType = Math.random() < 0.5 ? 'line' : (Math.random() < 0.5 ? 'staggered' : 'gap');
         const isGround = Math.random() < 0.7;
-        let baseX = 100 + Math.random() * (worldWidth - 200);
+        let baseX;
+
+        // Retry if spike would spawn near start or door
+        do {
+            baseX = 100 + Math.random() * (worldWidth - 200);
+        } while ((baseX > startX - 50 && baseX < startX + 150) || (baseX > door.x - 60 && baseX < door.x + 80));
+
         let baseY = isGround ? 376 - spikeHeight : platforms[Math.floor(Math.random() * platforms.length)].y - spikeHeight;
         placeSpikePattern(baseX, baseY, patternType, 3 + Math.floor(Math.random() * 3), 25 + Math.random() * 10);
     }
