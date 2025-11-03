@@ -25,6 +25,11 @@ const jumpPower = -15;
 const platforms = [];
 let door = { x: 760, y: 46, w: 18, h: 30 };
 
+// NEW: Boost variables
+let boostTimer = 0;
+const boostDuration = 90; // 90 frames = 1.5 seconds at 60fps
+const boostAmount = 2.5;
+
 const keys = {};
 document.addEventListener('keydown', e => keys[e.code] = true);
 document.addEventListener('keyup', e => keys[e.code] = false);
@@ -104,6 +109,11 @@ function randomLevel() {
             platform.baseX = nextX;
         }
 
+// NEW: Add an 'else if' to create boost platforms
+        else if (Math.random() < 0.10) { // 10% chance to be a boost platform
+            platform.isBoost = true;
+        }
+
         platforms.push(platform);
         currentX = nextX;
         currentY = nextY;
@@ -150,6 +160,10 @@ function randomLevel() {
 function update() {
     if (!gameStarted || paused) return;
 
+    if (boostTimer > 0) {
+        boostTimer--;
+    }
+
     // Moving platforms
     for (const plat of platforms) {
         if (plat.vx) {
@@ -159,7 +173,11 @@ function update() {
     }
 
     // Auto-run
-    player.x += moveSpeed;
+    let currentSpeed = moveSpeed;
+    if (boostTimer > 0) {
+        currentSpeed += boostAmount;
+    }
+    player.x += currentSpeed;
 
     // Jump
     if ((keys['ArrowUp'] || keys['Space'] || keys['KeyW']) && player.onGround) {
@@ -178,7 +196,12 @@ function update() {
             player.y = plat.y - player.h;
             player.vy = 0;
             player.onGround = true;
+
+            if (plat.isBoost) {
+                boostTimer = boostDuration;
+            }
         }
+        
     }
 
     // Spike collision
@@ -240,9 +263,16 @@ function update() {
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Platforms
-    ctx.fillStyle = '#654321';
-    for (const plat of platforms) ctx.fillRect(plat.x - cameraX, plat.y, plat.w, plat.h);
+// Platforms
+    // MODIFIED: Check for boost platforms to change color
+    for (const plat of platforms) {
+        if (plat.isBoost) {
+            ctx.fillStyle = '#2ecc71'; // Green for boost
+        } else {
+            ctx.fillStyle = '#654321'; // Default brown
+        }
+        ctx.fillRect(plat.x - cameraX, plat.y, plat.w, plat.h);
+    }
 
     // Walls
     ctx.fillStyle = '#555';
@@ -254,8 +284,14 @@ function draw() {
     ctx.fillStyle = '#fff';
     ctx.fillRect(door.x + door.w / 2 - 2 - cameraX, door.y + door.h - 8, 4, 4);
 
-    // Player
-    ctx.fillStyle = '#3498db';
+// Player
+    // MODIFIED: Change player color if boosted
+    if (boostTimer > 0) {
+        // Flashing effect while boosted
+        ctx.fillStyle = (Math.floor(boostTimer / 5) % 2 === 0) ? '#2ecc71' : '#3498db';
+    } else {
+        ctx.fillStyle = '#3498db'; // Default blue
+    }
     ctx.fillRect(player.x - cameraX, player.y, player.w, player.h);
 
     // Spikes
