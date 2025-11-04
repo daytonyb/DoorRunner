@@ -19,6 +19,8 @@ const walls = [];
 
 const player = { x: 30, y: 334, w: 35, h: 35, vx: 0, vy: 0, onGround: false };
 let levelNumber = 1;
+let lives = 3;              // NEW: Add this line
+const startingLives = 3;    // NEW: Add this line
 let moveSpeed = 4.5;
 const gravity = 0.7;
 const jumpPower = -15;
@@ -41,6 +43,11 @@ let paused = false;
 startBtn.onclick = () => {
     mainMenu.style.display = 'none';
     gameStarted = true;
+
+// NEW: Reset game state on start
+    levelNumber = 1;
+    lives = startingLives;
+
     randomLevel();
 };
 
@@ -93,26 +100,37 @@ function randomLevel() {
     const numPlatforms = 20 + difficulty;
     let currentX = startX, currentY = startY;
 
-    for (let i = 0; i < numPlatforms; i++) {
+for (let i = 0; i < numPlatforms; i++) {
+        
         const gap = 100 + Math.random() * 80 + difficulty * 5;
-        let nextX = Math.min(currentX + gap, worldWidth - 100);
-        let nextY = currentY + (Math.random() * 40 - 20);
-        if (Math.random() < 0.3) nextY -= 50;
-        nextY = Math.max(250, Math.min(nextY, 360));
+        let nextX = Math.min(currentX + gap, worldWidth - 100);
+        let nextY = currentY + (Math.random() * 40 - 20);
+        if (Math.random() < 0.3) nextY -= 50;
+        nextY = Math.max(250, Math.min(nextY, 360));
+        const pw = Math.max(30, 50 - difficulty + Math.random() * 50);
 
-        const pw = Math.max(30, 50 - difficulty + Math.random() * 50);
         const platform = { x: nextX, y: nextY, w: pw, h: 14 };
 
-        if (Math.random() < 0.15) {
+        // MODIFIED: Use a single roll to assign different platform types
+        const typeRoll = Math.random();
+
+        if (typeRoll < 0.15 && i > 0) { // 15% chance: Moving (horizontal)
             platform.vx = (Math.random() < 0.5 ? -1 : 1) * (1 + difficulty * 0.2);
             platform.range = 50 + Math.random() * 50;
             platform.baseX = nextX;
-        }
-
-// NEW: Add an 'else if' to create boost platforms
-        else if (Math.random() < 0.10) { // 10% chance to be a boost platform
+        } else if (typeRoll < 0.25 && i > 0) { // 10% chance: Moving (vertical)
+            platform.vy = (Math.random() < 0.5 ? -1 : 1) * (0.8 + difficulty * 0.1);
+            platform.range = 30 + Math.random() * 40;
+            platform.baseY = nextY;
+        } else if (typeRoll < 0.35) { // 10% chance: Boost
             platform.isBoost = true;
+        } else if (typeRoll < 0.45) { // 10% chance: Bouncy
+            platform.isBouncy = true;
+        } else if (typeRoll < 0.55) { // 10% chance: Crumbling
+            platform.isCrumbling = true;
+            platform.crumbleTimer = -1; // -1 means inactive
         }
+        // (The 'else' block from your 'isBoost' is removed, as it's part of this chain)
 
         platforms.push(platform);
         currentX = nextX;
@@ -160,6 +178,17 @@ function randomLevel() {
 function update() {
     if (!gameStarted || paused) return;
 
+    // NEW: Crumbling platform update loop
+    // (Loop backwards when splicing an array)
+    for (let i = platforms.length - 1; i >= 0; i--) {
+        const plat = platforms[i];
+        if (plat.crumbleTimer > 0) {
+            plat.crumbleTimer--;
+        } else if (plat.crumbleTimer === 0) {
+            platforms.splice(i, 1); // Remove the platform
+        }
+    }
+
     if (boostTimer > 0) {
         boostTimer--;
     }
@@ -169,6 +198,12 @@ function update() {
         if (plat.vx) {
             plat.x += plat.vx;
             if (plat.x > plat.baseX + plat.range || plat.x < plat.baseX) plat.vx *= -1;
+        }
+
+        // NEW: Add vertical movement
+        if (plat.vy) {
+            plat.y += plat.vy;
+            if (plat.y > plat.baseY + plat.range || plat.y < plat.baseY) plat.vy *= -1;
         }
     }
 
@@ -189,25 +224,55 @@ function update() {
     player.vy += gravity;
     player.y += player.vy;
 
-    // Platform collision
+// Platform collision
+    // --- MODIFIED: Replaced this entire block ---
     player.onGround = false;
     for (const plat of platforms) {
+        // Check for landing on top
         if (rectsCollide(player, plat) && player.vy >= 0 && player.y + player.h - player.vy <= plat.y) {
-            player.y = plat.y - player.h;
-            player.vy = 0;
-            player.onGround = true;
+            
+            // Bouncy Platform (overrides other logic)
+            if (plat.isBouncy) {
+                player.y = plat.y - player.h; // Snap to top
+                player.vy = jumpPower * 1.5;  // Launch!
+                player.onGround = false;
+                
+            } else {
+                // Standard Landing
+                player.y = plat.y - player.h;
+                player.vy = 0;
+                player.onGround = true;
 
-            if (plat.isBoost) {
-                boostTimer = boostDuration;
+                // Check for other platform types
+                if (plat.isBoost) {
+                    boostTimer = boostDuration;
+                }
+                
+                if (plat.isCrumbling && plat.crumbleTimer === -1) {
+                    plat.crumbleTimer = 5;
+                }
+
+                // Stick to moving platform
+                if (plat.vy) {
+                    player.y += plat.vy;
+                }
+                if (plat.vx) {
+                    player.x += plat.vx; // Move player with platform
+                }
             }
         }
-        
     }
+    // --- END MODIFICATION ---
 
-    // Spike collision
+// Spike collision
     for (const spike of spikes) {
         if (rectsCollide(player, spike)) {
-            levelNumber = 1;
+            // MODIFIED: Use lives system
+            lives--;
+            if (lives <= 0) {
+                levelNumber = 1;
+                lives = startingLives;
+            }
             randomLevel();
             return;
         }
@@ -233,8 +298,13 @@ function update() {
                 player.vy = 0;
                 player.onGround = true;
             } else if (fromLeft || fromRight) {
-                // Hit from the side — die
+
+                lives--;
+            if (lives <= 0) {
                 levelNumber = 1;
+                lives = startingLives;
+            }
+
                 randomLevel();
                 return;
             }
@@ -248,9 +318,14 @@ function update() {
         return;
     }
 
-    // Fall off screen
+// Fall off screen
     if (player.y > canvas.height) {
-        levelNumber = 1;
+        // MODIFIED: Use lives system
+        lives--;
+        if (lives <= 0) {
+            levelNumber = 1;
+            lives = startingLives;
+        }
         randomLevel();
         return;
     }
@@ -264,15 +339,25 @@ function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
 // Platforms
-    // MODIFIED: Check for boost platforms to change color
+    // --- MODIFIED: Add colors for new types ---
     for (const plat of platforms) {
         if (plat.isBoost) {
-            ctx.fillStyle = '#2ecc71'; // Green for boost
+            ctx.fillStyle = '#2ecc71'; // Green (Boost)
+        } else if (plat.isBouncy) {
+            ctx.fillStyle = '#9b59b6'; // Purple (Bouncy)
+        } else if (plat.isCrumbling) {
+            // Flash red if timer is active
+            if (plat.crumbleTimer > 0 && Math.floor(plat.crumbleTimer / 4) % 2 === 0) {
+                ctx.fillStyle = '#e74c3c'; // Red (Crumbling)
+            } else {
+                ctx.fillStyle = '#f39c12'; // Orange (Crumbling)
+            }
         } else {
             ctx.fillStyle = '#654321'; // Default brown
         }
         ctx.fillRect(plat.x - cameraX, plat.y, plat.w, plat.h);
     }
+    // --- END MODIFICATION ---
 
     // Walls
     ctx.fillStyle = '#555';
@@ -310,6 +395,11 @@ function draw() {
     ctx.font = '20px Arial';
     ctx.fillText(`Level ${levelNumber}`, 16, 28);
 
+// NEW: Lives text
+    ctx.textAlign = 'right'; // Align to the right
+    ctx.fillText(`❤️ ${lives}`, canvas.width - 16, 28);
+    ctx.textAlign = 'left';  // Reset alignment
+
     // Pause overlay
     if (paused) {
         ctx.fillStyle = 'rgba(0,0,0,0.5)';
@@ -329,5 +419,4 @@ function loop() {
 }
 
 loop();
-
 
