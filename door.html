@@ -20,8 +20,8 @@
                 <button id="startBtn" style="padding:15px 30px; margin:10px; font-size:24px; cursor:pointer; border-radius:8px;"><a href="index.html">Main Menu</a></button>
         </div>
 
-                    <button id="settingsBtn" style="padding:15px 30px; margin: 10px; font-size:24px; cursor:pointer; border-radius:8px;">How to Play (Recommended)</button>
-        <div id="settingsPanel" style="display:none; flex-direction:column; align-items:center; margin-top:20px; color:#fff; font-size:20px; padding: -4px;">
+                    <button id="controlBtn" style="padding:15px; margin: 10px; font-size:24px; cursor:pointer; border-radius:8px;">How to Play (Recommended)</button>
+        <div id="controlPanel" style="display:none; flex-direction:column; align-items:center; margin-top:20px; color:#fff; font-size:20px; padding: -4px;">
             <div class="parent" style="padding: 14px;">
             <div class="div1" style="background-color: rgb(62, 212, 42); margin-top:10px; color:#6b4f1d; font-size:1.1rem; background:#fffbe6; border-radius:8px; padding:8px 16px; box-shadow:0 1px 4px #a67c52;">
                 Controls: <b>Space</b> to jump, <b>P</b> to pause, <b>M</b> to go to main menu, and <b>Left Shift</b> to dash!
@@ -34,8 +34,37 @@
             </div>
         </div>
         </div>
-    </div>
 
+        <div style="margin-top:20px; color:#fff; font-size:20px; text-align: center;">
+            <span style="font-size:24px;">Settings</span>
+            <div id="difficultyPanel" style="display:flex; flex-direction:row; align-items:center; gap: 15px; margin-top:10px;">
+                <button class="difficulty-btn" data-levels="3" style="padding:10px 20px; font-size:18px; cursor:pointer; border-radius:8px; background-color: #ddd;">
+                    Easy (3 Levels)
+                </button>
+                <button class="difficulty-btn" data-levels="5" style="padding:10px 20px; font-size:18px; cursor:pointer; border-radius:8px; background-color: #2ecc71;">
+                    Medium (5 Levels)
+                </button>
+                <button class="difficulty-btn" data-levels="7" style="padding:10px 20px; font-size:18px; cursor:pointer; border-radius:8px; background-color: #ddd;">
+                    Hard (7 Levels)
+                </button>
+            </div>
+        </div>
+
+        <div style="margin-top:20px; color:#fff; font-size:20px; text-align: center;">
+            <div id="livesPanel" style="display:flex; flex-direction:row; align-items:center; gap: 15px; margin-top:10px;">
+                <button class="lives-btn" data-lives="1" style="padding:10px 20px; font-size:18px; cursor:pointer; border-radius:8px; background-color: #ddd;">
+                    1 Life
+                </button>
+                <button class="lives-btn" data-lives="3" style="padding:10px 20px; font-size:18px; cursor:pointer; border-radius:8px; background-color: #2ecc71;">
+                    3 Lives
+                </button>
+                <button class="lives-btn" data-lives="5" style="padding:10px 20px; font-size:18px; cursor:pointer; border-radius:8px; background-color: #ddd;">
+                    5 Lives
+                </button>
+            </div>
+        </div>
+
+    </div>
 
     <!-- GAME CONTAINER -->
     <div id="platformer-container" style="display:flex; flex-direction:column; align-items:center; margin:32px 0;">
@@ -47,4 +76,3 @@
     <script src="app.js"></script>
 </body>
 </html>
-
