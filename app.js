@@ -1,9 +1,13 @@
 // ---------------------- MENU ELEMENTS ----------------------
 const mainMenu = document.getElementById('main-menu');
 const startBtn = document.getElementById('startBtn');
-const settingsBtn = document.getElementById('settingsBtn');
-const settingsPanel = document.getElementById('settingsPanel');
+const controlBtn = document.getElementById('controlBtn');
+const controlPanel = document.getElementById('controlPanel');
 const difficultyRange = document.getElementById('difficultyRange');
+const difficultyPanel = document.getElementById('difficultyPanel');
+const difficultyBtns = document.querySelectorAll('.difficulty-btn');
+const livesPanel = document.getElementById('livesPanel');
+const livesBtns = document.querySelectorAll('.lives-btn');
 
 // ---------------------- GAME VARIABLES ----------------------
 const canvas = document.getElementById('platformer-canvas');
@@ -30,8 +34,9 @@ const player = {
     dashCooldown: 0 
 };
 let levelNumber = 1;
-let lives = 3;              // NEW: Add this line
-const startingLives = 3;    // NEW: Add this line
+let lives = 3;              
+let startingLives = 3;    
+let maxLevels = 5;
 let moveSpeed = 4.5;
 const gravity = 0.7;
 const jumpPower = -15;
@@ -49,6 +54,8 @@ document.addEventListener('keyup', e => keys[e.code] = false);
 
 let gameStarted = false;
 let paused = false;
+let gameWon = false;
+let gameLost = false;
 
 // ---------------------- MENU HANDLERS ----------------------
 startBtn.onclick = () => {
@@ -58,13 +65,58 @@ startBtn.onclick = () => {
 // NEW: Reset game state on start
     levelNumber = 1;
     lives = startingLives;
+    gameWon = false;
+    gameLost = false;
 
     randomLevel();
 };
 
-settingsBtn.onclick = () => {
-    settingsPanel.style.display = settingsPanel.style.display === 'flex' ? 'none' : 'flex';
+controlBtn.onclick = () => {
+    controlPanel.style.display = controlPanel.style.display === 'flex' ? 'none' : 'flex';
 };
+
+// NEW: Add this entire block for difficulty selection
+function updateDifficultyVisuals() {
+    difficultyBtns.forEach(btn => {
+        if (parseInt(btn.dataset.levels) === maxLevels) {
+            btn.style.backgroundColor = '#2ecc71'; // Green for selected
+        } else {
+            btn.style.backgroundColor = '#ddd'; // Default gray
+        }
+    });
+}
+
+difficultyBtns.forEach(btn => {
+    btn.onclick = () => {
+        maxLevels = parseInt(btn.dataset.levels); // Get level count from data-levels attribute
+        updateDifficultyVisuals(); // Update button colors
+    };
+});
+
+function updateLivesVisuals() {
+    livesBtns.forEach(btn => {
+        let num = btn.dataset.lives;
+        let text = `${num} ${num === '1' ? 'Life' : 'Lives'}`;
+        
+        if (parseInt(num) === startingLives) {
+            btn.style.backgroundColor = '#2ecc71'; // Green for selected
+            btn.textContent = `${text} (Default)`;
+        } else {
+            btn.style.backgroundColor = '#ddd'; // Default gray
+            btn.textContent = text;
+        }
+    });
+}
+
+livesBtns.forEach(btn => {
+    btn.onclick = () => {
+        startingLives = parseInt(btn.dataset.lives); // Set the starting lives
+        updateLivesVisuals(); // Update button colors and text
+    };
+});
+
+// Run this once on load to set the default text (e.g., "3 Lives (Default)")
+updateLivesVisuals();
 
 // Pause & Menu toggle
 document.addEventListener('keydown', (e) => {
@@ -73,6 +125,11 @@ document.addEventListener('keydown', (e) => {
         gameStarted = false;
         mainMenu.style.display = 'flex';
         paused = false;
+        gameWon = false;
+        gameLost = false; // NEW: Add this line
+        // NEW: Reset game state for a clean start next time
+        levelNumber = 1;
+        lives = startingLives;
     }
 });
 
@@ -304,13 +361,15 @@ function update() {
     for (const spike of spikes) {
         if (rectsCollide(player, spike)) {
            if (player.dashTimer > 0) continue; // NEW: Invincible during dash
+
             // MODIFIED: Use lives system
             lives--;
             if (lives <= 0) {
-                levelNumber = 1;
-                lives = startingLives;
+                gameStarted = false;
+                gameLost = true;
+            } else {
+                randomLevel();
             }
-            randomLevel();
             return;
         }
     }
@@ -338,22 +397,29 @@ function update() {
 
                 if (player.dashTimer > 0) continue; // NEW: Invincible during dash
 
-                lives--;
+            lives--;
             if (lives <= 0) {
-                levelNumber = 1;
-                lives = startingLives;
-            }
-
+                gameStarted = false;
+                gameLost = true;
+            } else {
                 randomLevel();
-                return;
+            }
+            return;
             }
         }
     }
 
-    // Door collision
+// Door collision
     if (rectsCollide(player, door)) {
-        levelNumber++;
-        randomLevel();
+        if (levelNumber === maxLevels) {
+            // Player just beat level 5
+            gameWon = true;
+            gameStarted = false; // Stop the game
+        } else {
+            // Not level 5, so proceed as normal
+            levelNumber++;
+            randomLevel();
+        }
         return;
     }
 
@@ -362,10 +428,11 @@ function update() {
         // MODIFIED: Use lives system
         lives--;
         if (lives <= 0) {
-            levelNumber = 1;
-            lives = startingLives;
+            gameStarted = false;
+            gameLost = true;
+        } else {
+            randomLevel();
         }
-        randomLevel();
         return;
     }
 
@@ -454,6 +521,7 @@ if (player.dashTimer > 0) {
     }
 
     // Pause overlay
+// Pause overlay
     if (paused) {
         ctx.fillStyle = 'rgba(0,0,0,0.5)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -461,6 +529,33 @@ if (player.dashTimer > 0) {
         ctx.font = '36px Arial';
         ctx.textAlign = 'center';
         ctx.fillText('PAUSED', canvas.width / 2, canvas.height / 2);
+        ctx.textAlign = 'left';
+    } 
+    // NEW: Win Screen
+    else if (gameWon) {
+        ctx.fillStyle = 'rgba(26, 188, 156, 0.8)'; // A nice win color
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#fff';
+        ctx.font = '40px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('YOU WIN!', canvas.width / 2, canvas.height / 2 - 20);
+        ctx.font = '20px Arial';
+        ctx.fillText(`You completed all ${maxLevels} levels!`, canvas.width / 2, canvas.height / 2 + 20);
+        ctx.fillText("Press 'M' to return to the Menu", canvas.width / 2, canvas.height / 2 + 60);
+        ctx.textAlign = 'left';
+    }
+
+    // NEW: Game Over Screen
+    else if (gameLost) {
+        ctx.fillStyle = 'rgba(192, 57, 43, 0.8)'; // A dark red
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#fff';
+        ctx.font = '40px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('YOU DIED', canvas.width / 2, canvas.height / 2 - 20);
+        ctx.font = '20px Arial';
+        ctx.fillText("You are out of lives.", canvas.width / 2, canvas.height / 2 + 20);
+        ctx.fillText("Press 'M' to return to the Menu", canvas.width / 2, canvas.height / 2 + 60);
         ctx.textAlign = 'left';
     }
 }
@@ -472,3 +567,4 @@ function loop() {
 }
 
 loop();
+
