@@ -17,7 +17,18 @@ const spikeHeight = 20;
 
 const walls = [];
 
-const player = { x: 30, y: 334, w: 35, h: 35, vx: 0, vy: 0, onGround: false };
+// NEW: Dash variables
+const dashSpeed = 8;
+const dashDuration = 12; // 12 frames = 0.2 seconds at 60fps
+const dashCooldownTime = 60; // 1 second cooldown
+
+// MODIFIED: Add dash properties to player
+const player = { 
+    x: 30, y: 334, w: 35, h: 35, 
+    vx: 0, vy: 0, onGround: false,
+    dashTimer: 0, 
+    dashCooldown: 0 
+};
 let levelNumber = 1;
 let lives = 3;              // NEW: Add this line
 const startingLives = 3;    // NEW: Add this line
@@ -93,6 +104,9 @@ function randomLevel() {
     const startX = 50, startY = 334;
     player.x = startX; player.y = startY; player.vx = 0; player.vy = 0;
     cameraX = 0;
+    boostTimer = 0;
+    player.dashTimer = 0; // NEW: Reset dash timer
+    player.dashCooldown = 0; // NEW: Reset dash cooldown
 
     const difficulty = levelNumber;
     moveSpeed = 4.5 + difficulty * 0.15;
@@ -189,6 +203,18 @@ function update() {
         }
     }
 
+    // --- NEW: Dash Cooldown ---
+    if (player.dashCooldown > 0) {
+        player.dashCooldown--;
+    }
+
+    // --- NEW: Dash Key Check ---
+    // Check for dash input (Left Shift)
+    if ((keys['ShiftLeft'] || keys['KeyX']) && player.dashCooldown === 0) {
+        player.dashTimer = dashDuration;
+        player.dashCooldown = dashCooldownTime;
+    }
+
     if (boostTimer > 0) {
         boostTimer--;
     }
@@ -212,6 +238,10 @@ function update() {
     if (boostTimer > 0) {
         currentSpeed += boostAmount;
     }
+    // --- NEW: Add dash speed if active ---
+    if (player.dashTimer > 0) {
+        currentSpeed += dashSpeed;
+    }
     player.x += currentSpeed;
 
     // Jump
@@ -220,9 +250,15 @@ function update() {
         player.onGround = false;
     }
 
-    // Gravity
-    player.vy += gravity;
-    player.y += player.vy;
+// Gravity
+    // --- MODIFIED: Apply gravity ONLY if not dashing ---
+    if (player.dashTimer > 0) {
+        player.dashTimer--;
+        player.vy = 0; // Freeze vertical motion during dash
+    } else {
+        player.vy += gravity;
+    }
+    player.y += player.vy; 
 
 // Platform collision
     // --- MODIFIED: Replaced this entire block ---
@@ -267,6 +303,7 @@ function update() {
 // Spike collision
     for (const spike of spikes) {
         if (rectsCollide(player, spike)) {
+           if (player.dashTimer > 0) continue; // NEW: Invincible during dash
             // MODIFIED: Use lives system
             lives--;
             if (lives <= 0) {
@@ -298,6 +335,8 @@ function update() {
                 player.vy = 0;
                 player.onGround = true;
             } else if (fromLeft || fromRight) {
+
+                if (player.dashTimer > 0) continue; // NEW: Invincible during dash
 
                 lives--;
             if (lives <= 0) {
@@ -370,8 +409,10 @@ function draw() {
     ctx.fillRect(door.x + door.w / 2 - 2 - cameraX, door.y + door.h - 8, 4, 4);
 
 // Player
-    // MODIFIED: Change player color if boosted
-    if (boostTimer > 0) {
+if (player.dashTimer > 0) {
+        // Flashing white effect during dash
+        ctx.fillStyle = (Math.floor(player.dashTimer / 3) % 2 === 0) ? '#ffffff' : '#3498db';
+    } else if (boostTimer > 0) {
         // Flashing effect while boosted
         ctx.fillStyle = (Math.floor(boostTimer / 5) % 2 === 0) ? '#2ecc71' : '#3498db';
     } else {
@@ -400,6 +441,18 @@ function draw() {
     ctx.fillText(`❤️ ${lives}`, canvas.width - 16, 28);
     ctx.textAlign = 'left';  // Reset alignment
 
+// --- NEW: Draw Dash Cooldown Indicator ---
+    if (player.dashCooldown > 0) {
+        ctx.fillStyle = 'rgba(0,0,0,0.4)';
+        let barWidth = 50;
+        let barHeight = 8;
+        let progress = (player.dashCooldown / dashCooldownTime) * barWidth;
+        
+        ctx.fillRect(player.x - cameraX + player.w / 2 - barWidth / 2, player.y - cameraX - 15, barWidth, barHeight);
+        ctx.fillStyle = '#9b59b6'; // Purple for dash
+        ctx.fillRect(player.x - cameraX + player.w / 2 - barWidth / 2, player.y - cameraX - 15, barWidth - progress, barHeight);
+    }
+
     // Pause overlay
     if (paused) {
         ctx.fillStyle = 'rgba(0,0,0,0.5)';
@@ -419,4 +472,3 @@ function loop() {
 }
 
 loop();
-
