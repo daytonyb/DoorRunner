@@ -60,16 +60,19 @@ let gameLost = false;
 // ---------------------- MENU HANDLERS ----------------------
 startBtn.onclick = () => {
     mainMenu.style.display = 'none';
-    gameStarted = true;
+    resetGame(); // MODIFIED: Call our new reset function
+};
 
-// NEW: Reset game state on start
-    levelNumber = 1;
-    lives = startingLives;
+// NEW: Add this entire function
+function resetGame() {
+    gameStarted = true;
+    paused = false;
     gameWon = false;
     gameLost = false;
-
-    randomLevel();
-};
+    levelNumber = 1;
+    lives = startingLives;
+    randomLevel(); // This generates level 1 and sets player position
+}
 
 controlBtn.onclick = () => {
     controlPanel.style.display = controlPanel.style.display === 'flex' ? 'none' : 'flex';
@@ -120,16 +123,26 @@ updateLivesVisuals();
 
 // Pause & Menu toggle
 document.addEventListener('keydown', (e) => {
+    // 'P' to Pause
     if (e.code === 'KeyP') paused = !paused;
+
+    // 'M' to go to Menu
     if (e.code === 'KeyM') {
         gameStarted = false;
         mainMenu.style.display = 'flex';
         paused = false;
         gameWon = false;
-        gameLost = false; // NEW: Add this line
-        // NEW: Reset game state for a clean start next time
+        gameLost = false; 
         levelNumber = 1;
         lives = startingLives;
+    }
+    
+    // NEW: 'R' to Restart Game
+    if (e.code === 'KeyR') {
+        // We can restart as long as we're not already on the main menu
+        if (gameStarted || gameLost || gameWon) {
+            resetGame();
+        }
     }
 });
 
@@ -267,7 +280,7 @@ function update() {
 
     // --- NEW: Dash Key Check ---
     // Check for dash input (Left Shift)
-    if ((keys['ShiftLeft'] || keys['KeyX']) && player.dashCooldown === 0) {
+    if ((keys['ShiftLeft'] || keys['KeyX'] || keys['ShiftRight']) && player.dashCooldown === 0) {
         player.dashTimer = dashDuration;
         player.dashCooldown = dashCooldownTime;
     }
@@ -541,7 +554,7 @@ if (player.dashTimer > 0) {
         ctx.fillText('YOU WIN!', canvas.width / 2, canvas.height / 2 - 20);
         ctx.font = '20px Arial';
         ctx.fillText(`You completed all ${maxLevels} levels!`, canvas.width / 2, canvas.height / 2 + 20);
-        ctx.fillText("Press 'M' to return to the Menu", canvas.width / 2, canvas.height / 2 + 60);
+        ctx.fillText("Press 'R' to restart or Press 'M' to return to the Menu", canvas.width / 2, canvas.height / 2 + 60);
         ctx.textAlign = 'left';
     }
 
@@ -555,7 +568,7 @@ if (player.dashTimer > 0) {
         ctx.fillText('YOU DIED', canvas.width / 2, canvas.height / 2 - 20);
         ctx.font = '20px Arial';
         ctx.fillText("You are out of lives.", canvas.width / 2, canvas.height / 2 + 20);
-        ctx.fillText("Press 'M' to return to the Menu", canvas.width / 2, canvas.height / 2 + 60);
+        ctx.fillText("Press 'R' to restart or Press 'M' to return to the Menu", canvas.width / 2, canvas.height / 2 + 60);
         ctx.textAlign = 'left';
     }
 }
@@ -567,4 +580,3 @@ function loop() {
 }
 
 loop();
-
