@@ -8,6 +8,8 @@ const difficultyPanel = document.getElementById('difficultyPanel');
 const difficultyBtns = document.querySelectorAll('.difficulty-btn');
 const livesPanel = document.getElementById('livesPanel');
 const livesBtns = document.querySelectorAll('.lives-btn');
+const speedPanel = document.getElementById('speedPanel');
+const speedBtns = document.querySelectorAll('.speed-btn');
 
 // ---------------------- GAME VARIABLES ----------------------
 const canvas = document.getElementById('platformer-canvas');
@@ -37,7 +39,8 @@ let levelNumber = 1;
 let lives = 3;              
 let startingLives = 3;    
 let maxLevels = 5;
-let moveSpeed = 4.5;
+let baseMoveSpeed = 4.5;    // NEW: This is set by the menu
+let moveSpeed = 4.5;        // MODIFIED: This will be calculated in-game
 const gravity = 0.7;
 const jumpPower = -15;
 const platforms = [];
@@ -78,20 +81,39 @@ controlBtn.onclick = () => {
     controlPanel.style.display = controlPanel.style.display === 'flex' ? 'none' : 'flex';
 };
 
-// NEW: Add this entire block for difficulty selection
 function updateDifficultyVisuals() {
     difficultyBtns.forEach(btn => {
-        if (parseInt(btn.dataset.levels) === maxLevels) {
-            btn.style.backgroundColor = '#2ecc71'; // Green for selected
+        const levels = btn.dataset.levels;
+
+        if (levels === 'endless') {
+            if (maxLevels === Infinity) {
+                btn.style.backgroundColor = '#e67e22'; // Orange for endless
+                btn.textContent = 'Endless (Selected)';
+            } else {
+                btn.style.backgroundColor = '#ddd';
+                btn.textContent = 'Endless';
+            }
         } else {
-            btn.style.backgroundColor = '#ddd'; // Default gray
+            const levelNum = parseInt(levels);
+            if (levelNum === maxLevels) {
+                btn.style.backgroundColor = '#2ecc71'; // Green for selected
+                btn.textContent = `${levelNum} Levels (Default)`;
+            } else {
+                btn.style.backgroundColor = '#ddd';
+                btn.textContent = `${levelNum} Levels`;
+            }
         }
     });
 }
 
 difficultyBtns.forEach(btn => {
     btn.onclick = () => {
-        maxLevels = parseInt(btn.dataset.levels); // Get level count from data-levels attribute
+        const levels = btn.dataset.levels;
+        if (levels === 'endless') {
+            maxLevels = Infinity;
+        } else {
+            maxLevels = parseInt(levels); // Get level count from data-levels attribute
+        }
         updateDifficultyVisuals(); // Update button colors
     };
 });
@@ -120,6 +142,39 @@ livesBtns.forEach(btn => {
 
 // Run this once on load to set the default text (e.g., "3 Lives (Default)")
 updateLivesVisuals();
+
+// NEW: Add this entire block for speed selection
+function updateSpeedVisuals() {
+    speedBtns.forEach(btn => {
+        const speed = parseFloat(btn.dataset.speed);
+        
+        if (speed === baseMoveSpeed) {
+            btn.style.backgroundColor = '#2ecc71'; // Green for selected
+            if (speed === 4.5) btn.textContent = 'Medium (Default)';
+            else if (speed === 3.0) btn.textContent = 'Slow';
+            else if (speed === 6.0) btn.textContent = 'Fast';
+            else if (speed === 7.5) btn.textContent = 'Faster';
+            else if (speed === 10) btn.textContent = 'Extreme';
+        } else {
+            btn.style.backgroundColor = '#ddd'; // Default gray
+            if (speed === 3.0) btn.textContent = 'Slow';
+            if (speed === 4.5) btn.textContent = 'Medium';
+            if (speed === 6.0) btn.textContent = 'Fast';
+            if (speed === 7.5) btn.textContent = 'Faster';
+            if (speed === 10) btn.textContent = 'Extreme';
+        }
+    });
+}
+
+speedBtns.forEach(btn => {
+    btn.onclick = () => {
+        baseMoveSpeed = parseFloat(btn.dataset.speed); // Set the base move speed
+        updateSpeedVisuals(); // Update button colors
+    };
+});
+
+// Run this once on load to set the default text
+updateSpeedVisuals();
 
 // Pause & Menu toggle
 document.addEventListener('keydown', (e) => {
@@ -179,7 +234,7 @@ function randomLevel() {
     player.dashCooldown = 0; // NEW: Reset dash cooldown
 
     const difficulty = levelNumber;
-    moveSpeed = 4.5 + difficulty * 0.15;
+    moveSpeed = baseMoveSpeed + difficulty * 0.15;
 
     const numPlatforms = 20 + difficulty;
     let currentX = startX, currentY = startY;
@@ -424,12 +479,17 @@ function update() {
 
 // Door collision
     if (rectsCollide(player, door)) {
-        if (levelNumber === maxLevels) {
-            // Player just beat level 5
+        
+        // NEW: Check for endless mode first
+        if (maxLevels === Infinity) {
+            levelNumber++;
+            randomLevel();
+        } 
+        // Original logic for finite levels
+        else if (levelNumber === maxLevels) { 
             gameWon = true;
-            gameStarted = false; // Stop the game
+            gameStarted = false; 
         } else {
-            // Not level 5, so proceed as normal
             levelNumber++;
             randomLevel();
         }
