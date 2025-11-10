@@ -10,6 +10,14 @@ const livesPanel = document.getElementById('livesPanel');
 const livesBtns = document.querySelectorAll('.lives-btn');
 const speedPanel = document.getElementById('speedPanel');
 const speedBtns = document.querySelectorAll('.speed-btn');
+const settingsBtn = document.getElementById('settingsBtn');
+const settingsPanel = document.getElementById('settingsPanel');
+
+// --- ADD THESE THREE LINES ---
+const difficultyToggleBtn = document.getElementById('difficultyToggleBtn');
+const livesToggleBtn = document.getElementById('livesToggleBtn');
+const speedToggleBtn = document.getElementById('speedToggleBtn');
+
 
 // ---------------------- GAME VARIABLES ----------------------
 const canvas = document.getElementById('platformer-canvas');
@@ -80,6 +88,40 @@ function resetGame() {
 controlBtn.onclick = () => {
     controlPanel.style.display = controlPanel.style.display === 'flex' ? 'none' : 'flex';
 };
+
+// This toggles the main panel with the 3 new buttons
+settingsBtn.onclick = () => {
+    settingsPanel.style.display = settingsPanel.style.display === 'flex' ? 'none' : 'flex';
+    // --- ADDITION: Hide sub-panels when closing main panel ---
+    if (settingsPanel.style.display === 'none') {
+        difficultyPanel.style.display = 'none';
+        livesPanel.style.display = 'none';
+        speedPanel.style.display = 'none';
+    }
+};
+
+// --- ADD THESE THREE NEW CLICK HANDLERS ---
+difficultyToggleBtn.onclick = () => {
+    difficultyPanel.style.display = difficultyPanel.style.display === 'flex' ? 'none' : 'flex';
+    // Optional: Hide others when one is opened
+    livesPanel.style.display = 'none';
+    speedPanel.style.display = 'none';
+};
+
+livesToggleBtn.onclick = () => {
+    livesPanel.style.display = livesPanel.style.display === 'flex' ? 'none' : 'flex';
+    // Optional: Hide others when one is opened
+    difficultyPanel.style.display = 'none';
+    speedPanel.style.display = 'none';
+};
+
+speedToggleBtn.onclick = () => {
+    speedPanel.style.display = speedPanel.style.display === 'flex' ? 'none' : 'flex';
+    // Optional: Hide others when one is opened
+    difficultyPanel.style.display = 'none';
+    livesPanel.style.display = 'none';
+};
+
 
 function updateDifficultyVisuals() {
     difficultyBtns.forEach(btn => {
@@ -625,7 +667,7 @@ if (player.dashTimer > 0) {
         ctx.fillStyle = '#fff';
         ctx.font = '40px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText('YOU DIED', canvas.width / 2, canvas.height / 2 - 20);
+        ctx.fillText('YOU DIED', canvas.w / 2, canvas.height / 2 - 20);
         ctx.font = '20px Arial';
         ctx.fillText("You are out of lives.", canvas.width / 2, canvas.height / 2 + 20);
         ctx.fillText("Press 'R' to restart or Press 'M' to return to the Menu", canvas.width / 2, canvas.height / 2 + 60);
