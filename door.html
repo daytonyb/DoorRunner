@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- MAIN MENU -->
     <div id="main-menu" style="position:absolute; top:0; left:0; width:100%; height:100%; 
         background:rgba(0,0,0,0.8); display:flex; flex-direction:column; align-items:center; 
         padding-top:40px; z-index:1000; color:#fff; font-size:32px;">
@@ -19,46 +18,43 @@
             <button style="padding:15px 30px; margin:10px; font-size:24px; cursor:pointer; border-radius:8px;"><a href="index.html" style="text-decoration: none; color: inherit;">Main Menu</a></button>
         </div>
 
-        <!-- NEW: Wrapper for control and settings buttons -->
         <div style="display:flex; gap:20px; margin-top: 10px;">
             <button id="controlBtn" style="padding:15px; font-size:24px; cursor:pointer; border-radius:8px;">How to Play</button>
-            <!-- MAIN SETTINGS BUTTON -->
             <button id="settingsBtn" style="padding:15px; font-size:24px; cursor:pointer; border-radius:8px;">Settings</button>
         </div>
         
-        <!-- How to Play Panel -->
         <div id="controlPanel" style="display:none; flex-direction:column; align-items:center; margin-top:20px; color:#fff; font-size:20px; padding: -4px;">
             <div class="parent" style="padding: 14px;">
             <div class="div1" style="background-color: rgb(62, 212, 42); margin-top:10px; color:#6b4f1d; font-size:1.1rem; background:#fffbe6; border-radius:8px; padding:8px 16px; box-shadow:0 1px 4px #a67c52;">
-                Controls: <b>Space</b> to jump, <b>P</b> to pause, <b>M</b> to go to main menu, <b>Shift</b> to dash, <b>Z</b> to upwards dash and <b>R</b> to restart!
+                Controls: <b>Space</b> to jump, <b>P</b> to pause, <b>M</b> to menu, <b>Shift</b> to dash, <b>Enter</b> or <b>Z</b> to vertical dash, and <b>R</b> to restart!
             </div>
             <div class="div2" style="background-color: rgb(62, 212, 42); margin-top:10px; color:#6b4f1d; font-size:1.1rem; background:#fffbe6; border-radius:8px; padding:8px 16px; box-shadow:0 1px 4px #a67c52;">
-                Reach <b>the door</b> to move to the next level, Avoid <b>the spikes</b> to stay alive! Land on top <b>of walls</b>, and <b>tunnels</b>!
+                Reach <b>the door</b> to move to the next level, Avoid <b>the spikes</b> to stay alive! Land on top <b>of walls</b>, not the sides!
             </div>
             <div class="div3" style="background-color: rgb(62, 212, 42); margin-top:10px; color:#6b4f1d; font-size:1.1rem; background:#fffbe6; border-radius:8px; padding:8px 16px; box-shadow:0 1px 4px #a67c52;">
-                Now with <b>speed boosts</b>, <b>jump pads</b>, <b>crumbling</b> platforms and <b>tunnels</b>! Use <b>moving platforms</b> to help you out!
+                Now with <b>speed boosts</b>, <b>jump pads</b>, and <b>crumbling</b> platforms! You have <b>3 lives</b> to make it as far as you can!
             </div>
         </div>
         </div>
 
 
-        <!-- MAIN SETTINGS PANEL (holds the 3 new buttons) -->
         <div id="settingsPanel" style="display:none; flex-direction:column; align-items:center; margin-top:10px; color:#fff; font-size:20px; width: 100%;">
 
-            <!-- NEW: Wrapper for toggle buttons -->
             <div id="settingsToggleWrapper" style="display:flex; flex-direction:row; justify-content: center; gap: 10px; margin-bottom: 10px;">
-                <button id="difficultyToggleBtn" style="padding:10px 20px; font-size:18px; cursor:pointer; border-radius:8px; background-color: #ddd; width: 150px;">
+                <button id="difficultyToggleBtn" style="padding:10px 20px; font-size:18px; cursor:pointer; border-radius:8px; background-color: #ddd; width: 120px;">
                     Difficulty
                 </button>
-                <button id="livesToggleBtn" style="padding:10px 20px; font-size:18px; cursor:pointer; border-radius:8px; background-color: #ddd; width: 150px;">
+                <button id="livesToggleBtn" style="padding:10px 20px; font-size:18px; cursor:pointer; border-radius:8px; background-color: #ddd; width: 120px;">
                     Lives
                 </button>
-                <button id="speedToggleBtn" style="padding:10px 20px; font-size:18px; cursor:pointer; border-radius:8px; background-color: #ddd; width: 150px;">
+                <button id="speedToggleBtn" style="padding:10px 20px; font-size:18px; cursor:pointer; border-radius:8px; background-color: #ddd; width: 120px;">
                     Speed
+                </button>
+                <button id="togglesToggleBtn" style="padding:10px 20px; font-size:18px; cursor:pointer; border-radius:8px; background-color: #ddd; width: 120px;">
+                    Toggles
                 </button>
             </div>
             
-            <!-- Difficulty Options Panel (now hidden) -->
             <div id="difficultyPanel" style="display:none; flex-direction:row; flex-wrap: wrap; justify-content: center; align-items:center; gap: 15px; margin-top:10px; background-color: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; width: 80%; box-sizing: border-box;">
                 <button class="difficulty-btn" data-levels="3" style="padding:10px 20px; font-size:18px; cursor:pointer; border-radius:8px; background-color: #ddd;">
                     Easy (3 Levels)
@@ -74,7 +70,6 @@
                 </button>
             </div>
 
-            <!-- Lives Options Panel (now hidden) -->
             <div id="livesPanel" style="display:none; flex-direction:row; flex-wrap: wrap; justify-content: center; align-items:center; gap: 15px; margin-top:10px; background-color: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; width: 80%; box-sizing: border-box;">
                 <button class="lives-btn" data-lives="1" style="padding:10px 20px; font-size:18px; cursor:pointer; border-radius:8px; background-color: #ddd;">
                     1 Life
@@ -93,7 +88,6 @@
                 </button>
             </div>
 
-            <!-- Speed Options Panel (now hidden) -->
             <div id="speedPanel" style="display:none; flex-direction:row; flex-wrap: wrap; justify-content: center; align-items:center; gap: 15px; margin-top:10px; background-color: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; width: 80%; box-sizing: border-box;">
                 <button class="speed-btn" data-speed="3.0" style="padding:10px 20px; font-size:18px; cursor:pointer; border-radius:8px; background-color: #ddd;">
                     Slow
@@ -112,12 +106,45 @@
                 </button>
             </div>
 
+            <div id="togglesPanel" style="display:none; flex-direction:row; flex-wrap: wrap; justify-content: center; align-items:center; gap: 15px; margin-top:10px; background-color: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; width: 80%; box-sizing: border-box;">
+                <button id="btnMenuPlatforms" style="padding:10px 20px; font-size:18px; cursor:pointer; border-radius:8px; background-color: #3498db;">
+                    Special Platforms >
+                </button>
+                <button id="btnMenuAbilities" style="padding:10px 20px; font-size:18px; cursor:pointer; border-radius:8px; background-color: #3498db;">
+                    Abilities >
+                </button>
+                <button id="btnToggleWalls" style="padding:10px 20px; font-size:18px; cursor:pointer; border-radius:8px; background-color: #2ecc71;">
+                    Walls: ON
+                </button>
+                <button id="btnToggleTunnels" style="padding:10px 20px; font-size:18px; cursor:pointer; border-radius:8px; background-color: #2ecc71;">
+                    Tunnels: ON
+                </button>
+            </div>
+
+            <div id="abilitiesPanel" style="display:none; flex-direction:row; flex-wrap: wrap; justify-content: center; align-items:center; gap: 15px; margin-top:10px; background-color: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; width: 80%; box-sizing: border-box;">
+                <button id="btnToggleHDash" style="padding:10px 20px; font-size:18px; cursor:pointer; border-radius:8px; background-color: #2ecc71;">
+                    Dash (Shift): ON
+                </button>
+                <button id="btnToggleVDash" style="padding:10px 20px; font-size:18px; cursor:pointer; border-radius:8px; background-color: #2ecc71;">
+                    V-Dash (Enter): ON
+                </button>
+            </div>
+
+            <div id="platformsPanel" style="display:none; flex-direction:row; flex-wrap: wrap; justify-content: center; align-items:center; gap: 15px; margin-top:10px; background-color: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; width: 80%; box-sizing: border-box;">
+                <button id="btnToggleBoost" style="padding:10px 20px; font-size:18px; cursor:pointer; border-radius:8px; background-color: #2ecc71;">
+                    Boost: ON
+                </button>
+                <button id="btnToggleBouncy" style="padding:10px 20px; font-size:18px; cursor:pointer; border-radius:8px; background-color: #2ecc71;">
+                    Bouncy: ON
+                </button>
+                <button id="btnToggleCrumbling" style="padding:10px 20px; font-size:18px; cursor:pointer; border-radius:8px; background-color: #2ecc71;">
+                    Crumbling: ON
+                </button>
+            </div>
+
         </div>
-        <!-- END OF MAIN SETTINGS WRAPPER -->
+        </div>
 
-    </div>
-
-    <!-- GAME CONTAINER -->
     <div id="platformer-container" style="display:flex; flex-direction:column; align-items:center; margin:32px 0;">
         <canvas id="platformer-canvas" width="800" height="400" 
             style="border:3px solid #654321; background:#e3c08d; border-radius:12px; box-shadow:0 2px 12px #a67c52;">
