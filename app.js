@@ -13,10 +13,29 @@ const speedBtns = document.querySelectorAll('.speed-btn');
 const settingsBtn = document.getElementById('settingsBtn');
 const settingsPanel = document.getElementById('settingsPanel');
 
-// --- ADD THESE THREE LINES ---
+// --- MAIN CATEGORY BUTTONS ---
 const difficultyToggleBtn = document.getElementById('difficultyToggleBtn');
 const livesToggleBtn = document.getElementById('livesToggleBtn');
 const speedToggleBtn = document.getElementById('speedToggleBtn');
+const togglesToggleBtn = document.getElementById('togglesToggleBtn'); 
+
+// --- TOGGLE PANEL ELEMENTS ---
+const togglesPanel = document.getElementById('togglesPanel');
+const btnMenuPlatforms = document.getElementById('btnMenuPlatforms');
+const btnMenuAbilities = document.getElementById('btnMenuAbilities');
+const btnToggleWalls = document.getElementById('btnToggleWalls');
+const btnToggleTunnels = document.getElementById('btnToggleTunnels');
+
+// --- NEW: SUB-PANEL ELEMENTS ---
+const abilitiesPanel = document.getElementById('abilitiesPanel');
+const platformsPanel = document.getElementById('platformsPanel');
+
+const btnToggleHDash = document.getElementById('btnToggleHDash');
+const btnToggleVDash = document.getElementById('btnToggleVDash');
+
+const btnToggleBoost = document.getElementById('btnToggleBoost');
+const btnToggleBouncy = document.getElementById('btnToggleBouncy');
+const btnToggleCrumbling = document.getElementById('btnToggleCrumbling');
 
 
 // ---------------------- GAME VARIABLES ----------------------
@@ -30,15 +49,25 @@ const spikeWidth = 20;
 const spikeHeight = 20;
 
 const walls = [];
-// MODIFIED: Removed 'tunnels' array. They are now part of 'platforms'.
 
-// NEW: Dash variables
+// NEW: Toggle States (Granular)
+let enableWalls = true;
+let enableTunnels = true;
+
+let enableHDash = true;
+let enableVDash = true;
+
+let enableBoost = true;
+let enableBouncy = true;
+let enableCrumbling = true;
+
+// Dash variables
 const dashSpeed = 8;
-const dashDuration = 12; // 12 frames = 0.2 seconds at 60fps
+const dashDuration = 12; 
 const dashCooldownTime = 120; 
 
-// NEW: Vertical Dash variables
-const vDashPower = -12; // The constant upward velocity during the dash
+// Vertical Dash variables
+const vDashPower = -12; 
 const vDashDuration = 12;
 const vDashCooldownTime = 120; 
 
@@ -48,23 +77,23 @@ const player = {
     vx: 0, vy: 0, onGround: false,
     dashTimer: 0, 
     dashCooldown: 0,
-    vDashTimer: 0,     // NEW: Vertical dash timer
-    vDashCooldown: 0   // NEW: Vertical dash cooldown
+    vDashTimer: 0,     
+    vDashCooldown: 0   
 };
 let levelNumber = 1;
 let lives = 3;              
 let startingLives = 3;    
 let maxLevels = 5;
-let baseMoveSpeed = 4.5;    // NEW: This is set by the menu
-let moveSpeed = 4.5;        // MODIFIED: This will be calculated in-game
+let baseMoveSpeed = 4.5;    
+let moveSpeed = 4.5;        
 const gravity = 0.7;
 const jumpPower = -15;
 const platforms = [];
 let door = { x: 760, y: 46, w: 18, h: 30 };
 
-// NEW: Boost variables
+// Boost variables
 let boostTimer = 0;
-const boostDuration = 90; // 90 frames = 1.5 seconds at 60fps
+const boostDuration = 90; 
 const boostAmount = 2.5;
 
 const keys = {};
@@ -79,10 +108,9 @@ let gameLost = false;
 // ---------------------- MENU HANDLERS ----------------------
 startBtn.onclick = () => {
     mainMenu.style.display = 'none';
-    resetGame(); // MODIFIED: Call our new reset function
+    resetGame();
 };
 
-// NEW: Add this entire function
 function resetGame() {
     gameStarted = true;
     paused = false;
@@ -90,54 +118,135 @@ function resetGame() {
     gameLost = false;
     levelNumber = 1;
     lives = startingLives;
-    randomLevel(); // This generates level 1 and sets player position
+    randomLevel(); 
 }
 
 controlBtn.onclick = () => {
     controlPanel.style.display = controlPanel.style.display === 'flex' ? 'none' : 'flex';
 };
 
-// This toggles the main panel with the 3 new buttons
+// SETTINGS BUTTON logic
 settingsBtn.onclick = () => {
     settingsPanel.style.display = settingsPanel.style.display === 'flex' ? 'none' : 'flex';
-    // --- ADDITION: Hide sub-panels when closing main panel ---
+    // Hide all sub-panels when closing main panel
     if (settingsPanel.style.display === 'none') {
         difficultyPanel.style.display = 'none';
         livesPanel.style.display = 'none';
         speedPanel.style.display = 'none';
+        togglesPanel.style.display = 'none';
+        abilitiesPanel.style.display = 'none';
+        platformsPanel.style.display = 'none';
     }
 };
 
-// --- ADD THESE THREE NEW CLICK HANDLERS ---
-difficultyToggleBtn.onclick = () => {
-    difficultyPanel.style.display = difficultyPanel.style.display === 'flex' ? 'none' : 'flex';
-    // Optional: Hide others when one is opened
+// --- MAIN TAB HANDLERS ---
+// When clicking a main tab, hide all content panels, then show the right one
+function hideAllPanels() {
+    difficultyPanel.style.display = 'none';
     livesPanel.style.display = 'none';
     speedPanel.style.display = 'none';
+    togglesPanel.style.display = 'none';
+    abilitiesPanel.style.display = 'none';
+    platformsPanel.style.display = 'none';
+}
+
+difficultyToggleBtn.onclick = () => {
+    let wasVisible = difficultyPanel.style.display === 'flex';
+    hideAllPanels();
+    if (!wasVisible) difficultyPanel.style.display = 'flex';
 };
 
 livesToggleBtn.onclick = () => {
-    livesPanel.style.display = livesPanel.style.display === 'flex' ? 'none' : 'flex';
-    // Optional: Hide others when one is opened
-    difficultyPanel.style.display = 'none';
-    speedPanel.style.display = 'none';
+    let wasVisible = livesPanel.style.display === 'flex';
+    hideAllPanels();
+    if (!wasVisible) livesPanel.style.display = 'flex';
 };
 
 speedToggleBtn.onclick = () => {
-    speedPanel.style.display = speedPanel.style.display === 'flex' ? 'none' : 'flex';
-    // Optional: Hide others when one is opened
-    difficultyPanel.style.display = 'none';
-    livesPanel.style.display = 'none';
+    let wasVisible = speedPanel.style.display === 'flex';
+    hideAllPanels();
+    if (!wasVisible) speedPanel.style.display = 'flex';
+};
+
+togglesToggleBtn.onclick = () => {
+    // If we are in a sub-menu (abilities/platforms), clicking Toggles should go back to main Toggles list
+    // If we are already in main list, close it.
+    // If we are closed, open main list.
+    if (abilitiesPanel.style.display === 'flex' || platformsPanel.style.display === 'flex') {
+        hideAllPanels();
+        togglesPanel.style.display = 'flex';
+    } else {
+        let wasVisible = togglesPanel.style.display === 'flex';
+        hideAllPanels();
+        if (!wasVisible) togglesPanel.style.display = 'flex';
+    }
+};
+
+// --- SUB-MENU NAVIGATION ---
+btnMenuAbilities.onclick = () => {
+    togglesPanel.style.display = 'none';
+    abilitiesPanel.style.display = 'flex';
+};
+
+btnMenuPlatforms.onclick = () => {
+    togglesPanel.style.display = 'none';
+    platformsPanel.style.display = 'flex';
 };
 
 
+// --- TOGGLE BUTTON LOGIC ---
+function updateToggleBtn(btn, state, name) {
+    if (state) {
+        btn.style.backgroundColor = '#2ecc71'; // Green
+        btn.textContent = `${name}: ON`;
+    } else {
+        btn.style.backgroundColor = '#ddd'; // Gray
+        btn.textContent = `${name}: OFF`;
+    }
+}
+
+// Standard Toggles
+btnToggleWalls.onclick = () => { 
+    enableWalls = !enableWalls; 
+    updateToggleBtn(btnToggleWalls, enableWalls, "Walls"); 
+};
+btnToggleTunnels.onclick = () => { 
+    enableTunnels = !enableTunnels; 
+    updateToggleBtn(btnToggleTunnels, enableTunnels, "Tunnels"); 
+};
+
+// Ability Toggles
+btnToggleHDash.onclick = () => { 
+    enableHDash = !enableHDash; 
+    updateToggleBtn(btnToggleHDash, enableHDash, "Dash (Shift)"); 
+};
+btnToggleVDash.onclick = () => { 
+    enableVDash = !enableVDash; 
+    updateToggleBtn(btnToggleVDash, enableVDash, "V-Dash (Enter)"); 
+};
+
+// Platform Toggles
+btnToggleBoost.onclick = () => { 
+    enableBoost = !enableBoost; 
+    updateToggleBtn(btnToggleBoost, enableBoost, "Boost"); 
+};
+btnToggleBouncy.onclick = () => { 
+    enableBouncy = !enableBouncy; 
+    updateToggleBtn(btnToggleBouncy, enableBouncy, "Bouncy"); 
+};
+btnToggleCrumbling.onclick = () => { 
+    enableCrumbling = !enableCrumbling; 
+    updateToggleBtn(btnToggleCrumbling, enableCrumbling, "Crumbling"); 
+};
+
+
+// --- EXISTING SETTINGS LOGIC ---
 function updateDifficultyVisuals() {
     difficultyBtns.forEach(btn => {
         const levels = btn.dataset.levels;
-
         if (levels === 'endless') {
             if (maxLevels === Infinity) {
-                btn.style.backgroundColor = '#e67e22'; // Orange for endless
+                btn.style.backgroundColor = '#e67e22'; 
                 btn.textContent = 'Endless (Selected)';
             } else {
                 btn.style.backgroundColor = '#ddd';
@@ -146,7 +255,7 @@ function updateDifficultyVisuals() {
         } else {
             const levelNum = parseInt(levels);
             if (levelNum === maxLevels) {
-                btn.style.backgroundColor = '#2ecc71'; // Green for selected
+                btn.style.backgroundColor = '#2ecc71'; 
                 btn.textContent = `${levelNum} Levels (Default)`;
             } else {
                 btn.style.backgroundColor = '#ddd';
@@ -159,12 +268,9 @@ function updateDifficultyVisuals() {
 difficultyBtns.forEach(btn => {
     btn.onclick = () => {
         const levels = btn.dataset.levels;
-        if (levels === 'endless') {
-            maxLevels = Infinity;
-        } else {
-            maxLevels = parseInt(levels); // Get level count from data-levels attribute
-        }
-        updateDifficultyVisuals(); // Update button colors
+        if (levels === 'endless') maxLevels = Infinity;
+        else maxLevels = parseInt(levels);
+        updateDifficultyVisuals();
     };
 });
 
@@ -172,12 +278,11 @@ function updateLivesVisuals() {
     livesBtns.forEach(btn => {
         let num = btn.dataset.lives;
         let text = `${num} ${num === '1' ? 'Life' : 'Lives'}`;
-        
         if (parseInt(num) === startingLives) {
-            btn.style.backgroundColor = '#2ecc71'; // Green for selected
+            btn.style.backgroundColor = '#2ecc71'; 
             btn.textContent = `${text} (Default)`;
         } else {
-            btn.style.backgroundColor = '#ddd'; // Default gray
+            btn.style.backgroundColor = '#ddd'; 
             btn.textContent = text;
         }
     });
@@ -185,28 +290,24 @@ function updateLivesVisuals() {
 
 livesBtns.forEach(btn => {
     btn.onclick = () => {
-        startingLives = parseInt(btn.dataset.lives); // Set the starting lives
-        updateLivesVisuals(); // Update button colors and text
+        startingLives = parseInt(btn.dataset.lives);
+        updateLivesVisuals();
     };
 });
-
-// Run this once on load to set the default text (e.g., "3 Lives (Default)")
 updateLivesVisuals();
 
-// NEW: Add this entire block for speed selection
 function updateSpeedVisuals() {
     speedBtns.forEach(btn => {
         const speed = parseFloat(btn.dataset.speed);
-        
         if (speed === baseMoveSpeed) {
-            btn.style.backgroundColor = '#2ecc71'; // Green for selected
+            btn.style.backgroundColor = '#2ecc71'; 
             if (speed === 4.5) btn.textContent = 'Medium (Default)';
             else if (speed === 3.0) btn.textContent = 'Slow';
             else if (speed === 6.0) btn.textContent = 'Fast';
             else if (speed === 7.5) btn.textContent = 'Faster';
             else if (speed === 10) btn.textContent = 'Extreme';
         } else {
-            btn.style.backgroundColor = '#ddd'; // Default gray
+            btn.style.backgroundColor = '#ddd';
             if (speed === 3.0) btn.textContent = 'Slow';
             if (speed === 4.5) btn.textContent = 'Medium';
             if (speed === 6.0) btn.textContent = 'Fast';
@@ -218,20 +319,16 @@ function updateSpeedVisuals() {
 
 speedBtns.forEach(btn => {
     btn.onclick = () => {
-        baseMoveSpeed = parseFloat(btn.dataset.speed); // Set the base move speed
-        updateSpeedVisuals(); // Update button colors
+        baseMoveSpeed = parseFloat(btn.dataset.speed);
+        updateSpeedVisuals(); 
     };
 });
-
-// Run this once on load to set the default text
 updateSpeedVisuals();
+
 
 // Pause & Menu toggle
 document.addEventListener('keydown', (e) => {
-    // 'P' to Pause
     if (e.code === 'KeyP') paused = !paused;
-
-    // 'M' to go to Menu
     if (e.code === 'KeyM') {
         gameStarted = false;
         mainMenu.style.display = 'flex';
@@ -241,10 +338,7 @@ document.addEventListener('keydown', (e) => {
         levelNumber = 1;
         lives = startingLives;
     }
-    
-    // NEW: 'R' to Restart Game
     if (e.code === 'KeyR') {
-        // We can restart as long as we're not already on the main menu
         if (gameStarted || gameLost || gameWon) {
             resetGame();
         }
@@ -271,7 +365,6 @@ function randomLevel() {
     platforms.length = 0;
     spikes.length = 0;
     walls.length = 0;
-    // MODIFIED: No separate tunnel clearing needed, they are platforms now
 
     // Full ground
     platforms.push({ x: 0, y: 376, w: worldWidth, h: 24 });
@@ -303,24 +396,26 @@ function randomLevel() {
 
         const platform = { x: nextX, y: nextY, w: pw, h: 14 };
 
-        // MODIFIED: Use a single roll to assign different platform types
+        // MODIFIED: Check specific toggle flags
         const typeRoll = Math.random();
 
-        if (typeRoll < 0.15 && i > 0) { // 15% chance: Moving (horizontal)
+        if (typeRoll < 0.15 && i > 0) { // Moving (Horizontal)
             platform.vx = (Math.random() < 0.5 ? -1 : 1) * (1 + difficulty * 0.2);
             platform.range = 50 + Math.random() * 50;
             platform.baseX = nextX;
-        } else if (typeRoll < 0.25 && i > 0) { // 10% chance: Moving (vertical)
+        } else if (typeRoll < 0.25 && i > 0) { // Moving (Vertical)
             platform.vy = (Math.random() < 0.5 ? -1 : 1) * (0.8 + difficulty * 0.1);
             platform.range = 30 + Math.random() * 40;
             platform.baseY = nextY;
-        } else if (typeRoll < 0.35) { // 10% chance: Boost
+        } 
+        // GRANULAR CHECKS
+        else if (enableBoost && typeRoll < 0.35) { 
             platform.isBoost = true;
-        } else if (typeRoll < 0.45) { // 10% chance: Bouncy
+        } else if (enableBouncy && typeRoll < 0.45) { 
             platform.isBouncy = true;
-        } else if (typeRoll < 0.55) { // 10% chance: Crumbling
+        } else if (enableCrumbling && typeRoll < 0.55) { 
             platform.isCrumbling = true;
-            platform.crumbleTimer = -1; // -1 means inactive
+            platform.crumbleTimer = -1; 
         }
         
         platforms.push(platform);
@@ -347,87 +442,86 @@ function randomLevel() {
     }
 
     // Walls
-    const numWalls = Math.min(2 + Math.floor(difficulty / 2), 6);
-    for (let i = 0; i < numWalls; i++) {
-        let wallX;
-        do {
-            wallX = 300 + Math.random() * (worldWidth - 500);
-        } while ((wallX > startX - 50 && wallX < startX + 150) || (wallX > door.x - 100 && wallX < door.x + 120));
+    if (enableWalls) {
+        const numWalls = Math.min(2 + Math.floor(difficulty / 2), 6);
+        for (let i = 0; i < numWalls; i++) {
+            let wallX;
+            do {
+                wallX = 300 + Math.random() * (worldWidth - 500);
+            } while ((wallX > startX - 50 && wallX < startX + 150) || (wallX > door.x - 100 && wallX < door.x + 120));
 
-        const wallHeight = 60 + Math.random() * 80;
-        const wall = {
-            x: wallX,
-            y: 376 - wallHeight,
-            w: 20 + Math.random() * 15,
-            h: wallHeight
-        };
-        walls.push(wall);
+            const wallHeight = 60 + Math.random() * 80;
+            const wall = {
+                x: wallX,
+                y: 376 - wallHeight,
+                w: 20 + Math.random() * 15,
+                h: wallHeight
+            };
+            walls.push(wall);
+        }
     }
 
-    // --- MODIFICATION START: Generate Tunnels as Platforms ---
-    // We now add them to the 'platforms' array with isTunnel: true
-    const numTunnels = Math.min(2 + Math.floor(difficulty / 2), 6);
-    for (let i = 0; i < numTunnels; i++) {
-        let tunnelX;
-        do {
-            tunnelX = 200 + Math.random() * (worldWidth - 400);
-        } while ((tunnelX > startX - 100 && tunnelX < startX + 200) || (tunnelX > door.x - 150 && tunnelX < door.x + 150));
+    // Tunnels
+    if (enableTunnels) {
+        const numTunnels = Math.min(2 + Math.floor(difficulty / 2), 6);
+        for (let i = 0; i < numTunnels; i++) {
+            let tunnelX;
+            do {
+                tunnelX = 200 + Math.random() * (worldWidth - 400);
+            } while ((tunnelX > startX - 100 && tunnelX < startX + 200) || (tunnelX > door.x - 150 && tunnelX < door.x + 150));
 
-        const tunnelY = 150 + Math.random() * 100; // Place it high up
-        const tunnelWidth = 100 + Math.random() * 150;
-        
-        platforms.push({
-            x: tunnelX,
-            y: tunnelY,
-            w: tunnelWidth,
-            h: 20 + Math.random() * 15,
-            isTunnel: true // Mark this as a tunnel
-        });
+            const tunnelY = 150 + Math.random() * 100; // Place it high up
+            const tunnelWidth = 100 + Math.random() * 150;
+            
+            platforms.push({
+                x: tunnelX,
+                y: tunnelY,
+                w: tunnelWidth,
+                h: 20 + Math.random() * 15,
+                isTunnel: true // Mark this as a tunnel
+            });
+        }
     }
-    // --- MODIFICATION END ---
 }
 
 // ---------------------- GAME LOOP ----------------------
 function update() {
     if (!gameStarted || paused) return;
 
-    // NEW: Crumbling platform update loop
-    // (Loop backwards when splicing an array)
+    // Crumbling platform update
     for (let i = platforms.length - 1; i >= 0; i--) {
         const plat = platforms[i];
         if (plat.crumbleTimer > 0) {
             plat.crumbleTimer--;
         } else if (plat.crumbleTimer === 0) {
-            platforms.splice(i, 1); // Remove the platform
+            platforms.splice(i, 1); 
         }
     }
 
-    // --- NEW: Dash Cooldown ---
-    if (player.dashCooldown > 0) {
-        player.dashCooldown--;
-    }
-    // --- NEW: Vertical Dash Cooldown ---
-    if (player.vDashCooldown > 0) {
-        player.vDashCooldown--;
+    // Cooldowns
+    if (player.dashCooldown > 0) player.dashCooldown--;
+    if (player.vDashCooldown > 0) player.vDashCooldown--;
+
+    // MODIFIED: Granular Ability Checks
+    
+    // Horizontal Dash
+    if (enableHDash) {
+        if ((keys['ShiftLeft'] || keys['KeyX'] || keys['ShiftRight']) && player.dashCooldown === 0) {
+            player.dashTimer = dashDuration;
+            player.dashCooldown = dashCooldownTime;
+        }
     }
 
-    // --- NEW: Dash Key Check ---
-    // Check for dash input (Left Shift)
-    if ((keys['ShiftLeft'] || keys['KeyX'] || keys['ShiftRight']) && player.dashCooldown === 0) {
-        player.dashTimer = dashDuration;
-        player.dashCooldown = dashCooldownTime;
-    }
-    // --- NEW: Vertical Dash Key Check ---
-    if ((keys['Enter'] || keys['KeyZ']) && player.vDashCooldown === 0) {
-        player.vDashTimer = vDashDuration;
-        player.vDashCooldown = vDashCooldownTime;
-        player.onGround = false; // Can't be on ground if v-dashing
+    // Vertical Dash
+    if (enableVDash) {
+        if ((keys['Enter'] || keys['KeyZ']) && player.vDashCooldown === 0) {
+            player.vDashTimer = vDashDuration;
+            player.vDashCooldown = vDashCooldownTime;
+            player.onGround = false; 
+        }
     }
 
-
-    if (boostTimer > 0) {
-        boostTimer--;
-    }
+    if (boostTimer > 0) boostTimer--;
 
     // Moving platforms
     for (const plat of platforms) {
@@ -435,8 +529,6 @@ function update() {
             plat.x += plat.vx;
             if (plat.x > plat.baseX + plat.range || plat.x < plat.baseX) plat.vx *= -1;
         }
-
-        // NEW: Add vertical movement
         if (plat.vy) {
             plat.y += plat.vy;
             if (plat.y > plat.baseY + plat.range || plat.y < plat.baseY) plat.vy *= -1;
@@ -445,13 +537,8 @@ function update() {
 
     // Auto-run
     let currentSpeed = moveSpeed;
-    if (boostTimer > 0) {
-        currentSpeed += boostAmount;
-    }
-    // --- NEW: Add dash speed if active ---
-    if (player.dashTimer > 0) {
-        currentSpeed += dashSpeed;
-    }
+    if (boostTimer > 0) currentSpeed += boostAmount;
+    if (player.dashTimer > 0) currentSpeed += dashSpeed;
     player.x += currentSpeed;
 
     // Jump
@@ -473,39 +560,31 @@ function update() {
     player.y += player.vy; 
 
 
-    // --- MODIFIED: Platform Collision Logic ---
+    // Platform Collision Logic
     player.onGround = false;
     for (const plat of platforms) {
-        // Check simple collision first
         if (rectsCollide(player, plat)) {
 
-            // === TUNNEL BEHAVIOR (Solid Block) ===
+            // TUNNEL BEHAVIOR
             if (plat.isTunnel) {
-                // 1. Hit Head (Moving UP) - Solid Bottom
                 if (player.vy < 0 && (player.y - player.vy >= plat.y + plat.h)) {
-                    player.y = plat.y + plat.h; // Snap to bottom
-                    player.vy = 0; // Stop upward movement
+                    player.y = plat.y + plat.h; 
+                    player.vy = 0; 
                 }
-                // 2. Land on Top (Moving DOWN) - Solid Top
                 else if (player.vy >= 0 && (player.y + player.h - player.vy <= plat.y)) {
-                    player.y = plat.y - player.h; // Snap to top
-                    player.vy = 0; // Stop downward movement
-                    player.onGround = true; // Allow jumping
+                    player.y = plat.y - player.h; 
+                    player.vy = 0; 
+                    player.onGround = true; 
                 }
             }
-
-            // === NORMAL PLATFORM BEHAVIOR (One-way) ===
+            // NORMAL PLATFORM BEHAVIOR
             else {
-                // Land on Feet (Downward Movement)
                 if (player.vy >= 0 && player.y + player.h - player.vy <= plat.y) {
-                    
-                    // Bouncy Logic
                     if (plat.isBouncy) {
                         player.y = plat.y - player.h;
                         player.vy = jumpPower * 1.5; 
                         player.onGround = false;
                     } else {
-                        // Standard Land
                         player.y = plat.y - player.h;
                         player.vy = 0;
                         player.onGround = true;
@@ -516,18 +595,15 @@ function update() {
                         if (plat.vx) player.x += plat.vx;
                     }
                 }
-                // Normal platforms allow jumping through from bottom (Do nothing if moving UP)
             }
         }
     }
-    // --- END MODIFICATION ---
 
-// Spike collision
+    // Spike collision
     for (const spike of spikes) {
         if (rectsCollide(player, spike)) {
-           if (player.dashTimer > 0 || player.vDashTimer > 0) continue; // Invincible during either dash
+           if (player.dashTimer > 0 || player.vDashTimer > 0) continue; 
 
-            // MODIFIED: Use lives system
             lives--;
             if (lives <= 0) {
                 gameStarted = false;
@@ -539,7 +615,7 @@ function update() {
         }
     }
 
-    // Wall collision (only kill from the sides)
+    // Wall collision
     for (const wall of walls) {
         if (rectsCollide(player, wall)) {
             const playerBottom = player.y + player.h;
@@ -554,36 +630,29 @@ function update() {
             const fromRight = playerLeft < wallRight && playerRight > wallRight && playerBottom > wallTop + 5;
 
             if (fromTop) {
-                // Land safely on top
                 player.y = wall.y - player.h;
                 player.vy = 0;
                 player.onGround = true;
             } else if (fromLeft || fromRight) {
-
-                if (player.dashTimer > 0 || player.vDashTimer > 0) continue; // Invincible during either dash
-
-            lives--;
-            if (lives <= 0) {
-                gameStarted = false;
-                gameLost = true;
-            } else {
-                randomLevel();
-            }
-            return;
+                if (player.dashTimer > 0 || player.vDashTimer > 0) continue; 
+                lives--;
+                if (lives <= 0) {
+                    gameStarted = false;
+                    gameLost = true;
+                } else {
+                    randomLevel();
+                }
+                return;
             }
         }
     }
 
-// Door collision
+    // Door collision
     if (rectsCollide(player, door)) {
-        
-        // NEW: Check for endless mode first
         if (maxLevels === Infinity) {
             levelNumber++;
             randomLevel();
-        } 
-        // Original logic for finite levels
-        else if (levelNumber === maxLevels) { 
+        } else if (levelNumber === maxLevels) { 
             gameWon = true;
             gameStarted = false; 
         } else {
@@ -593,9 +662,8 @@ function update() {
         return;
     }
 
-// Fall off screen
+    // Fall off screen
     if (player.y > canvas.height) {
-        // MODIFIED: Use lives system
         lives--;
         if (lives <= 0) {
             gameStarted = false;
@@ -606,7 +674,6 @@ function update() {
         return;
     }
 
-    // Camera
     const cameraMargin = 300;
     cameraX = Math.max(0, Math.min(player.x - cameraMargin, worldWidth - canvas.width));
 }
@@ -614,34 +681,29 @@ function update() {
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-// Platforms
-    // --- MODIFIED: Add colors for new types ---
+    // Platforms
     for (const plat of platforms) {
         if (plat.isTunnel) {
-            ctx.fillStyle = '#777'; // Gray (Tunnel/Ceiling)
+            ctx.fillStyle = '#777'; 
         } else if (plat.isBoost) {
-            ctx.fillStyle = '#2ecc71'; // Green (Boost)
+            ctx.fillStyle = '#2ecc71'; 
         } else if (plat.isBouncy) {
-            ctx.fillStyle = '#9b59b6'; // Purple (Bouncy)
+            ctx.fillStyle = '#9b59b6'; 
         } else if (plat.isCrumbling) {
-            // Flash red if timer is active
             if (plat.crumbleTimer > 0 && Math.floor(plat.crumbleTimer / 4) % 2 === 0) {
-                ctx.fillStyle = '#e74c3c'; // Red (Crumbling)
+                ctx.fillStyle = '#e74c3c'; 
             } else {
-                ctx.fillStyle = '#f39c12'; // Orange (Crumbling)
+                ctx.fillStyle = '#f39c12'; 
             }
         } else {
-            ctx.fillStyle = '#654321'; // Default brown
+            ctx.fillStyle = '#654321'; 
         }
         ctx.fillRect(plat.x - cameraX, plat.y, plat.w, plat.h);
     }
-    // --- END MODIFICATION ---
 
     // Walls
     ctx.fillStyle = '#555';
     for (const wall of walls) ctx.fillRect(wall.x - cameraX, wall.y, wall.w, wall.h);
-
-    // MODIFIED: Removed separate Tunnel draw loop (handled in platforms now)
 
     // Door
     ctx.fillStyle = '#e67e22';
@@ -649,15 +711,13 @@ function draw() {
     ctx.fillStyle = '#fff';
     ctx.fillRect(door.x + door.w / 2 - 2 - cameraX, door.y + door.h - 8, 4, 4);
 
-// Player
-if (player.dashTimer > 0 || player.vDashTimer > 0) {
-        // Flashing white effect during either dash
+    // Player
+    if (player.dashTimer > 0 || player.vDashTimer > 0) {
         ctx.fillStyle = (Math.floor(player.dashTimer / 3) % 2 === 0 || Math.floor(player.vDashTimer / 3) % 2 === 0) ? '#ffffff' : '#3498db';
     } else if (boostTimer > 0) {
-        // Flashing effect while boosted
         ctx.fillStyle = (Math.floor(boostTimer / 5) % 2 === 0) ? '#2ecc71' : '#3498db';
     } else {
-        ctx.fillStyle = '#3498db'; // Default blue
+        ctx.fillStyle = '#3498db'; 
     }
     ctx.fillRect(player.x - cameraX, player.y, player.w, player.h);
 
@@ -677,42 +737,37 @@ if (player.dashTimer > 0 || player.vDashTimer > 0) {
     ctx.font = '20px Arial';
     ctx.fillText(`Level ${levelNumber}`, 16, 28);
 
-// NEW: Lives text
-    ctx.textAlign = 'right'; // Align to the right
+    // Lives text
+    ctx.textAlign = 'right'; 
     ctx.fillText(`❤️ ${lives}`, canvas.width - 16, 28);
-    ctx.textAlign = 'left';  // Reset alignment
+    ctx.textAlign = 'left';  
 
-    // --- MODIFICATION START: Cooldown Bars ---
+    // Cooldown Bars
     let barWidth = 50;
     let barHeight = 8;
 
-    // Draw Horizontal Dash Cooldown Indicator
-    if (player.dashCooldown > 0) {
+    // Only draw dashes if abilities are enabled
+    
+    if (enableHDash && player.dashCooldown > 0) {
         ctx.fillStyle = 'rgba(0,0,0,0.4)';
         let progress = (player.dashCooldown / dashCooldownTime) * barWidth;
-        
-        // --- FIX: Changed 'player.y - cameraX - 15' to 'player.y - 15' ---
         let yPos = player.y - 15;
         ctx.fillRect(player.x - cameraX + player.w / 2 - barWidth / 2, yPos, barWidth, barHeight);
-        ctx.fillStyle = '#9b59b6'; // Purple for H-dash
+        ctx.fillStyle = '#9b59b6'; 
         ctx.fillRect(player.x - cameraX + player.w / 2 - barWidth / 2, yPos, barWidth - progress, barHeight);
     }
 
-    // Draw Vertical Dash Cooldown Indicator
-    if (player.vDashCooldown > 0) {
+    if (enableVDash && player.vDashCooldown > 0) {
         ctx.fillStyle = 'rgba(0,0,0,0.4)';
-        // Place it 10px above the H-dash bar
         let yPos = player.y - 25; 
         let progress = (player.vDashCooldown / vDashCooldownTime) * barWidth;
-        
         ctx.fillRect(player.x - cameraX + player.w / 2 - barWidth / 2, yPos, barWidth, barHeight);
-        ctx.fillStyle = '#1abc9c'; // Teal for V-dash
+        ctx.fillStyle = '#1abc9c'; 
         ctx.fillRect(player.x - cameraX + player.w / 2 - barWidth / 2, yPos, barWidth - progress, barHeight);
     }
-    // --- MODIFICATION END ---
+    
 
-
-    // Pause overlay
+    // Menus
     if (paused) {
         ctx.fillStyle = 'rgba(0,0,0,0.5)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -722,9 +777,8 @@ if (player.dashTimer > 0 || player.vDashTimer > 0) {
         ctx.fillText('PAUSED', canvas.width / 2, canvas.height / 2);
         ctx.textAlign = 'left';
     } 
-    // NEW: Win Screen
     else if (gameWon) {
-        ctx.fillStyle = 'rgba(26, 188, 156, 0.8)'; // A nice win color
+        ctx.fillStyle = 'rgba(26, 188, 156, 0.8)'; 
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = '#fff';
         ctx.font = '40px Arial';
@@ -735,10 +789,8 @@ if (player.dashTimer > 0 || player.vDashTimer > 0) {
         ctx.fillText("Press 'R' to restart or Press 'M' to return to the Menu", canvas.width / 2, canvas.height / 2 + 60);
         ctx.textAlign = 'left';
     }
-
-    // NEW: Game Over Screen
     else if (gameLost) {
-        ctx.fillStyle = 'rgba(192, 57, 43, 0.8)'; // A dark red
+        ctx.fillStyle = 'rgba(192, 57, 43, 0.8)'; 
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = '#fff';
         ctx.font = '40px Arial';
