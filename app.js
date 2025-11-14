@@ -30,18 +30,26 @@ const spikeWidth = 20;
 const spikeHeight = 20;
 
 const walls = [];
+// MODIFIED: Removed 'tunnels' array. They are now part of 'platforms'.
 
 // NEW: Dash variables
 const dashSpeed = 8;
 const dashDuration = 12; // 12 frames = 0.2 seconds at 60fps
-const dashCooldownTime = 60; // 1 second cooldown
+const dashCooldownTime = 120; 
+
+// NEW: Vertical Dash variables
+const vDashPower = -12; // The constant upward velocity during the dash
+const vDashDuration = 12;
+const vDashCooldownTime = 120; 
 
 // MODIFIED: Add dash properties to player
 const player = { 
     x: 30, y: 334, w: 35, h: 35, 
     vx: 0, vy: 0, onGround: false,
     dashTimer: 0, 
-    dashCooldown: 0 
+    dashCooldown: 0,
+    vDashTimer: 0,     // NEW: Vertical dash timer
+    vDashCooldown: 0   // NEW: Vertical dash cooldown
 };
 let levelNumber = 1;
 let lives = 3;              
@@ -263,6 +271,7 @@ function randomLevel() {
     platforms.length = 0;
     spikes.length = 0;
     walls.length = 0;
+    // MODIFIED: No separate tunnel clearing needed, they are platforms now
 
     // Full ground
     platforms.push({ x: 0, y: 376, w: worldWidth, h: 24 });
@@ -272,8 +281,10 @@ function randomLevel() {
     player.x = startX; player.y = startY; player.vx = 0; player.vy = 0;
     cameraX = 0;
     boostTimer = 0;
-    player.dashTimer = 0; // NEW: Reset dash timer
-    player.dashCooldown = 0; // NEW: Reset dash cooldown
+    player.dashTimer = 0; 
+    player.dashCooldown = 0; 
+    player.vDashTimer = 0;     
+    player.vDashCooldown = 0; 
 
     const difficulty = levelNumber;
     moveSpeed = baseMoveSpeed + difficulty * 0.15;
@@ -281,7 +292,7 @@ function randomLevel() {
     const numPlatforms = 20 + difficulty;
     let currentX = startX, currentY = startY;
 
-for (let i = 0; i < numPlatforms; i++) {
+    for (let i = 0; i < numPlatforms; i++) {
         
         const gap = 100 + Math.random() * 80 + difficulty * 5;
         let nextX = Math.min(currentX + gap, worldWidth - 100);
@@ -311,8 +322,7 @@ for (let i = 0; i < numPlatforms; i++) {
             platform.isCrumbling = true;
             platform.crumbleTimer = -1; // -1 means inactive
         }
-        // (The 'else' block from your 'isBoost' is removed, as it's part of this chain)
-
+        
         platforms.push(platform);
         currentX = nextX;
         currentY = nextY;
@@ -353,6 +363,28 @@ for (let i = 0; i < numPlatforms; i++) {
         };
         walls.push(wall);
     }
+
+    // --- MODIFICATION START: Generate Tunnels as Platforms ---
+    // We now add them to the 'platforms' array with isTunnel: true
+    const numTunnels = Math.min(2 + Math.floor(difficulty / 2), 6);
+    for (let i = 0; i < numTunnels; i++) {
+        let tunnelX;
+        do {
+            tunnelX = 200 + Math.random() * (worldWidth - 400);
+        } while ((tunnelX > startX - 100 && tunnelX < startX + 200) || (tunnelX > door.x - 150 && tunnelX < door.x + 150));
+
+        const tunnelY = 150 + Math.random() * 100; // Place it high up
+        const tunnelWidth = 100 + Math.random() * 150;
+        
+        platforms.push({
+            x: tunnelX,
+            y: tunnelY,
+            w: tunnelWidth,
+            h: 20 + Math.random() * 15,
+            isTunnel: true // Mark this as a tunnel
+        });
+    }
+    // --- MODIFICATION END ---
 }
 
 // ---------------------- GAME LOOP ----------------------
@@ -374,6 +406,10 @@ function update() {
     if (player.dashCooldown > 0) {
         player.dashCooldown--;
     }
+    // --- NEW: Vertical Dash Cooldown ---
+    if (player.vDashCooldown > 0) {
+        player.vDashCooldown--;
+    }
 
     // --- NEW: Dash Key Check ---
     // Check for dash input (Left Shift)
@@ -381,6 +417,13 @@ function update() {
         player.dashTimer = dashDuration;
         player.dashCooldown = dashCooldownTime;
     }
+    // --- NEW: Vertical Dash Key Check ---
+    if ((keys['Enter'] || keys['KeyZ']) && player.vDashCooldown === 0) {
+        player.vDashTimer = vDashDuration;
+        player.vDashCooldown = vDashCooldownTime;
+        player.onGround = false; // Can't be on ground if v-dashing
+    }
+
 
     if (boostTimer > 0) {
         boostTimer--;
@@ -417,51 +460,63 @@ function update() {
         player.onGround = false;
     }
 
-// Gravity
-    // --- MODIFIED: Apply gravity ONLY if not dashing ---
-    if (player.dashTimer > 0) {
+    // Gravity
+    if (player.vDashTimer > 0) {
+        player.vDashTimer--;
+        player.vy = vDashPower; 
+    } else if (player.dashTimer > 0) {
         player.dashTimer--;
-        player.vy = 0; // Freeze vertical motion during dash
+        player.vy = 0; 
     } else {
         player.vy += gravity;
     }
     player.y += player.vy; 
 
-// Platform collision
-    // --- MODIFIED: Replaced this entire block ---
+
+    // --- MODIFIED: Platform Collision Logic ---
     player.onGround = false;
     for (const plat of platforms) {
-        // Check for landing on top
-        if (rectsCollide(player, plat) && player.vy >= 0 && player.y + player.h - player.vy <= plat.y) {
-            
-            // Bouncy Platform (overrides other logic)
-            if (plat.isBouncy) {
-                player.y = plat.y - player.h; // Snap to top
-                player.vy = jumpPower * 1.5;  // Launch!
-                player.onGround = false;
-                
-            } else {
-                // Standard Landing
-                player.y = plat.y - player.h;
-                player.vy = 0;
-                player.onGround = true;
+        // Check simple collision first
+        if (rectsCollide(player, plat)) {
 
-                // Check for other platform types
-                if (plat.isBoost) {
-                    boostTimer = boostDuration;
+            // === TUNNEL BEHAVIOR (Solid Block) ===
+            if (plat.isTunnel) {
+                // 1. Hit Head (Moving UP) - Solid Bottom
+                if (player.vy < 0 && (player.y - player.vy >= plat.y + plat.h)) {
+                    player.y = plat.y + plat.h; // Snap to bottom
+                    player.vy = 0; // Stop upward movement
                 }
-                
-                if (plat.isCrumbling && plat.crumbleTimer === -1) {
-                    plat.crumbleTimer = 5;
+                // 2. Land on Top (Moving DOWN) - Solid Top
+                else if (player.vy >= 0 && (player.y + player.h - player.vy <= plat.y)) {
+                    player.y = plat.y - player.h; // Snap to top
+                    player.vy = 0; // Stop downward movement
+                    player.onGround = true; // Allow jumping
                 }
+            }
 
-                // Stick to moving platform
-                if (plat.vy) {
-                    player.y += plat.vy;
+            // === NORMAL PLATFORM BEHAVIOR (One-way) ===
+            else {
+                // Land on Feet (Downward Movement)
+                if (player.vy >= 0 && player.y + player.h - player.vy <= plat.y) {
+                    
+                    // Bouncy Logic
+                    if (plat.isBouncy) {
+                        player.y = plat.y - player.h;
+                        player.vy = jumpPower * 1.5; 
+                        player.onGround = false;
+                    } else {
+                        // Standard Land
+                        player.y = plat.y - player.h;
+                        player.vy = 0;
+                        player.onGround = true;
+
+                        if (plat.isBoost) boostTimer = boostDuration;
+                        if (plat.isCrumbling && plat.crumbleTimer === -1) plat.crumbleTimer = 5;
+                        if (plat.vy) player.y += plat.vy;
+                        if (plat.vx) player.x += plat.vx;
+                    }
                 }
-                if (plat.vx) {
-                    player.x += plat.vx; // Move player with platform
-                }
+                // Normal platforms allow jumping through from bottom (Do nothing if moving UP)
             }
         }
     }
@@ -470,7 +525,7 @@ function update() {
 // Spike collision
     for (const spike of spikes) {
         if (rectsCollide(player, spike)) {
-           if (player.dashTimer > 0) continue; // NEW: Invincible during dash
+           if (player.dashTimer > 0 || player.vDashTimer > 0) continue; // Invincible during either dash
 
             // MODIFIED: Use lives system
             lives--;
@@ -505,7 +560,7 @@ function update() {
                 player.onGround = true;
             } else if (fromLeft || fromRight) {
 
-                if (player.dashTimer > 0) continue; // NEW: Invincible during dash
+                if (player.dashTimer > 0 || player.vDashTimer > 0) continue; // Invincible during either dash
 
             lives--;
             if (lives <= 0) {
@@ -562,7 +617,9 @@ function draw() {
 // Platforms
     // --- MODIFIED: Add colors for new types ---
     for (const plat of platforms) {
-        if (plat.isBoost) {
+        if (plat.isTunnel) {
+            ctx.fillStyle = '#777'; // Gray (Tunnel/Ceiling)
+        } else if (plat.isBoost) {
             ctx.fillStyle = '#2ecc71'; // Green (Boost)
         } else if (plat.isBouncy) {
             ctx.fillStyle = '#9b59b6'; // Purple (Bouncy)
@@ -584,6 +641,8 @@ function draw() {
     ctx.fillStyle = '#555';
     for (const wall of walls) ctx.fillRect(wall.x - cameraX, wall.y, wall.w, wall.h);
 
+    // MODIFIED: Removed separate Tunnel draw loop (handled in platforms now)
+
     // Door
     ctx.fillStyle = '#e67e22';
     ctx.fillRect(door.x - cameraX, door.y, door.w, door.h);
@@ -591,9 +650,9 @@ function draw() {
     ctx.fillRect(door.x + door.w / 2 - 2 - cameraX, door.y + door.h - 8, 4, 4);
 
 // Player
-if (player.dashTimer > 0) {
-        // Flashing white effect during dash
-        ctx.fillStyle = (Math.floor(player.dashTimer / 3) % 2 === 0) ? '#ffffff' : '#3498db';
+if (player.dashTimer > 0 || player.vDashTimer > 0) {
+        // Flashing white effect during either dash
+        ctx.fillStyle = (Math.floor(player.dashTimer / 3) % 2 === 0 || Math.floor(player.vDashTimer / 3) % 2 === 0) ? '#ffffff' : '#3498db';
     } else if (boostTimer > 0) {
         // Flashing effect while boosted
         ctx.fillStyle = (Math.floor(boostTimer / 5) % 2 === 0) ? '#2ecc71' : '#3498db';
@@ -623,20 +682,37 @@ if (player.dashTimer > 0) {
     ctx.fillText(`❤️ ${lives}`, canvas.width - 16, 28);
     ctx.textAlign = 'left';  // Reset alignment
 
-// --- NEW: Draw Dash Cooldown Indicator ---
+    // --- MODIFICATION START: Cooldown Bars ---
+    let barWidth = 50;
+    let barHeight = 8;
+
+    // Draw Horizontal Dash Cooldown Indicator
     if (player.dashCooldown > 0) {
         ctx.fillStyle = 'rgba(0,0,0,0.4)';
-        let barWidth = 50;
-        let barHeight = 8;
         let progress = (player.dashCooldown / dashCooldownTime) * barWidth;
         
-        ctx.fillRect(player.x - cameraX + player.w / 2 - barWidth / 2, player.y - cameraX - 15, barWidth, barHeight);
-        ctx.fillStyle = '#9b59b6'; // Purple for dash
-        ctx.fillRect(player.x - cameraX + player.w / 2 - barWidth / 2, player.y - cameraX - 15, barWidth - progress, barHeight);
+        // --- FIX: Changed 'player.y - cameraX - 15' to 'player.y - 15' ---
+        let yPos = player.y - 15;
+        ctx.fillRect(player.x - cameraX + player.w / 2 - barWidth / 2, yPos, barWidth, barHeight);
+        ctx.fillStyle = '#9b59b6'; // Purple for H-dash
+        ctx.fillRect(player.x - cameraX + player.w / 2 - barWidth / 2, yPos, barWidth - progress, barHeight);
     }
 
+    // Draw Vertical Dash Cooldown Indicator
+    if (player.vDashCooldown > 0) {
+        ctx.fillStyle = 'rgba(0,0,0,0.4)';
+        // Place it 10px above the H-dash bar
+        let yPos = player.y - 25; 
+        let progress = (player.vDashCooldown / vDashCooldownTime) * barWidth;
+        
+        ctx.fillRect(player.x - cameraX + player.w / 2 - barWidth / 2, yPos, barWidth, barHeight);
+        ctx.fillStyle = '#1abc9c'; // Teal for V-dash
+        ctx.fillRect(player.x - cameraX + player.w / 2 - barWidth / 2, yPos, barWidth - progress, barHeight);
+    }
+    // --- MODIFICATION END ---
+
+
     // Pause overlay
-// Pause overlay
     if (paused) {
         ctx.fillStyle = 'rgba(0,0,0,0.5)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -667,7 +743,7 @@ if (player.dashTimer > 0) {
         ctx.fillStyle = '#fff';
         ctx.font = '40px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText('YOU DIED', canvas.w / 2, canvas.height / 2 - 20);
+        ctx.fillText('YOU DIED', canvas.width / 2, canvas.height / 2 - 20);
         ctx.font = '20px Arial';
         ctx.fillText("You are out of lives.", canvas.width / 2, canvas.height / 2 + 20);
         ctx.fillText("Press 'R' to restart or Press 'M' to return to the Menu", canvas.width / 2, canvas.height / 2 + 60);
