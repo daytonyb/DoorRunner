@@ -17,6 +17,8 @@ const settingsPanel = document.getElementById('settingsPanel');
 const difficultyToggleBtn = document.getElementById('difficultyToggleBtn');
 const livesToggleBtn = document.getElementById('livesToggleBtn');
 const speedToggleBtn = document.getElementById('speedToggleBtn');
+const cooldownToggleBtn = document.getElementById('cooldownToggleBtn'); 
+const skinsToggleBtn = document.getElementById('skinsToggleBtn'); 
 const togglesToggleBtn = document.getElementById('togglesToggleBtn'); 
 
 // --- TOGGLE PANEL ELEMENTS ---
@@ -25,8 +27,18 @@ const btnMenuPlatforms = document.getElementById('btnMenuPlatforms');
 const btnMenuAbilities = document.getElementById('btnMenuAbilities');
 const btnToggleWalls = document.getElementById('btnToggleWalls');
 const btnToggleTunnels = document.getElementById('btnToggleTunnels');
+const btnToggleParticles = document.getElementById('btnToggleParticles'); 
+const btnToggleBg = document.getElementById('btnToggleBg'); 
 
-// --- NEW: SUB-PANEL ELEMENTS ---
+// --- COOLDOWN ELEMENTS ---
+const cooldownPanel = document.getElementById('cooldownPanel');
+const cooldownBtns = document.querySelectorAll('.cooldown-btn');
+
+// --- SKINS ELEMENTS ---
+const skinsPanel = document.getElementById('skinsPanel');
+const skinBtns = document.querySelectorAll('.skin-btn');
+
+// --- SUB-PANEL ELEMENTS ---
 const abilitiesPanel = document.getElementById('abilitiesPanel');
 const platformsPanel = document.getElementById('platformsPanel');
 
@@ -49,10 +61,15 @@ const spikeWidth = 20;
 const spikeHeight = 20;
 
 const walls = [];
+const coins = []; 
+const particles = [];
+const bgObjects = [];
 
-// NEW: Toggle States (Granular)
+// Toggle States
 let enableWalls = true;
 let enableTunnels = true;
+let enableParticles = true; 
+let enableBg = true;
 
 let enableHDash = true;
 let enableVDash = true;
@@ -64,12 +81,20 @@ let enableCrumbling = true;
 // Dash variables
 const dashSpeed = 8;
 const dashDuration = 12; 
-const dashCooldownTime = 120; 
+let dashCooldownTime = 120; 
 
 // Vertical Dash variables
 const vDashPower = -12; 
 const vDashDuration = 12;
-const vDashCooldownTime = 120; 
+let vDashCooldownTime = 120; 
+
+// Player Skin Color
+let playerSkin = '#3498db'; 
+
+// Scoring Variables
+let score = 0;
+let pendingScore = 0; // NEW: Score collected this level but not yet banked
+let bobOffset = 0; 
 
 // MODIFIED: Add dash properties to player
 const player = { 
@@ -105,6 +130,128 @@ let paused = false;
 let gameWon = false;
 let gameLost = false;
 
+// ---------------------- PARTICLE SYSTEM ----------------------
+class Particle {
+    constructor(x, y, w, h, color, vx, vy, life, type) {
+        this.x = x;
+        this.y = y;
+        this.w = w;
+        this.h = h;
+        this.color = color;
+        this.vx = vx;
+        this.vy = vy;
+        this.life = life;
+        this.maxLife = life;
+        this.type = type; 
+    }
+
+    update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.life--;
+
+        if (this.type === 'dust' || this.type === 'explosion' || this.type === 'crumble' || this.type === 'bounce' || this.type === 'coin') {
+             this.vy += 0.2;
+        }
+    }
+
+    draw(ctx, cameraX) {
+        ctx.globalAlpha = this.life / this.maxLife;
+        ctx.fillStyle = this.color;
+        ctx.fillRect(this.x - cameraX, this.y, this.w, this.h);
+        ctx.globalAlpha = 1.0;
+    }
+}
+
+function createDust(x, y) {
+    if (!enableParticles) return;
+    const count = 4;
+    for (let i = 0; i < count; i++) {
+        let size = Math.random() * 4 + 2;
+        let vx = (Math.random() - 0.5) * 2;
+        let vy = -Math.random() * 2 - 1;
+        particles.push(new Particle(x, y, size, size, '#ffffff', vx, vy, 20, 'dust'));
+    }
+}
+
+function createTrail(x, y, w, h, color) {
+    if (!enableParticles) return;
+    particles.push(new Particle(x, y, w, h, color, 0, 0, 10, 'trail'));
+}
+
+function createExplosion(x, y, color) {
+    if (!enableParticles) return;
+    const count = 20;
+    for (let i = 0; i < count; i++) {
+        let size = Math.random() * 6 + 4;
+        let vx = (Math.random() - 0.5) * 10;
+        let vy = (Math.random() - 0.5) * 10;
+        particles.push(new Particle(x, y, size, size, color, vx, vy, 40, 'explosion'));
+    }
+}
+
+function createCrumbleDebris(x, y, w, h) {
+    if (!enableParticles) return;
+    const count = 8;
+    for (let i = 0; i < count; i++) {
+        let size = Math.random() * 6 + 3;
+        let px = x + Math.random() * w;
+        let py = y + Math.random() * h;
+        let vx = (Math.random() - 0.5) * 2;
+        let vy = Math.random() * 2; 
+        particles.push(new Particle(px, py, size, size, '#f39c12', vx, vy, 30, 'crumble'));
+    }
+}
+
+function createDoorGlow() {
+    if (!enableParticles) return;
+    if (Math.random() > 0.3) return; 
+    let size = Math.random() * 3 + 2;
+    let px = door.x + Math.random() * door.w;
+    let py = door.y + door.h - Math.random() * 5; 
+    let vx = (Math.random() - 0.5) * 0.5;
+    let vy = -Math.random() * 1.5 - 0.5; 
+    particles.push(new Particle(px, py, size, size, '#ffeb3b', vx, vy, 45, 'glow'));
+}
+
+function createBoostSparks(x, y, w, h) {
+    if (!enableParticles) return;
+    const count = 8;
+    for (let i = 0; i < count; i++) {
+        let size = Math.random() * 4 + 2;
+        let px = x + Math.random() * w;
+        let py = y + Math.random() * h;
+        let vx = (Math.random() - 0.5) * 6; 
+        let vy = (Math.random() - 0.5) * 2;
+        particles.push(new Particle(px, py, size, size, '#2ecc71', vx, vy, 20, 'boost'));
+    }
+}
+
+function createBouncyRipple(x, y, w) {
+    if (!enableParticles) return;
+    const count = 6;
+    for (let i = 0; i < count; i++) {
+        let size = Math.random() * 5 + 2;
+        let px = x + Math.random() * w;
+        let py = y; 
+        let vx = (Math.random() - 0.5) * 4;
+        let vy = -Math.random() * 4 - 2; 
+        particles.push(new Particle(px, py, size, size, '#9b59b6', vx, vy, 25, 'bounce'));
+    }
+}
+
+function createCoinSparkle(x, y) {
+    if (!enableParticles) return;
+    const count = 10;
+    for (let i = 0; i < count; i++) {
+        let size = Math.random() * 4 + 2;
+        let vx = (Math.random() - 0.5) * 5;
+        let vy = (Math.random() - 0.5) * 5;
+        particles.push(new Particle(x, y, size, size, '#f1c40f', vx, vy, 25, 'coin'));
+    }
+}
+
+
 // ---------------------- MENU HANDLERS ----------------------
 startBtn.onclick = () => {
     mainMenu.style.display = 'none';
@@ -118,6 +265,9 @@ function resetGame() {
     gameLost = false;
     levelNumber = 1;
     lives = startingLives;
+    score = 0; 
+    pendingScore = 0; // Reset pending
+    particles.length = 0; 
     randomLevel(); 
 }
 
@@ -128,23 +278,18 @@ controlBtn.onclick = () => {
 // SETTINGS BUTTON logic
 settingsBtn.onclick = () => {
     settingsPanel.style.display = settingsPanel.style.display === 'flex' ? 'none' : 'flex';
-    // Hide all sub-panels when closing main panel
     if (settingsPanel.style.display === 'none') {
-        difficultyPanel.style.display = 'none';
-        livesPanel.style.display = 'none';
-        speedPanel.style.display = 'none';
-        togglesPanel.style.display = 'none';
-        abilitiesPanel.style.display = 'none';
-        platformsPanel.style.display = 'none';
+        hideAllPanels();
     }
 };
 
 // --- MAIN TAB HANDLERS ---
-// When clicking a main tab, hide all content panels, then show the right one
 function hideAllPanels() {
     difficultyPanel.style.display = 'none';
     livesPanel.style.display = 'none';
     speedPanel.style.display = 'none';
+    cooldownPanel.style.display = 'none'; 
+    skinsPanel.style.display = 'none'; 
     togglesPanel.style.display = 'none';
     abilitiesPanel.style.display = 'none';
     platformsPanel.style.display = 'none';
@@ -168,10 +313,19 @@ speedToggleBtn.onclick = () => {
     if (!wasVisible) speedPanel.style.display = 'flex';
 };
 
+cooldownToggleBtn.onclick = () => {
+    let wasVisible = cooldownPanel.style.display === 'flex';
+    hideAllPanels();
+    if (!wasVisible) cooldownPanel.style.display = 'flex';
+};
+
+skinsToggleBtn.onclick = () => {
+    let wasVisible = skinsPanel.style.display === 'flex';
+    hideAllPanels();
+    if (!wasVisible) skinsPanel.style.display = 'flex';
+};
+
 togglesToggleBtn.onclick = () => {
-    // If we are in a sub-menu (abilities/platforms), clicking Toggles should go back to main Toggles list
-    // If we are already in main list, close it.
-    // If we are closed, open main list.
     if (abilitiesPanel.style.display === 'flex' || platformsPanel.style.display === 'flex') {
         hideAllPanels();
         togglesPanel.style.display = 'flex';
@@ -213,6 +367,15 @@ btnToggleWalls.onclick = () => {
 btnToggleTunnels.onclick = () => { 
     enableTunnels = !enableTunnels; 
     updateToggleBtn(btnToggleTunnels, enableTunnels, "Tunnels"); 
+};
+btnToggleParticles.onclick = () => { 
+    enableParticles = !enableParticles; 
+    updateToggleBtn(btnToggleParticles, enableParticles, "Particles"); 
+};
+// BG
+btnToggleBg.onclick = () => { 
+    enableBg = !enableBg; 
+    updateToggleBtn(btnToggleBg, enableBg, "Background"); 
 };
 
 // Ability Toggles
@@ -326,6 +489,59 @@ speedBtns.forEach(btn => {
 updateSpeedVisuals();
 
 
+// --- COOLDOWN SETTINGS LOGIC ---
+function updateCooldownVisuals() {
+    cooldownBtns.forEach(btn => {
+        const cd = parseInt(btn.dataset.cd);
+        if (cd === dashCooldownTime) { // Assuming both dashes synced for UI
+            btn.style.backgroundColor = '#2ecc71'; 
+            if (cd === 150) btn.textContent = 'Slow (2.5s)';
+            else if (cd === 120) btn.textContent = 'Medium (2.0s) (Default)';
+            else if (cd === 90) btn.textContent = 'Fast (1.5s)';
+            else if (cd === 60) btn.textContent = 'Faster (1.0s)';
+        } else {
+            btn.style.backgroundColor = '#ddd'; 
+            if (cd === 150) btn.textContent = 'Slow (2.5s)';
+            else if (cd === 120) btn.textContent = 'Medium (2.0s)';
+            else if (cd === 90) btn.textContent = 'Fast (1.5s)';
+            else if (cd === 60) btn.textContent = 'Faster (1.0s)';
+        }
+    });
+}
+
+cooldownBtns.forEach(btn => {
+    btn.onclick = () => {
+        const val = parseInt(btn.dataset.cd);
+        dashCooldownTime = val;
+        vDashCooldownTime = val;
+        updateCooldownVisuals();
+    }
+});
+updateCooldownVisuals();
+
+// --- SKIN SETTINGS LOGIC ---
+function updateSkinVisuals() {
+    skinBtns.forEach(btn => {
+        const color = btn.dataset.color;
+        if (color === playerSkin) {
+            btn.style.border = "3px solid white";
+            btn.style.transform = "scale(1.1)";
+        } else {
+            btn.style.border = "none";
+            btn.style.transform = "scale(1.0)";
+        }
+    });
+}
+
+skinBtns.forEach(btn => {
+    btn.onclick = () => {
+        playerSkin = btn.dataset.color;
+        updateSkinVisuals();
+    }
+});
+updateSkinVisuals();
+
+
 // Pause & Menu toggle
 document.addEventListener('keydown', (e) => {
     if (e.code === 'KeyP') paused = !paused;
@@ -365,6 +581,24 @@ function randomLevel() {
     platforms.length = 0;
     spikes.length = 0;
     walls.length = 0;
+    coins.length = 0; 
+    bgObjects.length = 0;
+    pendingScore = 0; // Reset pending score on new level load (if died/next level)
+    
+    if (enableBg) {
+        for (let i=0; i<30; i++) {
+             let heightFactor = 40 + (levelNumber * 40);
+             let baseHeight = 40;
+
+             bgObjects.push({
+                 x: Math.random() * worldWidth,
+                 y: canvas.height, 
+                 w: 200 + Math.random() * 400,
+                 h: baseHeight + Math.random() * heightFactor,
+                 color: Math.random() > 0.5 ? '#b0b0b0' : '#909090' 
+             });
+        }
+    }
 
     // Full ground
     platforms.push({ x: 0, y: 376, w: worldWidth, h: 24 });
@@ -396,19 +630,17 @@ function randomLevel() {
 
         const platform = { x: nextX, y: nextY, w: pw, h: 14 };
 
-        // MODIFIED: Check specific toggle flags
         const typeRoll = Math.random();
 
-        if (typeRoll < 0.15 && i > 0) { // Moving (Horizontal)
+        if (typeRoll < 0.15 && i > 0) { 
             platform.vx = (Math.random() < 0.5 ? -1 : 1) * (1 + difficulty * 0.2);
             platform.range = 50 + Math.random() * 50;
             platform.baseX = nextX;
-        } else if (typeRoll < 0.25 && i > 0) { // Moving (Vertical)
+        } else if (typeRoll < 0.25 && i > 0) { 
             platform.vy = (Math.random() < 0.5 ? -1 : 1) * (0.8 + difficulty * 0.1);
             platform.range = 30 + Math.random() * 40;
             platform.baseY = nextY;
         } 
-        // GRANULAR CHECKS
         else if (enableBoost && typeRoll < 0.35) { 
             platform.isBoost = true;
         } else if (enableBouncy && typeRoll < 0.45) { 
@@ -422,6 +654,48 @@ function randomLevel() {
         currentX = nextX;
         currentY = nextY;
     }
+
+    // --- NEW: PLACING EXACTLY 5 COINS ---
+    // We create segments to ensure spread
+    // NOTE: platforms array has 'numPlatforms' + 1 (ground). 
+    // We want to place coins on the generated platforms (indices 1 to end).
+    if (platforms.length > 6) {
+        const usablePlatforms = platforms.slice(1); // Ignore ground
+        const totalPlats = usablePlatforms.length;
+        const segmentSize = Math.floor(totalPlats / 5);
+
+        for (let i = 0; i < 5; i++) {
+            // Calculate random index within the segment
+            let startIndex = i * segmentSize;
+            let endIndex = Math.min((i + 1) * segmentSize, totalPlats - 1);
+            
+            if (startIndex >= endIndex) continue;
+
+            let chosenIndex = startIndex + Math.floor(Math.random() * (endIndex - startIndex));
+            let plat = usablePlatforms[chosenIndex];
+
+            // RISK LOGIC FOR COIN PLACEMENT
+            let coinY = plat.y - 40;
+            let coinX = plat.x + plat.w / 2 - 7;
+
+            // 1. Gap Risk (Check previous platform)
+            let prevPlat = platforms[chosenIndex]; // Because we sliced off index 0, platforms[chosenIndex] is roughly previous
+            let dist = plat.x - (prevPlat ? (prevPlat.x + prevPlat.w) : 0);
+            
+            if (dist > 150 && Math.random() < 0.5) {
+                // Place in the air gap
+                coinX = plat.x - dist/2;
+                coinY = plat.y - 20;
+            } 
+            // 2. High Altitude Risk (if platform is low, force jump)
+            else if (plat.y > 300 && Math.random() < 0.4) {
+                coinY = plat.y - 120; // Needs double jump or bounce
+            }
+
+            coins.push({ x: coinX, y: coinY, w: 15, h: 15 });
+        }
+    }
+
 
     // Door at end
     door.x = worldWidth - 60;
@@ -488,12 +762,27 @@ function randomLevel() {
 function update() {
     if (!gameStarted || paused) return;
 
+    // Coin Bobbing
+    bobOffset = Math.sin(Date.now() / 200) * 3;
+
+    // Spawn Door Glow
+    createDoorGlow();
+
+    // Particle update
+    for (let i = particles.length - 1; i >= 0; i--) {
+        particles[i].update();
+        if (particles[i].life <= 0) {
+            particles.splice(i, 1);
+        }
+    }
+
     // Crumbling platform update
     for (let i = platforms.length - 1; i >= 0; i--) {
         const plat = platforms[i];
         if (plat.crumbleTimer > 0) {
             plat.crumbleTimer--;
         } else if (plat.crumbleTimer === 0) {
+            createCrumbleDebris(plat.x, plat.y, plat.w, plat.h);
             platforms.splice(i, 1); 
         }
     }
@@ -502,17 +791,13 @@ function update() {
     if (player.dashCooldown > 0) player.dashCooldown--;
     if (player.vDashCooldown > 0) player.vDashCooldown--;
 
-    // MODIFIED: Granular Ability Checks
-    
-    // Horizontal Dash
+    // Ability Checks
     if (enableHDash) {
         if ((keys['ShiftLeft'] || keys['KeyX'] || keys['ShiftRight']) && player.dashCooldown === 0) {
             player.dashTimer = dashDuration;
             player.dashCooldown = dashCooldownTime;
         }
     }
-
-    // Vertical Dash
     if (enableVDash) {
         if ((keys['Enter'] || keys['KeyZ']) && player.vDashCooldown === 0) {
             player.vDashTimer = vDashDuration;
@@ -545,15 +830,22 @@ function update() {
     if ((keys['ArrowUp'] || keys['Space'] || keys['KeyW']) && player.onGround) {
         player.vy = jumpPower;
         player.onGround = false;
+        createDust(player.x + player.w / 2, player.y + player.h); 
     }
 
     // Gravity
     if (player.vDashTimer > 0) {
         player.vDashTimer--;
         player.vy = vDashPower; 
+        if (player.vDashTimer % 3 === 0) {
+            createTrail(player.x, player.y, player.w, player.h, '#1abc9c'); 
+        }
     } else if (player.dashTimer > 0) {
         player.dashTimer--;
         player.vy = 0; 
+        if (player.dashTimer % 3 === 0) {
+             createTrail(player.x, player.y, player.w, player.h, '#9b59b6'); 
+        }
     } else {
         player.vy += gravity;
     }
@@ -562,10 +854,9 @@ function update() {
 
     // Platform Collision Logic
     player.onGround = false;
+    
     for (const plat of platforms) {
         if (rectsCollide(player, plat)) {
-
-            // TUNNEL BEHAVIOR
             if (plat.isTunnel) {
                 if (player.vy < 0 && (player.y - player.vy >= plat.y + plat.h)) {
                     player.y = plat.y + plat.h; 
@@ -575,21 +866,29 @@ function update() {
                     player.y = plat.y - player.h; 
                     player.vy = 0; 
                     player.onGround = true; 
+                    if (player.vy > 0) createDust(player.x + player.w / 2, player.y + player.h);
                 }
             }
-            // NORMAL PLATFORM BEHAVIOR
             else {
                 if (player.vy >= 0 && player.y + player.h - player.vy <= plat.y) {
                     if (plat.isBouncy) {
                         player.y = plat.y - player.h;
                         player.vy = jumpPower * 1.5; 
                         player.onGround = false;
+                        createBouncyRipple(plat.x, plat.y, plat.w);
+                        createDust(player.x + player.w / 2, player.y + player.h);
                     } else {
                         player.y = plat.y - player.h;
+                        if (player.vy > 0) {
+                             createDust(player.x + player.w / 2, player.y + player.h);
+                        }
                         player.vy = 0;
                         player.onGround = true;
 
-                        if (plat.isBoost) boostTimer = boostDuration;
+                        if (plat.isBoost) {
+                             boostTimer = boostDuration;
+                             createBoostSparks(player.x, player.y, player.w, player.h);
+                        }
                         if (plat.isCrumbling && plat.crumbleTimer === -1) plat.crumbleTimer = 5;
                         if (plat.vy) player.y += plat.vy;
                         if (plat.vx) player.x += plat.vx;
@@ -603,6 +902,9 @@ function update() {
     for (const spike of spikes) {
         if (rectsCollide(player, spike)) {
            if (player.dashTimer > 0 || player.vDashTimer > 0) continue; 
+            createExplosion(player.x + player.w/2, player.y + player.h/2, playerSkin);
+            
+            pendingScore = 0; // LOSE PENDING SCORE ON DEATH
 
             lives--;
             if (lives <= 0) {
@@ -631,10 +933,15 @@ function update() {
 
             if (fromTop) {
                 player.y = wall.y - player.h;
+                if (player.vy > 0) createDust(player.x + player.w / 2, player.y + player.h);
                 player.vy = 0;
                 player.onGround = true;
             } else if (fromLeft || fromRight) {
                 if (player.dashTimer > 0 || player.vDashTimer > 0) continue; 
+                createExplosion(player.x + player.w/2, player.y + player.h/2, playerSkin);
+                
+                pendingScore = 0; // LOSE PENDING SCORE ON DEATH
+
                 lives--;
                 if (lives <= 0) {
                     gameStarted = false;
@@ -647,8 +954,27 @@ function update() {
         }
     }
 
+    // Coin Collision Logic
+    for (let i = coins.length - 1; i >= 0; i--) {
+        if (rectsCollide(player, coins[i])) {
+            // Multipliers
+            let speedMult = (moveSpeed / 4.5); // e.g., 1.0 to 2.0
+            let lifeMult = 1 + (lives * 0.1);
+            let levelMult = 1 + (levelNumber * 0.2);
+            
+            let points = Math.floor(100 * speedMult * lifeMult * levelMult);
+            pendingScore += points; // Add to PENDING, not score
+
+            createCoinSparkle(coins[i].x, coins[i].y);
+            coins.splice(i, 1);
+        }
+    }
+
     // Door collision
     if (rectsCollide(player, door)) {
+        score += pendingScore; // BANK SCORE
+        pendingScore = 0;
+
         if (maxLevels === Infinity) {
             levelNumber++;
             randomLevel();
@@ -664,6 +990,10 @@ function update() {
 
     // Fall off screen
     if (player.y > canvas.height) {
+        createExplosion(player.x + player.w/2, player.y + player.h/2, playerSkin);
+        
+        pendingScore = 0; // LOSE PENDING SCORE
+
         lives--;
         if (lives <= 0) {
             gameStarted = false;
@@ -680,6 +1010,24 @@ function update() {
 
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw Background
+    if (enableBg) {
+        for (const bg of bgObjects) {
+            let parallaxX = bg.x - cameraX * 0.2;
+            ctx.fillStyle = bg.color;
+            ctx.beginPath();
+            ctx.moveTo(parallaxX, bg.y); // Bottom left
+            ctx.lineTo(parallaxX + bg.w/2, bg.y - bg.h); // Top tip
+            ctx.lineTo(parallaxX + bg.w, bg.y); // Bottom right
+            ctx.fill();
+        }
+    }
+
+    // Draw Particles
+    for (const p of particles) {
+        p.draw(ctx, cameraX);
+    }
 
     // Platforms
     for (const plat of platforms) {
@@ -705,6 +1053,16 @@ function draw() {
     ctx.fillStyle = '#555';
     for (const wall of walls) ctx.fillRect(wall.x - cameraX, wall.y, wall.w, wall.h);
 
+    // Draw Coins
+    ctx.fillStyle = '#f1c40f'; // Gold
+    for (const c of coins) {
+        let drawY = c.y + bobOffset;
+        ctx.fillRect(c.x - cameraX, drawY, c.w, c.h);
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(c.x - cameraX + 4, drawY + 4, 4, 4);
+        ctx.fillStyle = '#f1c40f'; 
+    }
+
     // Door
     ctx.fillStyle = '#e67e22';
     ctx.fillRect(door.x - cameraX, door.y, door.w, door.h);
@@ -713,11 +1071,11 @@ function draw() {
 
     // Player
     if (player.dashTimer > 0 || player.vDashTimer > 0) {
-        ctx.fillStyle = (Math.floor(player.dashTimer / 3) % 2 === 0 || Math.floor(player.vDashTimer / 3) % 2 === 0) ? '#ffffff' : '#3498db';
+        ctx.fillStyle = (Math.floor(player.dashTimer / 3) % 2 === 0 || Math.floor(player.vDashTimer / 3) % 2 === 0) ? '#ffffff' : playerSkin;
     } else if (boostTimer > 0) {
-        ctx.fillStyle = (Math.floor(boostTimer / 5) % 2 === 0) ? '#2ecc71' : '#3498db';
+        ctx.fillStyle = (Math.floor(boostTimer / 5) % 2 === 0) ? '#2ecc71' : playerSkin;
     } else {
-        ctx.fillStyle = '#3498db'; 
+        ctx.fillStyle = playerSkin; 
     }
     ctx.fillRect(player.x - cameraX, player.y, player.w, player.h);
 
@@ -731,23 +1089,11 @@ function draw() {
         ctx.closePath();
         ctx.fill();
     }
-
-    // Level text
-    ctx.fillStyle = 'rgba(0,0,0,0.7)';
-    ctx.font = '20px Arial';
-    ctx.fillText(`Level ${levelNumber}`, 16, 28);
-
-    // Lives text
-    ctx.textAlign = 'right'; 
-    ctx.fillText(`❤️ ${lives}`, canvas.width - 16, 28);
-    ctx.textAlign = 'left';  
-
+    
     // Cooldown Bars
     let barWidth = 50;
     let barHeight = 8;
 
-    // Only draw dashes if abilities are enabled
-    
     if (enableHDash && player.dashCooldown > 0) {
         ctx.fillStyle = 'rgba(0,0,0,0.4)';
         let progress = (player.dashCooldown / dashCooldownTime) * barWidth;
@@ -765,7 +1111,22 @@ function draw() {
         ctx.fillStyle = '#1abc9c'; 
         ctx.fillRect(player.x - cameraX + player.w / 2 - barWidth / 2, yPos, barWidth - progress, barHeight);
     }
-    
+
+    // --- HUD ---
+    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+    ctx.font = '20px Arial';
+    ctx.fillText(`Level ${levelNumber}`, 16, 28);
+
+    // NEW: Score Display with Pending
+    let scoreText = `Score: ${score}`;
+    if (pendingScore > 0) scoreText += ` (+${pendingScore})`;
+    ctx.fillText(scoreText, 16, 56);
+
+    // Lives text
+    ctx.textAlign = 'right'; 
+    ctx.fillText(`❤️ ${lives}`, canvas.width - 16, 28);
+    ctx.textAlign = 'left';  
+
 
     // Menus
     if (paused) {
@@ -783,10 +1144,12 @@ function draw() {
         ctx.fillStyle = '#fff';
         ctx.font = '40px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText('YOU WIN!', canvas.width / 2, canvas.height / 2 - 20);
+        ctx.fillText('YOU WIN!', canvas.width / 2, canvas.height / 2 - 50);
+        // Score Display
+        ctx.fillText(`Final Score: ${score}`, canvas.width / 2, canvas.height / 2);
         ctx.font = '20px Arial';
-        ctx.fillText(`You completed all ${maxLevels} levels!`, canvas.width / 2, canvas.height / 2 + 20);
-        ctx.fillText("Press 'R' to restart or Press 'M' to return to the Menu", canvas.width / 2, canvas.height / 2 + 60);
+        ctx.fillText(`You completed all ${maxLevels} levels!`, canvas.width / 2, canvas.height / 2 + 40);
+        ctx.fillText("Press 'R' to restart or Press 'M' to return to the Menu", canvas.width / 2, canvas.height / 2 + 80);
         ctx.textAlign = 'left';
     }
     else if (gameLost) {
@@ -795,10 +1158,12 @@ function draw() {
         ctx.fillStyle = '#fff';
         ctx.font = '40px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText('YOU DIED', canvas.width / 2, canvas.height / 2 - 20);
+        ctx.fillText('YOU DIED', canvas.width / 2, canvas.height / 2 - 50);
+        // Score Display
+        ctx.fillText(`Final Score: ${score}`, canvas.width / 2, canvas.height / 2);
         ctx.font = '20px Arial';
-        ctx.fillText("You are out of lives.", canvas.width / 2, canvas.height / 2 + 20);
-        ctx.fillText("Press 'R' to restart or Press 'M' to return to the Menu", canvas.width / 2, canvas.height / 2 + 60);
+        ctx.fillText("You are out of lives.", canvas.width / 2, canvas.height / 2 + 40);
+        ctx.fillText("Press 'R' to restart or Press 'M' to return to the Menu", canvas.width / 2, canvas.height / 2 + 80);
         ctx.textAlign = 'left';
     }
 }
