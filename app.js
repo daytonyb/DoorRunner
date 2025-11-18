@@ -29,6 +29,7 @@ const btnToggleWalls = document.getElementById('btnToggleWalls');
 const btnToggleTunnels = document.getElementById('btnToggleTunnels');
 const btnToggleParticles = document.getElementById('btnToggleParticles'); 
 const btnToggleBg = document.getElementById('btnToggleBg'); 
+const btnToggleCoins = document.getElementById('btnToggleCoins'); 
 
 // --- COOLDOWN ELEMENTS ---
 const cooldownPanel = document.getElementById('cooldownPanel');
@@ -70,6 +71,7 @@ let enableWalls = true;
 let enableTunnels = true;
 let enableParticles = true; 
 let enableBg = true;
+let enableCoins = true; 
 
 let enableHDash = true;
 let enableVDash = true;
@@ -93,7 +95,6 @@ let playerSkin = '#3498db';
 
 // Scoring Variables
 let score = 0;
-let pendingScore = 0; // NEW: Score collected this level but not yet banked
 let bobOffset = 0; 
 
 // MODIFIED: Add dash properties to player
@@ -266,7 +267,6 @@ function resetGame() {
     levelNumber = 1;
     lives = startingLives;
     score = 0; 
-    pendingScore = 0; // Reset pending
     particles.length = 0; 
     randomLevel(); 
 }
@@ -376,6 +376,11 @@ btnToggleParticles.onclick = () => {
 btnToggleBg.onclick = () => { 
     enableBg = !enableBg; 
     updateToggleBtn(btnToggleBg, enableBg, "Background"); 
+};
+// Coins
+btnToggleCoins.onclick = () => {
+    enableCoins = !enableCoins;
+    updateToggleBtn(btnToggleCoins, enableCoins, "Coins");
 };
 
 // Ability Toggles
@@ -583,7 +588,7 @@ function randomLevel() {
     walls.length = 0;
     coins.length = 0; 
     bgObjects.length = 0;
-    pendingScore = 0; // Reset pending score on new level load (if died/next level)
+    // pendingScore = 0; // Removed
     
     if (enableBg) {
         for (let i=0; i<30; i++) {
@@ -655,41 +660,34 @@ function randomLevel() {
         currentY = nextY;
     }
 
-    // --- NEW: PLACING EXACTLY 5 COINS ---
-    // We create segments to ensure spread
-    // NOTE: platforms array has 'numPlatforms' + 1 (ground). 
-    // We want to place coins on the generated platforms (indices 1 to end).
-    if (platforms.length > 6) {
+    // --- PLACING EXACTLY 5 COINS ---
+    if (enableCoins && platforms.length > 6) {
         const usablePlatforms = platforms.slice(1); // Ignore ground
         const totalPlats = usablePlatforms.length;
         const segmentSize = Math.floor(totalPlats / 5);
 
         for (let i = 0; i < 5; i++) {
-            // Calculate random index within the segment
             let startIndex = i * segmentSize;
             let endIndex = Math.min((i + 1) * segmentSize, totalPlats - 1);
-            
             if (startIndex >= endIndex) continue;
 
             let chosenIndex = startIndex + Math.floor(Math.random() * (endIndex - startIndex));
             let plat = usablePlatforms[chosenIndex];
 
-            // RISK LOGIC FOR COIN PLACEMENT
             let coinY = plat.y - 40;
             let coinX = plat.x + plat.w / 2 - 7;
 
-            // 1. Gap Risk (Check previous platform)
-            let prevPlat = platforms[chosenIndex]; // Because we sliced off index 0, platforms[chosenIndex] is roughly previous
+            // Gap Risk 
+            let prevPlat = platforms[chosenIndex]; 
             let dist = plat.x - (prevPlat ? (prevPlat.x + prevPlat.w) : 0);
             
             if (dist > 150 && Math.random() < 0.5) {
-                // Place in the air gap
                 coinX = plat.x - dist/2;
                 coinY = plat.y - 20;
             } 
-            // 2. High Altitude Risk (if platform is low, force jump)
+            // High Altitude Risk
             else if (plat.y > 300 && Math.random() < 0.4) {
-                coinY = plat.y - 120; // Needs double jump or bounce
+                coinY = plat.y - 120; 
             }
 
             coins.push({ x: coinX, y: coinY, w: 15, h: 15 });
@@ -877,6 +875,7 @@ function update() {
                         player.onGround = false;
                         createBouncyRipple(plat.x, plat.y, plat.w);
                         createDust(player.x + player.w / 2, player.y + player.h);
+                        if(enableCoins) score += 25;
                     } else {
                         player.y = plat.y - player.h;
                         if (player.vy > 0) {
@@ -886,10 +885,14 @@ function update() {
                         player.onGround = true;
 
                         if (plat.isBoost) {
+                             if(boostTimer === 0 && enableCoins) score += 25; 
                              boostTimer = boostDuration;
                              createBoostSparks(player.x, player.y, player.w, player.h);
                         }
-                        if (plat.isCrumbling && plat.crumbleTimer === -1) plat.crumbleTimer = 5;
+                        if (plat.isCrumbling && plat.crumbleTimer === -1) {
+                            if(enableCoins) score += 25;
+                            plat.crumbleTimer = 5;
+                        }
                         if (plat.vy) player.y += plat.vy;
                         if (plat.vx) player.x += plat.vx;
                     }
@@ -904,7 +907,10 @@ function update() {
            if (player.dashTimer > 0 || player.vDashTimer > 0) continue; 
             createExplosion(player.x + player.w/2, player.y + player.h/2, playerSkin);
             
-            pendingScore = 0; // LOSE PENDING SCORE ON DEATH
+            // Score Penalty
+            if (enableCoins) {
+                score = score - (500 * levelNumber); // MODIFIED
+            }
 
             lives--;
             if (lives <= 0) {
@@ -940,7 +946,10 @@ function update() {
                 if (player.dashTimer > 0 || player.vDashTimer > 0) continue; 
                 createExplosion(player.x + player.w/2, player.y + player.h/2, playerSkin);
                 
-                pendingScore = 0; // LOSE PENDING SCORE ON DEATH
+                // Score Penalty
+                if (enableCoins) {
+                    score = score - (500 * levelNumber); // MODIFIED
+                }
 
                 lives--;
                 if (lives <= 0) {
@@ -955,25 +964,33 @@ function update() {
     }
 
     // Coin Collision Logic
-    for (let i = coins.length - 1; i >= 0; i--) {
-        if (rectsCollide(player, coins[i])) {
-            // Multipliers
-            let speedMult = (moveSpeed / 4.5); // e.g., 1.0 to 2.0
-            let lifeMult = 1 + (lives * 0.1);
-            let levelMult = 1 + (levelNumber * 0.2);
-            
-            let points = Math.floor(100 * speedMult * lifeMult * levelMult);
-            pendingScore += points; // Add to PENDING, not score
+    if (enableCoins) {
+        for (let i = coins.length - 1; i >= 0; i--) {
+            if (rectsCollide(player, coins[i])) {
+                let speedMult = (moveSpeed / 4.5); 
+                let lifeMult = 1 + (2 / startingLives); 
+                let levelMult = 1 + (levelNumber * 0.2);
+                
+                let points = Math.floor(100 * speedMult * lifeMult * levelMult);
+                score += points; // MODIFIED
 
-            createCoinSparkle(coins[i].x, coins[i].y);
-            coins.splice(i, 1);
+                createCoinSparkle(coins[i].x, coins[i].y);
+                coins.splice(i, 1);
+            }
         }
     }
 
     // Door collision
     if (rectsCollide(player, door)) {
-        score += pendingScore; // BANK SCORE
-        pendingScore = 0;
+        
+        // Level Clear Bonus
+        if (enableCoins) {
+            let speedMult = (moveSpeed / 4.5); 
+            let lifeMult = 1 + (2 / startingLives); 
+            let levelMult = 1 + (levelNumber * 0.2);
+            let levelBonus = Math.floor(500 * speedMult * lifeMult * levelMult); // Base 500
+            score += levelBonus; // MODIFIED
+        }
 
         if (maxLevels === Infinity) {
             levelNumber++;
@@ -992,7 +1009,10 @@ function update() {
     if (player.y > canvas.height) {
         createExplosion(player.x + player.w/2, player.y + player.h/2, playerSkin);
         
-        pendingScore = 0; // LOSE PENDING SCORE
+        // Score Penalty
+        if (enableCoins) {
+            score = score - (500 * levelNumber); // MODIFIED
+        }
 
         lives--;
         if (lives <= 0) {
@@ -1054,13 +1074,15 @@ function draw() {
     for (const wall of walls) ctx.fillRect(wall.x - cameraX, wall.y, wall.w, wall.h);
 
     // Draw Coins
-    ctx.fillStyle = '#f1c40f'; // Gold
-    for (const c of coins) {
-        let drawY = c.y + bobOffset;
-        ctx.fillRect(c.x - cameraX, drawY, c.w, c.h);
-        ctx.fillStyle = '#fff';
-        ctx.fillRect(c.x - cameraX + 4, drawY + 4, 4, 4);
-        ctx.fillStyle = '#f1c40f'; 
+    if (enableCoins) {
+        ctx.fillStyle = '#f1c40f'; // Gold
+        for (const c of coins) {
+            let drawY = c.y + bobOffset;
+            ctx.fillRect(c.x - cameraX, drawY, c.w, c.h);
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(c.x - cameraX + 4, drawY + 4, 4, 4);
+            ctx.fillStyle = '#f1c40f'; 
+        }
     }
 
     // Door
@@ -1117,10 +1139,11 @@ function draw() {
     ctx.font = '20px Arial';
     ctx.fillText(`Level ${levelNumber}`, 16, 28);
 
-    // NEW: Score Display with Pending
-    let scoreText = `Score: ${score}`;
-    if (pendingScore > 0) scoreText += ` (+${pendingScore})`;
-    ctx.fillText(scoreText, 16, 56);
+    // Score Display (No pending)
+    if (enableCoins) {
+        let scoreText = `Score: ${score}`;
+        ctx.fillText(scoreText, 16, 56);
+    }
 
     // Lives text
     ctx.textAlign = 'right'; 
@@ -1144,9 +1167,9 @@ function draw() {
         ctx.fillStyle = '#fff';
         ctx.font = '40px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText('YOU WIN!', canvas.width / 2, canvas.height / 2 - 50);
+        ctx.fillText('YOU WIN!', canvas.width / 2, canvas.height / 2 - 40);
         // Score Display
-        ctx.fillText(`Final Score: ${score}`, canvas.width / 2, canvas.height / 2);
+        if (enableCoins) ctx.fillText(`Final Score: ${score}`, canvas.width / 2, canvas.height / 2);
         ctx.font = '20px Arial';
         ctx.fillText(`You completed all ${maxLevels} levels!`, canvas.width / 2, canvas.height / 2 + 40);
         ctx.fillText("Press 'R' to restart or Press 'M' to return to the Menu", canvas.width / 2, canvas.height / 2 + 80);
@@ -1158,9 +1181,9 @@ function draw() {
         ctx.fillStyle = '#fff';
         ctx.font = '40px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText('YOU DIED', canvas.width / 2, canvas.height / 2 - 50);
+        ctx.fillText('YOU DIED', canvas.width / 2, canvas.height / 2 - 40);
         // Score Display
-        ctx.fillText(`Final Score: ${score}`, canvas.width / 2, canvas.height / 2);
+        if (enableCoins) ctx.fillText(`Final Score: ${score}`, canvas.width / 2, canvas.height / 2);
         ctx.font = '20px Arial';
         ctx.fillText("You are out of lives.", canvas.width / 2, canvas.height / 2 + 40);
         ctx.fillText("Press 'R' to restart or Press 'M' to return to the Menu", canvas.width / 2, canvas.height / 2 + 80);
