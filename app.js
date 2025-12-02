@@ -53,6 +53,7 @@
     const btnToggleBg = document.getElementById('btnToggleBg'); 
     const btnToggleCoins = document.getElementById('btnToggleCoins'); 
     const btnToggleSound = document.getElementById('btnToggleSound');
+    const btnToggleEnemies = document.getElementById('btnToggleEnemies'); 
 
     // --- Ability Toggle Buttons ---
     const btnToggleHDash = document.getElementById('btnToggleHDash');
@@ -62,9 +63,13 @@
     const btnToggleBoost = document.getElementById('btnToggleBoost');
     const btnToggleBouncy = document.getElementById('btnToggleBouncy');
     const btnToggleCrumbling = document.getElementById('btnToggleCrumbling');
+    const btnToggleSlow = document.getElementById('btnToggleSlow'); 
 
-    // --- COMPETITION MODE BUTTON ---
-    const btnToggleCompetition = document.getElementById('btnToggleCompetition');
+    // --- GAME MODE BUTTONS ---
+    const btnModeCasual = document.getElementById('btnModeCasual');
+    const btnModeProgressive = document.getElementById('btnModeProgressive');
+    const btnModePlatformer = document.getElementById('btnModePlatformer'); 
+    const btnModeCompetition = document.getElementById('btnModeCompetition');
 
     // ----------------------------------------------------
     // 2. CONFIG & CONSTANTS
@@ -83,6 +88,8 @@
     const vDashDuration = 12;
     const boostDuration = 90; 
     const boostAmount = 2.5;
+    const slowDuration = 90; 
+    const slowAmount = 2.0;   
     const LEVEL_TRANSITION_TIME = 60; // 60 frames = 1 second
     const COMBO_TIMER_DURATION = 120; // 2 seconds at 60fps
     const COINS_FOR_EXTRA_LIFE = 5; // How many coins to get an extra life
@@ -98,7 +105,8 @@
         dashTimer: 0, 
         dashCooldown: 0,
         vDashTimer: 0,     
-        vDashCooldown: 0   
+        vDashCooldown: 0,
+        dashDir: 1 
     };
     const platforms = [];
     const spikes = [];
@@ -106,6 +114,9 @@
     const coins = []; 
     const particles = [];
     const bgObjects = [];
+    const swoopers = [];    
+    const poppers = [];     
+    const projectiles = []; 
     let door = { x: 760, y: 46, w: 18, h: 30 };
 
     // --- Game State ---
@@ -125,9 +136,10 @@
     let score = 0;
     let bobOffset = 0; 
     let boostTimer = 0;
+    let slowTimer = 0; 
     let coinComboMultiplier = 1;
     let coinComboTimer = 0;
-    let coinsCollectedThisLevel = 0; // NEW: For extra life
+    let coinsCollectedThisLevel = 0; 
 
     // --- Default Settings (will be overwritten by loadSettings) ---
     let startingLives = 3;    
@@ -150,9 +162,14 @@
     let enableBoost = true;
     let enableBouncy = true;
     let enableCrumbling = true;
+    let enableEnemies = true; 
+    let enableSlow = true; 
 
-    // --- COMPETITION STATE ---
-    let isCompetitionMode = false;
+    // --- GAME MODE STATE ---
+    let gameMode = 'casual'; // 'casual', 'progressive', 'competition', 'platformer'
+    let progressiveFeaturePool = [];
+    let featureUnlockMessage = '';
+    let featureUnlockTimer = 0;
 
     // ----------------------------------------------------
     // 4. CLASSES
@@ -223,6 +240,12 @@
         handleGameTimers();
         updateParticles();
         updateEntities();
+        
+        if (enableEnemies) {
+            updateEnemies();
+            updateProjectiles();
+        }
+
         handleInput();
         updatePlayerPhysics();
         handleCollisions();
@@ -239,9 +262,15 @@
         drawBackground();
         drawParticles();
         drawEntities();
+        
+        if (enableEnemies) {
+            drawEnemies();
+        }
+        
         drawPlayer();
         drawCooldownBars();
         drawHUD();
+        drawFeatureUnlockMessage(); // NEW: Draw unlock message
         drawOverlays();
     }
 
@@ -257,12 +286,21 @@
         if (player.dashCooldown > 0) player.dashCooldown--;
         if (player.vDashCooldown > 0) player.vDashCooldown--;
         if (boostTimer > 0) boostTimer--;
+        if (slowTimer > 0) slowTimer--; 
 
         // Update coin combo timer
         if (coinComboTimer > 0) {
             coinComboTimer--;
             if (coinComboTimer === 0) {
                 coinComboMultiplier = 1; // Reset combo
+            }
+        }
+        
+        // NEW: Update feature unlock timer
+        if (featureUnlockTimer > 0) {
+            featureUnlockTimer--;
+            if (featureUnlockTimer === 0) {
+                featureUnlockMessage = '';
             }
         }
     }
@@ -307,6 +345,46 @@
             }
         }
     }
+    
+    function updateEnemies() {
+        // Update Swoopers
+        for (let i = swoopers.length - 1; i >= 0; i--) {
+            const swooper = swoopers[i];
+            swooper.x += swooper.vx;
+            swooper.bobTimer += 0.05; // Sine wave speed
+            swooper.drawY = swooper.y + Math.sin(swooper.bobTimer) * 30; // 30px amplitude
+            
+            // Remove if off-screen
+            if (swooper.x + swooper.w < cameraX - 100) {
+                swoopers.splice(i, 1);
+            }
+        }
+
+        // Update Poppers
+        for (const popper of poppers) {
+            popper.fireCooldown--;
+            if (popper.fireCooldown <= 0) {
+                // Check if player is somewhat nearby before firing
+                if (popper.x > cameraX && popper.x < cameraX + canvas.width + 200) {
+                    createProjectile(popper.x, popper.y + popper.h / 2 - 5);
+                    popper.fireCooldown = 180; // 3 second cooldown
+                    playSound('dash'); // Re-using a sound, you might want a new one
+                }
+            }
+        }
+    }
+
+    function updateProjectiles() {
+        for (let i = projectiles.length - 1; i >= 0; i--) {
+            const proj = projectiles[i];
+            proj.x += proj.vx;
+            
+            // Remove if off-screen
+            if (proj.x + proj.w < cameraX - 100 || proj.x > worldWidth) {
+                projectiles.splice(i, 1);
+            }
+        }
+    }
 
     /**
      * Checks for player input (jump, dash) and applies actions.
@@ -314,6 +392,15 @@
     function handleInput() {
         // Horizontal Dash
         if (enableHDash && (keys['ShiftLeft'] || keys['KeyX'] || keys['ShiftRight']) && player.dashCooldown === 0) {
+            
+            // MODIFIED: Set dash direction
+            if (gameMode === 'platformer') {
+                if (keys['ArrowLeft'] || keys['KeyA']) player.dashDir = -1;
+                else player.dashDir = 1;
+            } else {
+                player.dashDir = 1; // Always dash right
+            }
+
             player.dashTimer = dashDuration;
             player.dashCooldown = dashCooldownTime;
             playSound('dash');
@@ -340,13 +427,38 @@
      * Applies physics (gravity, velocity) to the player.
      */
     function updatePlayerPhysics() {
-        // Auto-run
+        // Calculate base move speed
         let currentSpeed = moveSpeed;
         if (boostTimer > 0) currentSpeed += boostAmount;
-        if (player.dashTimer > 0) currentSpeed += dashSpeed;
-        player.x += currentSpeed;
+        if (slowTimer > 0) currentSpeed -= slowAmount;
+        if (player.dashTimer <= 0) {
+            currentSpeed = Math.max(1.0, currentSpeed);
+        }
 
-        // Gravity / Dash overrides
+        if (gameMode === 'platformer') {
+            // --- Platformer Mode Controls ---
+            let targetVx = 0;
+            if (player.dashTimer <= 0) { // Don't take input during dash
+                if (keys['ArrowLeft'] || keys['KeyA']) {
+                    targetVx = -currentSpeed;
+                }
+                if (keys['ArrowRight'] || keys['KeyD']) {
+                    targetVx = currentSpeed;
+                }
+            } else {
+                // Is dashing
+                targetVx = player.dashDir * (currentSpeed + dashSpeed);
+            }
+            player.x += targetVx;
+
+        } else {
+            // --- Auto-runner Modes ---
+            let runSpeed = currentSpeed;
+            if (player.dashTimer > 0) runSpeed += dashSpeed;
+            player.x += runSpeed;
+        }
+
+        // Gravity / Dash overrides (Vertical is the same, horizontal is handled above)
         if (player.vDashTimer > 0) {
             player.vDashTimer--;
             player.vy = vDashPower; 
@@ -355,15 +467,17 @@
             }
         } else if (player.dashTimer > 0) {
             player.dashTimer--;
-            player.vy = 0; 
+            player.vy = 0; // Horizontal dash flattens gravity
             if (player.dashTimer % 3 === 0) {
                  createTrail(player.x, player.y, player.w, player.h, '#9b59b6'); 
             }
         } else {
+            // Regular gravity
             player.vy += gravity;
         }
         player.y += player.vy; 
     }
+
 
     /**
      * Handles all collisions for the player (platforms, spikes, walls, coins).
@@ -374,13 +488,33 @@
         for (const plat of platforms) {
             if (!rectsCollide(player, plat)) continue;
 
+            const playerBottom = player.y + player.h;
+            const playerTop = player.y;
+            const playerRight = player.x + player.w;
+            const playerLeft = player.x;
+            
+            const platTop = plat.y;
+            const platBottom = plat.y + plat.h;
+            const platLeft = plat.x;
+            const platRight = plat.x + plat.w;
+            
+            // Calculate overlap on each side
+            const overlapBottom = (playerBottom - platTop);
+            const overlapTop = (platBottom - playerTop);
+            const overlapLeft = (playerRight - platLeft);
+            const overlapRight = (platRight - playerLeft);
+
+            // Find the *smallest* overlap. This is the side of collision.
+            const minOverlap = Math.min(overlapBottom, overlapTop, overlapLeft, overlapRight);
+            
+
             if (plat.isTunnel) {
-                // Tunnel logic
-                if (player.vy < 0 && (player.y - player.vy >= plat.y + plat.h)) {
+                // Tunnel logic (only cares about top/bottom)
+                if (minOverlap === overlapTop && player.vy < 0) {
                     player.y = plat.y + plat.h; // Hit head
                     player.vy = 0; 
                 }
-                else if (player.vy >= 0 && (player.y + player.h - player.vy <= plat.y)) {
+                else if (minOverlap === overlapBottom && player.vy >= 0) {
                     player.y = plat.y - player.h; // Land on top
                     if (player.vy > 5) playSound('land');
                     player.vy = 0; 
@@ -389,7 +523,10 @@
                 }
             } else {
                 // Regular platform logic
-                if (player.vy >= 0 && player.y + player.h - player.vy <= plat.y) {
+                
+                // Check for landing on top
+                if (player.vy >= 0 && (player.y + player.h - player.vy) <= plat.y + 1) { // Added +1 for tolerance
+                    
                     if (plat.isBouncy) {
                         player.y = plat.y - player.h;
                         player.vy = jumpPower * 1.5; 
@@ -399,7 +536,7 @@
                         playSound('powerup');
                         if(enableCoins) score += 25;
                     } else {
-                        player.y = plat.y - player.h;
+                        player.y = plat.y - player.h; // Snap to top
                         if (player.vy > 5) {
                              createDust(player.x + player.w / 2, player.y + player.h);
                              playSound('land');
@@ -418,6 +555,14 @@
                              boostTimer = boostDuration;
                              createBoostSparks(player.x, player.y, player.w, player.h);
                         }
+                        else if (plat.isSlow) { 
+                             if(slowTimer === 0) {
+                                 if(enableCoins) score += 25; 
+                                 playSound('land'); 
+                             }
+                             slowTimer = slowDuration;
+                             createDust(player.x + player.w / 2, player.y + player.h);
+                        }
                         if (plat.isCrumbling && plat.crumbleTimer === -1) {
                             if(enableCoins) score += 25;
                             playSound('powerup');
@@ -426,6 +571,17 @@
                         // Move with platform
                         if (plat.vy) player.y += plat.vy;
                         if (plat.vx) player.x += plat.vx;
+                    }
+                }
+                // NEW: Handle side collisions for platformer mode
+                else if (gameMode === 'platformer') {
+                    if (minOverlap === overlapLeft) {
+                        player.x = plat.x - player.w; // Hit from left
+                    } else if (minOverlap === overlapRight) {
+                        player.x = plat.x + plat.w; // Hit from right
+                    } else if (minOverlap === overlapTop) {
+                        player.y = plat.y + plat.h; // Hit from bottom
+                        player.vy = 0;
                     }
                 }
             }
@@ -444,16 +600,25 @@
         for (const wall of walls) {
             if (rectsCollide(player, wall)) {
                 const playerBottom = player.y + player.h;
-                const wallTop = wall.y;
+                const playerTop = player.y;
                 const playerRight = player.x + player.w;
-                const wallLeft = wall.x;
                 const playerLeft = player.x;
+                
+                const wallTop = wall.y;
+                const wallBottom = wall.y + wall.h;
+                const wallLeft = wall.x;
                 const wallRight = wall.x + wall.w;
 
-                const fromTop = playerBottom - wallTop < 10 && player.vy >= 0;
-                const fromLeft = playerRight > wallLeft && player.x < wallLeft && playerBottom > wallTop + 5;
-                
-                if (fromTop) {
+                // Calculate overlap on each side
+                const overlapBottom = (playerBottom - wallTop);
+                const overlapTop = (wallBottom - playerTop);
+                const overlapLeft = (playerRight - wallLeft);
+                const overlapRight = (wallRight - playerLeft);
+
+                // Find the *smallest* overlap. This is the side of collision.
+                const minOverlap = Math.min(overlapBottom, overlapTop, overlapLeft, overlapRight);
+
+                if (minOverlap === overlapBottom && player.vy >= 0) {
                     // Land on top of wall
                     player.y = wall.y - player.h;
                     if (player.vy > 5) {
@@ -464,14 +629,66 @@
                     }
                     player.vy = 0;
                     player.onGround = true;
-                } else if (fromLeft) {
-                    // Hit side of wall
+                } 
+                else if (gameMode === 'platformer') {
+                    // Platformer mode side collision
+                    if (minOverlap === overlapLeft) {
+                        player.x = wall.x - player.w; // Hit from left
+                    } else if (minOverlap === overlapRight) {
+                        player.x = wall.x + wall.w; // Hit from right
+                    }
+                }
+                else {
+                    // Auto-runner side collision (death)
+                    if (minOverlap === overlapLeft || minOverlap === overlapRight) {
+                         if (player.dashTimer > 0 || player.vDashTimer > 0) continue; 
+                         handlePlayerDeath();
+                         return;
+                    }
+                }
+            }
+        }
+
+        if (enableEnemies) {
+            // Player vs. Swooper
+            for (const swooper of swoopers) {
+                // Use swooper.drawY for accurate collision
+                if (rectsCollide(player, { x: swooper.x, y: swooper.drawY, w: swooper.w, h: swooper.h })) {
+                    if (player.dashTimer > 0 || player.vDashTimer > 0) {
+                        continue; 
+                    }
+                    handlePlayerDeath();
+                    return;
+                }
+            }
+
+            // Player vs. Popper (body)
+            for (const popper of poppers) {
+                if (rectsCollide(player, popper)) {
                     if (player.dashTimer > 0 || player.vDashTimer > 0) continue; 
                     handlePlayerDeath();
                     return;
                 }
             }
+
+            // Player vs. Projectile
+            for (let i = projectiles.length - 1; i >= 0; i--) {
+                const proj = projectiles[i];
+                if (rectsCollide(player, proj)) {
+                    if (player.dashTimer > 0 || player.vDashTimer > 0) {
+                        // SKILL: Dashing through a projectile destroys it!
+                        projectiles.splice(i, 1);
+                        createExplosion(proj.x, proj.y, '#f39c12'); // Particle burst
+                        playSound('powerup'); // Or a new "parry" sound
+                    } else {
+                        // Hit!
+                        handlePlayerDeath();
+                        return;
+                    }
+                }
+            }
         }
+        // --- END: Enemy Collisions ---
 
         // Coin Collision
         if (enableCoins) {
@@ -481,20 +698,18 @@
                     let lifeMult = 1 + (2 / startingLives); 
                     let levelMult = 1 + (levelNumber * 0.2);
                     
-                    // --- MODIFIED SCORING FOR COMBO ---
                     let basePoints = Math.floor(100 * speedMult * lifeMult * levelMult);
-                    let points = basePoints * coinComboMultiplier; // Apply combo!
+                    let points = basePoints * coinComboMultiplier; 
                     score += points; 
                     
-                    coinComboMultiplier++; // Increase combo
-                    coinComboTimer = COMBO_TIMER_DURATION; // Reset timer
-                    // --- END MODIFICATION ---
+                    coinComboMultiplier++; 
+                    coinComboTimer = COMBO_TIMER_DURATION; 
 
                     playSound('coin');
                     createCoinSparkle(coins[i].x, coins[i].y);
                     coins.splice(i, 1);
                     
-                    coinsCollectedThisLevel++; // NEW: Increment for extra life
+                    coinsCollectedThisLevel++; 
                 }
             }
         }
@@ -507,21 +722,27 @@
         // Door collision (Win level)
         if (rectsCollide(player, door)) {
             if (enableCoins) {
-                // Add level bonus
                 let speedMult = (moveSpeed / 4.5); 
                 let lifeMult = 1 + (2 / startingLives); 
                 let levelMult = 1 + (levelNumber * 0.2);
                 let levelBonus = Math.floor(500 * speedMult * lifeMult * levelMult);
                 score += levelBonus; 
                 
-                // --- NEW: Check for extra life ---
                 if (coinsCollectedThisLevel === COINS_FOR_EXTRA_LIFE) {
                     lives++;
-                    playSound('powerup'); // Play sound for getting extra life
+                    playSound('powerup'); 
                 }
             }
 
             playSound('win');
+            
+            // --- NEW: Progressive Mode Logic ---
+            if (gameMode === 'progressive' && progressiveFeaturePool.length > 0) {
+                const featureKey = progressiveFeaturePool.pop();
+                unlockFeature(featureKey);
+            }
+            // --- End Progressive Mode Logic ---
+
             if (maxLevels === Infinity) {
                 levelNumber++;
                 randomLevel(); 
@@ -545,9 +766,14 @@
     /**
      * Updates the camera position based on player.
      */
+    // MODIFIED: This function now locks the camera from moving left in ALL modes
     function updateCamera() {
         const cameraMargin = 300;
-        cameraX = Math.max(0, Math.min(player.x - cameraMargin, worldWidth - canvas.width));
+        let newCamX = Math.max(0, Math.min(player.x - cameraMargin, worldWidth - canvas.width));
+        
+        // Camera can only move right, or stay still.
+        // This now applies to ALL game modes as requested.
+        cameraX = Math.max(cameraX, newCamX);
     }
 
     // ----------------------------------------------------
@@ -574,10 +800,18 @@
     }
 
     function drawEntities() {
+        // --- NEW: Add shadow to all entities ---
+        ctx.save(); 
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+        ctx.shadowBlur = 4;
+        ctx.shadowOffsetY = 3;
+        ctx.shadowOffsetX = 2;
+
         // Platforms
         for (const plat of platforms) {
             if (plat.isTunnel) ctx.fillStyle = '#777'; 
             else if (plat.isBoost) ctx.fillStyle = '#2ecc71'; 
+            else if (plat.isSlow) ctx.fillStyle = '#3498db'; // NEW: Draw slow platform
             else if (plat.isBouncy) ctx.fillStyle = '#9b59b6'; 
             else if (plat.isCrumbling) {
                 ctx.fillStyle = (plat.crumbleTimer > 0 && Math.floor(plat.crumbleTimer / 4) % 2 === 0) ? '#e74c3c' : '#f39c12';
@@ -619,20 +853,66 @@
             ctx.closePath();
             ctx.fill();
         }
+
+        // --- NEW: Restore context to remove shadow for next draw calls ---
+        ctx.restore(); 
+    }
+
+    function drawEnemies() {
+        // --- NEW: Add shadow to all enemies ---
+        ctx.save(); 
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+        ctx.shadowBlur = 4;
+        ctx.shadowOffsetY = 3;
+        ctx.shadowOffsetX = 2;
+        
+        // Draw Swoopers (use drawY for sine wave)
+        ctx.fillStyle = '#c0392b'; // Dark red
+        for (const swooper of swoopers) {
+            ctx.fillRect(swooper.x - cameraX, swooper.drawY, swooper.w, swooper.h);
+        }
+
+        // Draw Poppers
+        ctx.fillStyle = '#8e44ad'; // Purple
+        for (const popper of poppers) {
+            ctx.fillRect(popper.x - cameraX, popper.y, popper.w, popper.h);
+        }
+
+        // Draw Projectiles
+        ctx.fillStyle = '#f39c12'; // Orange
+        for (const proj of projectiles) {
+            ctx.fillRect(proj.x - cameraX, proj.y, proj.w, proj.h);
+        }
+
+        // --- NEW: Restore context to remove shadow ---
+        ctx.restore();
     }
 
     function drawPlayer() {
         // Don't draw player if they are in the death transition
         if (isTransitioning) return;
 
+        // --- NEW: Add shadow to player ---
+        ctx.save(); 
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+        ctx.shadowBlur = 5;
+        ctx.shadowOffsetY = 3;
+        ctx.shadowOffsetX = 2;
+
+
         if (player.dashTimer > 0 || player.vDashTimer > 0) {
             ctx.fillStyle = (Math.floor(player.dashTimer / 3) % 2 === 0 || Math.floor(player.vDashTimer / 3) % 2 === 0) ? '#ffffff' : playerSkin;
         } else if (boostTimer > 0) {
             ctx.fillStyle = (Math.floor(boostTimer / 5) % 2 === 0) ? '#2ecc71' : playerSkin;
+        } else if (slowTimer > 0) { // NEW: Visual indicator for slow
+             ctx.fillStyle = (Math.floor(slowTimer / 5) % 2 === 0) ? '#3498db' : playerSkin;
         } else {
             ctx.fillStyle = playerSkin; 
         }
         ctx.fillRect(player.x - cameraX, player.y, player.w, player.h);
+
+        // --- NEW: Restore context to remove shadow ---
+        ctx.restore();
     }
 
     function drawCooldownBars() {
@@ -702,6 +982,26 @@
         ctx.textAlign = 'left'; 
     }
 
+    // NEW: Draw function for feature unlock message
+    function drawFeatureUnlockMessage() {
+        if (featureUnlockTimer > 0) {
+            let alpha = Math.min(1.0, featureUnlockTimer / 30); // Fade in/out
+            if (featureUnlockTimer < 30) alpha = featureUnlockTimer / 30;
+            if (featureUnlockTimer > 150) alpha = (180 - featureUnlockTimer) / 30;
+            
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.fillStyle = 'rgba(0,0,0,0.7)';
+            ctx.fillRect(canvas.width / 2 - 200, canvas.height / 2 - 40, 400, 80);
+            
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 24px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(featureUnlockMessage, canvas.width / 2, canvas.height / 2 + 8);
+            ctx.restore();
+        }
+    }
+
     function drawOverlays() {
         if (paused) {
             ctx.fillStyle = 'rgba(0,0,0,0.5)';
@@ -757,8 +1057,101 @@
         lives = startingLives;
         score = 0; 
         particles.length = 0; 
-        coinsCollectedThisLevel = 0; // NEW: Reset for extra life
+        coinsCollectedThisLevel = 0; 
+        
+        // NEW: Apply game mode settings
+        applyGameModeSettings();
+        
         randomLevel(); 
+    }
+    
+    // MODIFIED: Handle game mode logic
+    function applyGameModeSettings() {
+        // Reset all toggles to their saved state first (for casual)
+        loadSettings(); 
+        
+        if (gameMode === 'casual' || gameMode === 'platformer') {
+            // Settings are already loaded, just use them.
+        } 
+        else if (gameMode === 'competition') {
+            // Force all settings ON, use defaults for values
+            startingLives = 3;
+            maxLevels = Infinity; 
+            baseMoveSpeed = 4.5;
+            dashCooldownTime = 120;
+            vDashCooldownTime = 120;
+            
+            enableWalls = true;
+            enableTunnels = true;
+            enableParticles = true; 
+            enableBg = true;
+            enableCoins = true; 
+            enableSound = true;
+            enableHDash = true;
+            enableVDash = true;
+            enableBoost = true;
+            enableBouncy = true;
+            enableCrumbling = true;
+            enableEnemies = true; 
+            enableSlow = true;
+        }
+        else if (gameMode === 'progressive') {
+            // Force gameplay settings OFF, but cosmetics ON.
+            startingLives = 3; // Use default lives
+            maxLevels = Infinity; // Progressive is endless
+            baseMoveSpeed = 4.5; // Use default speed
+            
+            enableWalls = false;
+            enableTunnels = false;
+            enableParticles = true; // <-- Stays ON
+            enableBg = true;        // <-- Stays ON
+            enableCoins = true; 
+            enableSound = true;     // <-- Stays ON
+            enableHDash = false;
+            enableVDash = false;
+            enableBoost = false;
+            enableBouncy = false;
+            enableCrumbling = false;
+            enableEnemies = false; 
+            enableSlow = false;
+            
+            // Build and shuffle the feature pool
+            buildProgressiveFeaturePool();
+        }
+    }
+    
+    // MODIFIED: Create the pool of features to unlock
+    function buildProgressiveFeaturePool() {
+        // Removed Particles, Bg, and Sound
+        progressiveFeaturePool = [
+            'enableWalls', 'enableTunnels', 'enableHDash', 'enableVDash',
+            'enableBoost', 'enableBouncy', 'enableCrumbling', 'enableEnemies',
+            'enableSlow'
+        ];
+        
+        // Shuffle the pool
+        shuffle(progressiveFeaturePool);
+    }
+    
+    // MODIFIED: Logic to unlock a feature and set the message
+    function unlockFeature(featureKey) {
+        let featureName = 'Unknown';
+        
+        switch (featureKey) {
+            case 'enableWalls': enableWalls = true; featureName = 'Walls'; break;
+            case 'enableTunnels': enableTunnels = true; featureName = 'Tunnels'; break;
+            case 'enableHDash': enableHDash = true; featureName = 'Horizontal Dash'; break;
+            case 'enableVDash': enableVDash = true; featureName = 'Vertical Dash'; break;
+            case 'enableBoost': enableBoost = true; featureName = 'Boost Platforms'; break;
+            case 'enableBouncy': enableBouncy = true; featureName = 'Bouncy Platforms'; break;
+            case 'enableCrumbling': enableCrumbling = true; featureName = 'Crumbling Platforms'; break;
+            case 'enableEnemies': enableEnemies = true; featureName = 'Enemies'; break;
+            case 'enableSlow': enableSlow = true; featureName = 'Slow Platforms'; break;
+        }
+        
+        featureUnlockMessage = `Feature Unlocked: ${featureName}!`;
+        featureUnlockTimer = 180; // 3 seconds
+        playSound('win'); // Play a little chime
     }
 
     /**
@@ -792,18 +1185,22 @@
         walls.length = 0;
         coins.length = 0; 
         bgObjects.length = 0;
+        swoopers.length = 0;    
+        poppers.length = 0;     
+        projectiles.length = 0; 
         
         // Reset player
         player.x = 50; player.y = 334; player.vx = 0; player.vy = 0;
         cameraX = 0;
         boostTimer = 0;
+        slowTimer = 0; 
         player.dashTimer = 0; 
         player.dashCooldown = 0; 
         player.vDashTimer = 0;     
         player.vDashCooldown = 0; 
-        coinComboMultiplier = 1; // Reset combo
-        coinComboTimer = 0;      // Reset combo timer
-        coinsCollectedThisLevel = 0; // NEW: Reset for extra life
+        coinComboMultiplier = 1; 
+        coinComboTimer = 0;      
+        coinsCollectedThisLevel = 0; 
 
         // Apply difficulty scaling
         moveSpeed = baseMoveSpeed + levelNumber * 0.15;
@@ -824,23 +1221,41 @@
         }
 
         // Ground
-        platforms.push({ x: 0, y: 376, w: worldWidth, h: 24 });
+        if (gameMode !== 'platformer') {
+            platforms.push({ x: 0, y: 376, w: worldWidth, h: 24 });
+        }
 
         // Platforms
         const numPlatforms = 20 + difficulty;
         let currentX = player.x, currentY = player.y;
 
+        if (gameMode === 'platformer') {
+            platforms.push({ x: 30, y: 376, w: 100, h: 14 }); // Starting platform
+            currentX = 30;
+            currentY = 376;
+            player.x = 50; // Place player on it
+            player.y = 376 - player.h;
+        }
+
         for (let i = 0; i < numPlatforms; i++) {
-            const gap = 100 + Math.random() * 80 + difficulty * 5;
-            let nextX = Math.min(currentX + gap, worldWidth - 100);
-            let nextY = Math.max(250, Math.min(currentY + (Math.random() * 40 - 20), 360));
-            if (Math.random() < 0.3) nextY -= 50; // Chance for a higher jump
             const pw = Math.max(30, 50 - difficulty + Math.random() * 50);
+            let nextX, nextY;
+
+            if (gameMode === 'platformer') {
+                let hGap = 50 + Math.random() * 60; // Horizontal gap
+                let vGap = Math.random() * 140 - 70; // Vertical gap
+                nextX = Math.min(currentX + hGap, worldWidth - 100);
+                nextY = Math.max(100, Math.min(currentY + vGap, 360)); // Clamp Y
+            } else {
+                let gap = 100 + Math.random() * 80 + difficulty * 5;
+                nextX = Math.min(currentX + gap, worldWidth - 100);
+                nextY = Math.max(250, Math.min(currentY + (Math.random() * 40 - 20), 360));
+                if (Math.random() < 0.3) nextY -= 50; // Chance for a higher jump (auto-runner)
+            }
 
             const platform = { x: nextX, y: nextY, w: pw, h: 14 };
             const typeRoll = Math.random();
 
-            // Add special platform types
             if (typeRoll < 0.15 && i > 0) { 
                 platform.vx = (Math.random() < 0.5 ? -1 : 1) * (1 + difficulty * 0.2);
                 platform.range = 50 + Math.random() * 50;
@@ -855,6 +1270,9 @@
             else if (enableCrumbling && typeRoll < 0.55) { 
                 platform.isCrumbling = true;
                 platform.crumbleTimer = -1; 
+            }
+            else if (enableSlow && typeRoll < 0.65) { 
+                platform.isSlow = true;
             }
             
             platforms.push(platform);
@@ -883,22 +1301,57 @@
         }
 
         // Door
-        door.x = worldWidth - 60;
-        door.y = Math.max(currentY - 50, 60);
+        if (gameMode === 'platformer') {
+            // Spawn on the last platform
+            let lastPlat = platforms[platforms.length - 1];
+            door.x = lastPlat.x + (lastPlat.w / 2) - (door.w / 2);
+            door.y = lastPlat.y - door.h;
+        } else {
+            // Original logic
+            door.x = worldWidth - 60;
+            door.y = Math.max(currentY - 50, 60);
+        }
+
 
         // Spikes
+        // MODIFIED: Improved safe-zone checking
         const numPatterns = Math.min(2 + difficulty, 10);
         for (let i = 0; i < numPatterns; i++) {
             const patternType = Math.random() < 0.5 ? 'line' : (Math.random() < 0.5 ? 'staggered' : 'gap');
-            let baseX;
+            let baseX, baseY;
+            let safeToSpawn = false;
+
             do {
+                // 1. Get a position
                 baseX = 100 + Math.random() * (worldWidth - 200);
-            } while ((baseX > player.x - 50 && baseX < player.x + 150) || (baseX > door.x - 60 && baseX < door.x + 80));
-            let baseY = Math.random() < 0.7 ? 376 - spikeHeight : platforms[Math.floor(Math.random() * platforms.length)].y - spikeHeight;
+                if (gameMode === 'platformer') {
+                     // In platformer, spikes MUST be on platforms
+                    let plat = platforms[Math.floor(Math.random() * platforms.length)];
+                    if (plat) {
+                        baseY = plat.y - spikeHeight;
+                        baseX = plat.x + Math.random() * (plat.w - (spikeWidth * 3)); // *3 for pattern width
+                    } else {
+                        baseY = 500; // off-screen
+                    }
+                } else {
+                    // Original logic
+                    baseY = Math.random() < 0.7 ? 376 - spikeHeight : platforms[Math.floor(Math.random() * platforms.length)].y - spikeHeight;
+                }
+                
+                // 2. Check if it's safe
+                const playerSafeZone = { x: player.x - 50, y: player.y - 100, w: 200, h: 200 };
+                const doorSafeZone = { x: door.x - 60, y: door.y - 60, w: 120, h: 120 };
+                const spikeRect = { x: baseX, y: baseY, w: spikeWidth * 3, h: spikeHeight }; // *3 for pattern
+                
+                safeToSpawn = !rectsCollide(spikeRect, playerSafeZone) && !rectsCollide(spikeRect, doorSafeZone);
+
+            } while (!safeToSpawn); // 3. Reroll if not safe
+            
             placeSpikePattern(baseX, baseY, patternType, 3 + Math.floor(Math.random() * 3));
         }
 
         // Walls
+        // MODIFIED: REMOVED "&& gameMode !== 'platformer'"
         if (enableWalls) {
             const numWalls = Math.min(2 + Math.floor(difficulty / 2), 6);
             for (let i = 0; i < numWalls; i++) {
@@ -934,11 +1387,57 @@
                 });
             }
         }
+
+        if (enableEnemies) {
+            const usablePlatforms = platforms.slice(1); 
+
+            // Spawn Poppers on platforms
+            const numPoppers = 1 + Math.floor(difficulty / 2);
+            for (let i = 0; i < numPoppers && usablePlatforms.length > 0; i++) {
+                const plat = usablePlatforms[Math.floor(Math.random() * usablePlatforms.length)];
+                
+                if (plat.vx || plat.vy) continue; 
+
+                poppers.push({
+                    x: plat.x + plat.w / 2 - 10,
+                    y: plat.y - 20, 
+                    w: 20, h: 20,
+                    fireCooldown: 120 + Math.random() * 60 
+                });
+            }
+
+            // Spawn Swoopers in the air
+            const numSwoopers = 1 + Math.floor(difficulty / 2);
+            for (let i = 0; i < numSwoopers; i++) {
+                let spawnX;
+                do {
+                    spawnX = 400 + Math.random() * (worldWidth - 600);
+                } while ((spawnX > player.x - 100 && spawnX < player.x + 200) || (spawnX > door.x - 150 && spawnX < door.x + 150));
+                
+                let spawnY = 150 + Math.random() * 100; 
+                swoopers.push({
+                    x: spawnX,
+                    y: spawnY,      
+                    drawY: spawnY,  
+                    w: 25, h: 25,
+                    vx: -1.5 - (difficulty * 0.1), 
+                    bobTimer: Math.random() * Math.PI * 2 
+                });
+            }
+        }
     }
 
     // ----------------------------------------------------
     // 9. UTILITY, SOUND, & PARTICLE HELPERS
     // ----------------------------------------------------
+    
+    // NEW: Shuffle array utility
+    function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
 
     // --- Collision ---
     function rectsCollide(a, b) {
@@ -954,6 +1453,16 @@
             else if (patternType === 'gap') { if (i === Math.floor(count / 2)) continue; sx += i * spacing; }
             spikes.push({ x: sx, y: baseY, w: spikeWidth, h: spikeHeight });
         }
+    }
+
+    function createProjectile(x, y) {
+        projectiles.push({
+            x: x,
+            y: y,
+            w: 10,
+            h: 10,
+            vx: -3 - (levelNumber * 0.1) 
+        });
     }
 
     // --- Sound ---
@@ -1045,7 +1554,7 @@
     }
 
     function createExplosion(x, y, color) {
-        if (!enableParticles) return;
+        // The death explosion should always play, regardless of settings.
         for (let i = 0; i < 20; i++) {
             let size = Math.random() * 6 + 4;
             particles.push(new Particle(x, y, size, size, color, (Math.random() - 0.5) * 10, (Math.random() - 0.5) * 10, 40, 'explosion'));
@@ -1119,7 +1628,8 @@
         const subToggles = [
             btnMenuPlatforms, btnMenuAbilities, btnToggleWalls, btnToggleTunnels,
             btnToggleParticles, btnToggleBg, btnToggleCoins, btnToggleSound,
-            btnToggleHDash, btnToggleVDash, btnToggleBoost, btnToggleBouncy, btnToggleCrumbling
+            btnToggleHDash, btnToggleVDash, btnToggleBoost, btnToggleBouncy, btnToggleCrumbling,
+            btnToggleEnemies, btnToggleSlow 
         ];
         const valueButtons = [
             ...difficultyBtns, ...livesBtns, ...speedBtns, ...cooldownBtns, ...skinBtns
@@ -1137,49 +1647,12 @@
     }
 
     /**
-     * Force-applies all competition mode settings
-     */
-    function applyCompetitionMode(isEnabled) {
-        if (isEnabled) {
-            // 1. Force all game variables to competition standard
-            startingLives = 3;
-            maxLevels = Infinity; // <-- CHANGED: No level limit
-            baseMoveSpeed = 4.5;
-            dashCooldownTime = 120;
-            vDashCooldownTime = 120;
-            
-            enableWalls = true;
-            enableTunnels = true;
-            enableParticles = true; 
-            enableBg = true;
-            enableCoins = true; 
-            enableSound = true;
-            enableHDash = true;
-            enableVDash = true;
-            enableBoost = true;
-            enableBouncy = true;
-            enableCrumbling = true;
-
-            // 2. Update all visuals to show these locked-in settings
-            updateAllVisuals();
-            
-            // 3. Lock the UI
-            updateSettingsLock(true);
-            
-            // 4. Close any open settings panels
-            hideAllPanels();
-        } else {
-            // 1. Unlock the UI
-            updateSettingsLock(false);
-            // Settings variables remain as they were, but are now changeable.
-        }
-    }
-
-
-    /**
      * Loads all settings from localStorage on game start.
      */
     function loadSettings() {
+        // Load game mode
+        gameMode = localStorage.getItem('gameMode') || 'casual';
+    
         // Load numbers
         const savedMaxLevels = localStorage.getItem('maxLevels');
         if (savedMaxLevels) maxLevels = savedMaxLevels === 'Infinity' ? Infinity : parseInt(savedMaxLevels);
@@ -1214,29 +1687,8 @@
         enableBoost = saved('enableBoost') === null ? true : (saved('enableBoost') === 'true');
         enableBouncy = saved('enableBouncy') === null ? true : (saved('enableBouncy') === 'true');
         enableCrumbling = saved('enableCrumbling') === null ? true : (saved('enableCrumbling') === 'true');
-
-        // --- Load Competition Mode ---
-        isCompetitionMode = saved('isCompetitionMode') === 'true';
-
-        // --- If in comp mode, override all loaded settings ---
-        if (isCompetitionMode) {
-            startingLives = 3;
-            maxLevels = Infinity; // <-- CHANGED: No level limit
-            baseMoveSpeed = 4.5;
-            dashCooldownTime = 120;
-            vDashCooldownTime = 120;
-            enableWalls = true;
-            enableTunnels = true;
-            enableParticles = true; 
-            enableBg = true;
-            enableCoins = true; 
-            enableSound = true;
-            enableHDash = true;
-            enableVDash = true;
-            enableBoost = true;
-            enableBouncy = true;
-            enableCrumbling = true;
-        }
+        enableEnemies = saved('enableEnemies') === null ? true : (saved('enableEnemies') === 'true'); 
+        enableSlow = saved('enableSlow') === null ? true : (saved('enableSlow') === 'true'); 
     }
 
     /**
@@ -1256,16 +1708,40 @@
         updateToggleBtn(btnToggleBg, enableBg, "Background");
         updateToggleBtn(btnToggleCoins, enableCoins, "Coins");
         updateToggleBtn(btnToggleSound, enableSound, "Sound");
+        updateToggleBtn(btnToggleEnemies, enableEnemies, "Enemies"); 
         updateToggleBtn(btnToggleHDash, enableHDash, "Dash (Shift)");
         updateToggleBtn(btnToggleVDash, enableVDash, "V-Dash (Enter)");
         updateToggleBtn(btnToggleBoost, enableBoost, "Boost");
         updateToggleBtn(btnToggleBouncy, enableBouncy, "Bouncy");
         updateToggleBtn(btnToggleCrumbling, enableCrumbling, "Crumbling");
+        updateToggleBtn(btnToggleSlow, enableSlow, "Slow");
 
-        // Update competition button visuals
-        if (btnToggleCompetition) {
-            updateToggleBtn(btnToggleCompetition, isCompetitionMode, "Competition Mode");
+        // NEW: Update game mode button visuals
+        updateModeButtonVisuals();
+    }
+    
+    // MODIFIED: Function to update game mode buttons
+    function updateModeButtonVisuals() {
+        // Reset all
+        btnModeCasual.classList.remove('selected');
+        btnModeProgressive.classList.remove('selected');
+        btnModePlatformer.classList.remove('selected'); 
+        btnModeCompetition.classList.remove('selected');
+        
+        // Apply 'selected' class to the active mode
+        if (gameMode === 'casual') {
+            btnModeCasual.classList.add('selected');
+        } else if (gameMode === 'progressive') {
+            btnModeProgressive.classList.add('selected');
+        } else if (gameMode === 'platformer') { 
+            btnModePlatformer.classList.add('selected');
+        } else if (gameMode === 'competition') {
+            btnModeCompetition.classList.add('selected');
         }
+        
+        // Lock or unlock the settings panel
+        const isSettingsLocked = (gameMode === 'progressive' || gameMode === 'competition');
+        updateSettingsLock(isSettingsLocked);
     }
 
     /**
@@ -1387,8 +1863,8 @@
      * Initializes all event listeners for keyboard and UI buttons.
      */
     function initEventHandlers() {
-        // --- Lock settings on load if comp mode is on ---
-        updateSettingsLock(isCompetitionMode);
+        // --- Lock settings on load based on saved mode ---
+        updateSettingsLock(gameMode === 'progressive' || gameMode === 'competition');
 
         // --- Keyboard Listeners ---
         document.addEventListener('keydown', e => {
@@ -1405,13 +1881,13 @@
             
             // --- MODIFIED RESTART LOGIC ---
             if (e.code === 'KeyR') {
-                if (isCompetitionMode) {
-                    // In comp mode, only allow restart on game over
+                // In comp or progressive mode, only allow restart on game over
+                if (gameMode === 'competition' || gameMode === 'progressive') {
                     if (gameLost || gameWon) {
                         resetGame();
                     }
                 } else {
-                    // Original logic for non-comp mode
+                    // Original logic for casual/platformer mode
                     if (gameStarted || gameLost || gameWon) {
                         resetGame();
                     }
@@ -1552,6 +2028,13 @@
             saveSetting('enableSound', enableSound);
             updateToggleBtn(btnToggleSound, enableSound, "Sound");
         };
+        
+        btnToggleEnemies.onclick = () => {
+            enableEnemies = !enableEnemies;
+            saveSetting('enableEnemies', enableEnemies);
+            updateToggleBtn(btnToggleEnemies, enableEnemies, "Enemies");
+        };
+
         btnToggleHDash.onclick = () => { 
             enableHDash = !enableHDash; 
             saveSetting('enableHDash', enableHDash);
@@ -1578,15 +2061,36 @@
             updateToggleBtn(btnToggleCrumbling, enableCrumbling, "Crumbling"); 
         };
 
-        // --- COMPETITION BUTTON HANDLER ---
-        if (btnToggleCompetition) {
-            btnToggleCompetition.onclick = () => {
-                isCompetitionMode = !isCompetitionMode;
-                saveSetting('isCompetitionMode', isCompetitionMode);
-                updateToggleBtn(btnToggleCompetition, isCompetitionMode, "Competition Mode");
-                applyCompetitionMode(isCompetitionMode);
-            };
-        }
+        // NEW: Event handler for the slow toggle
+        btnToggleSlow.onclick = () => { 
+            enableSlow = !enableSlow; 
+            saveSetting('enableSlow', enableSlow);
+            updateToggleBtn(btnToggleSlow, enableSlow, "Slow"); 
+        };
+
+        // --- NEW: GAME MODE BUTTON HANDLERS ---
+        btnModeCasual.onclick = () => {
+            gameMode = 'casual';
+            saveSetting('gameMode', gameMode);
+            updateModeButtonVisuals();
+        };
+        btnModeProgressive.onclick = () => {
+            gameMode = 'progressive';
+            saveSetting('gameMode', gameMode);
+            updateModeButtonVisuals();
+            hideAllPanels(); // Hide settings panels as they are now locked
+        };
+        btnModePlatformer.onclick = () => { 
+            gameMode = 'platformer';
+            saveSetting('gameMode', gameMode);
+            updateModeButtonVisuals();
+        };
+        btnModeCompetition.onclick = () => {
+            gameMode = 'competition';
+            saveSetting('gameMode', gameMode);
+            updateModeButtonVisuals();
+            hideAllPanels(); // Hide settings panels as they are now locked
+        };
     }
 
     // ----------------------------------------------------
