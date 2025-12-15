@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Wacky Wizard</title>
+    <link rel="stylesheet" href="rpg.css">
+</head>
+<body>
+
+    <h1>Coordinate RPG</h1>
+
+    <div id="game-container">
+        <div id="grid"></div>
+        
+        <div id="ui-panel">
+            <div class="stat-box">
+                <h3>Stats</h3>
+                <p>HP: <span id="player-hp">100</span></p>
+                <p>Enemies: <span id="enemy-count">0</span></p>
+            </div>
+            <div class="log-box" id="game-log">
+                <div class="log-entry">Setup complete.</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="combat-screen">
+        <h2 style="color: #ef4444;">COMBAT!</h2>
+        <p>Enemy HP: <span id="combat-enemy-hp">0</span></p>
+        <p id="combat-status">Choose action!</p>
+        <div style="margin-top: 20px;">
+            <button class="btn btn-attack" onclick="combatAction('attack')">Attack</button>
+            <button class="btn btn-heal" onclick="combatAction('heal')">Heal</button>
+        </div>
+    </div>
+
+    <div id="message-overlay">
+        <h1 id="end-title">GAME OVER</h1>
+        <button class="btn" onclick="location.reload()">Play Again</button>
+    </div>
+
+    <div id="inventory-overlay">
+        <h2 id="inventory-title">Permanent Relics</h2>
+        <ul id="inventory-list">
+            </ul>
+        <button id="close-inv-btn" onclick="closeInventory()">Close</button>
+    </div>
+
+    <div id="tutorial-overlay">
+        <h2 id="tutorial-title">Tutorial</h2>
+        <p id="tutorial-text">Welcome to the game.</p>
+        <button class="btn" onclick="closeTutorial()">Got it!</button>
+    </div>
+
+    <script src="rpg.js"></script>
+    
+</body>
+</html>
