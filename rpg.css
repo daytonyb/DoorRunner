@@ -108,7 +108,19 @@ body {
 .spike-active::after { content: "▲"; color: #fff; font-weight: bold; font-size: 24px; }
 
 /* Entities */
-.player { background-color: #3b82f6 !important; color: white; z-index: 2; } 
+.player {
+    background-color: transparent !important;
+    background-image: url('player.png');
+    background-size: cover; 
+    background-position: center;
+    background-repeat: no-repeat;
+    image-rendering: pixelated; 
+    z-index: 10;
+}
+
+.player span {
+    display: none;
+}
 .enemy { background-color: #ef4444 !important; color: white; z-index: 2; }  
 
 .boss {
