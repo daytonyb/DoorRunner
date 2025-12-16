@@ -75,20 +75,20 @@ const LEVELS = {
         name: "EX-3: Slippery Slope", walls: ["B2","B8","H2","H8"], 
         ice: ["C2","C3","C4","C5","C6","C7","C8", "G2","G3","G4","G5","G6","G7","G8", "D5","E5","F5"],
         portals: [{pos: "E9", targetLevel: 'EX-3-2', targetPos: "A5", type: "door"}], 
-        enemies: [{pos: "E5", type: "yeti", hp: 15}] 
+        enemies: [{pos: "D5", type: "golem", hp: 15},{pos: "F5", type: "golem", hp: 15}] 
     },
     'EX-3-2': { 
         name: "EX-3: Frozen Lake", walls: [], 
         ice: ["B2","B3","B4","B5","B6","B7","B8","C2","C3","C4","C5","C6","C7","C8","D2","D3","D4","D5","D6","D7","D8","E2","E3","E4","E5","E6","E7","E8","F2","F3","F4","F5","F6","F7","F8","G2","G3","G4","G5","G6","G7","G8","H2","H3","H4","H5","H6","H7","H8"],
         portals: [{pos: "E9", targetLevel: 'EX-3-3', targetPos: "A5", type: "door"}], 
-        enemies: [ {pos: "C5", type: "wraith", hp: 6}, {pos: "G5", type: "wraith", hp: 6}, {pos: "E5", type: "yeti", hp: 15} ],
-        items: [{pos: "A1", type: "potion", value: 10}]
+        enemies: [ {pos: "C5", hp: 6}, {pos: "G5",type:"fast", hp: 6}, {pos: "E5", type: "golem", hp: 15} ],
     },
     'EX-3-3': { 
         name: "EX-3: The Glacier", walls: ["C3","G3","C7","G7"], 
         ice: ["A2","A3","A4","A5","A6","A7","A8", "I2","I3","I4","I5","I6","I7","I8"], 
         portals: [{pos: "E9", targetLevel: 'EX-3-Boss', targetPos: "E2", type: "door"}], 
-        enemies: [ {pos: "B5", type: "fast", hp: 8}, {pos: "H5", type: "fast", hp: 8}, {pos: "E5", type: "yeti", hp: 15} ] 
+        enemies: [ {pos: "B5", type: "fast", hp: 8}, {pos: "H5", type: "fast", hp: 8},{pos: "E8", type: "fast", hp: 8},{pos: "E2", type: "fast", hp: 8}, {pos: "E5", type: "golem", hp: 15} ],
+        items: [{pos: "A9", type: "potion", value: 5}, {pos: "I1", type: "weapon", value: 2, name: "Rusty Sword"}]
     },
     'EX-3-Boss': { 
         name: "EX-BOSS: ICE QUEEN", walls: ["A1","A9","I1","I9"], ice: ["B2","B8","H2","H8", "C3","C7","G3","G7"],
@@ -106,7 +106,8 @@ const LEVELS = {
 let currentLevelId = '0'; 
 let player = { 
     x: 0, y: 0, hp: 10, maxHp: 10, damage: 2, 
-    wasHit: false, hasCharm: false, hasIronStomach: false, hasAntidote: false, hasThorns: false 
+    wasHit: false, hasCharm: false, hasIronStomach: false, hasAntidote: false, hasThorns: false,
+    hasFrostHit: false // NEW RELIC PROPERTY
 };
 let enemies = []; 
 let items = []; 
@@ -164,6 +165,7 @@ function loadGame() {
         if(player.hasIronStomach === undefined) player.hasIronStomach = false;
         if(player.hasAntidote === undefined) player.hasAntidote = false;
         if(player.hasThorns === undefined) player.hasThorns = false; 
+        if(player.hasFrostHit === undefined) player.hasFrostHit = false; // NEW RELIC CHECK
 
         enemies = state.enemies;
         items = state.items;
@@ -561,6 +563,15 @@ function playerAttack() {
             triggerDamage(enemy.x, enemy.y, dmg, false);
             log(`Hit Enemy for ${dmg} damage!`);
 
+            // NEW: GLACIAL GEM EFFECT
+            if (player.hasFrostHit && enemy.hp > 0) {
+                if (Math.random() < 0.25) {
+                    enemy.stunned = true;
+                    log("Glacial Gem FREEZES the enemy!");
+                    triggerAttackAnim(enemy.x, enemy.y, 'anim-web'); 
+                }
+            }
+
             // MAGE BLINK MECHANIC
             if (enemy.type === 'mage' && enemy.hp > 0) {
                 let safeSpots = [];
@@ -583,6 +594,7 @@ function playerAttack() {
                 log(enemy.isBoss ? "BOSS DEFEATED!" : "Enemy defeated!");
                 if (currentLevelId === 'EX-1-Boss' && enemy.isBoss) items.push({ id: items.length, x: 4, y: 1, type: "relic", value: 0, name: "Vampiric Charm", collected: false });
                 else if (currentLevelId === 'EX-2-Boss' && enemy.isBoss) items.push({ id: items.length, x: 4, y: 5, type: "relic", value: 0, name: "Hydra Scale", collected: false });
+                else if (currentLevelId === 'EX-3-Boss' && enemy.isBoss) items.push({ id: items.length, x: 4, y: 5, type: "relic", value: 0, name: "Glacial Gem", collected: false }); // NEW DROP
                 
                 if (player.hasCharm && player.hp < player.maxHp) {
                     player.hp += 1; triggerHeal(player.x, player.y, 1);
@@ -710,6 +722,7 @@ function handleTurn(dx, dy) {
             if (item.name === 'Vampiric Charm') player.hasCharm = true;
             if (item.name === 'Antidote Vial') player.hasAntidote = true;
             if (item.name === 'Hydra Scale') player.hasThorns = true;
+            if (item.name === 'Glacial Gem') player.hasFrostHit = true; // NEW PICKUP
             log(`Picked up ${item.name}!`);
         } else if (item.type === 'heart_container') { player.maxHp += item.value; player.hp += item.value; log(`Consumed ${item.name}! Max HP +${item.value}.`); }
     }
@@ -967,6 +980,7 @@ function openInventory() {
     if (player.hasIronStomach) addItem("Iron Stomach", "🤢", "Immune to Hazards");
     if (player.hasAntidote) addItem("Antidote Vial", "🧪", "Symbol of Hope");
     if (player.hasThorns) addItem("Hydra Scale", "🐲", "Reflects 1 DMG on hit"); 
+    if (player.hasFrostHit) addItem("Glacial Gem", "❄️", "Chance to Freeze on hit"); // NEW INVENTORY ITEM
 
     if (!foundAny) list.innerHTML = '<li class="inv-item" style="justify-content:center; color:#777;">No relics collected yet.</li>';
     document.getElementById('inventory-overlay').style.display = 'block';
