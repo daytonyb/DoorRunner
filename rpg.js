@@ -8,7 +8,7 @@ const TUTORIAL_MESSAGES = {
     'Tutorial-1': { title: "Basics: Movement", text: "Welcome, Wizard!<br><br>Use <b>WASD</b> or <b>ARROWS</b> to move.<br>Reach <b>the door</b>." },
     'Tutorial-2': { title: "Basics: Combat", text: "Enemies block your path!<br><br>Press <b>SPACE</b> to attack orthogonally.<br>Defeat all enemies." },
     'Tutorial-3': { title: "Basics: Defense", text: "Enemies fight back.<br><br>Basic enemies only attack <b>diagonally</b>.<br>Don't stand on the corners!" },
-    'Tutorial-Boss': { title: "Final Exam", text: "Defeat the Construct.<br><br>You get <b>two actions</b> for every <b>one action</b> it takes." }
+    'Tutorial-Boss': { title: "Final Exam", text: "Defeat the Construct.<br><br><b>WARNING:</b> Bosses deal massive damage when enraged!" }
 };
 
 const LEVELS = {
@@ -38,25 +38,25 @@ const LEVELS = {
     '1-1': { name: "Sewers - The Tunnels", walls: ["B3", "B5", "B6", "D2", "D4", "D5", "F4", "F5", "F7", "H4", "H6"], hazards: ["C4", "C5", "G3", "G4", "E6", "F6"], portals: [ { pos: "I9", targetLevel: '1-2', targetPos: "A1", type: "door" } ], enemies: [{pos: "C8"}, {pos: "E1"}, {pos: "A5"}] },
     '1-2': { name: "Sewers - Sludge Pit", walls: ["C3", "C4", "C5", "C6", "G3", "G4", "G5", "G6"], hazards: ["D4", "D5", "E4", "E5", "F4", "F5"], portals: [ { pos: "I9", targetLevel: '1-3', targetPos: "A1", type: "door" } ], enemies: [{pos: "E3"}, {pos: "E6"}, {pos: "B5"}, {pos: "H4"}, {pos: "H8"}] },
     '1-3': { name: "Sewers - The Armory", walls: ["C2", "C3", "C4", "G2", "G3", "G4", "C7", "D7", "F7", "G7",], portals: [ { pos: "I9", targetLevel: '1-Boss', targetPos: "E1", type: "door" } ], enemies: [{pos: "E3"}, {pos: "E5"}, {pos: "E7"}, {pos: "E1"}, {pos: "E9"}], items: [{pos: "A9", type: "weapon", value: 2, name: "Rusty Sword"}, {pos: "I1", type: "potion", value: 5}] },
-    '1-Boss': { name: "Sewers - BOSS FIGHT", walls: [], portals: [ { pos: "E9", targetLevel: '0', targetPos: "E6", type: "door" } ], enemies: [{pos: "E5", isBoss: true}] },
+    '1-Boss': { name: "Sewers - SLUDGE TITAN", walls: [], portals: [ { pos: "E9", targetLevel: '0', targetPos: "E6", type: "door" } ], enemies: [{pos: "E5", isBoss: true, type: "sludge_titan", hp: 60}] },
     
     // --- LEVEL 2: FOREST ---
     '2-1': { name: "Forest - Overgrowth", walls: ["B2", "B3", "B4", "H6", "H7", "H8"], thickets: ["C2", "C3", "C4", "D2", "D3", "G6", "G7", "F6", "F7"], portals: [{pos: "I9", targetLevel: '2-2', targetPos: "A1", type: "door"}], enemies: [{pos: "D5"}, {pos: "G2"}, {pos: "B8"}] },
     '2-2': { name: "Forest - Rapids", walls: ["A5", "B5", "H5", "I5"], rivers: ["E1", "E2", "E3", "E4", "E5", "E6", "E7", "E8", "E9"], thickets: ["D2", "D8", "F2", "F8"], portals: [{pos: "I9", targetLevel: '2-3', targetPos: "A1", type: "door"}], enemies: [{pos: "C5"}, {pos: "G5"}, {pos: "F1"}] },
     '2-3': { name: "Forest - Spider Nest", walls: ["C3", "C7", "G3", "G7", "E5"], portals: [{pos: "I9", targetLevel: '2-Boss', targetPos: "E1", type: "door"}], enemies: [ {pos: "C5", type: "ranged"}, {pos: "G5", type: "ranged"}, {pos: "E3", type: "ranged"} ], items: [ {pos: "A9", type: "potion", value: 5}, {pos: "E9", type: "weapon", value: 2, name: "Rusty Sword"} ] },
-    '2-Boss': { name: "Forest - BROODMOTHER", walls: ["A1", "A9", "I1", "I9"], thickets: ["C3", "C7", "G3", "G7"], portals: [{pos: "E9", targetLevel: '0', targetPos: "E6", type: "door"}], enemies: [{pos: "E5", isBoss: true, type: "summoner"}] },
+    '2-Boss': { name: "Forest - BROODMOTHER", walls: ["A1", "A9", "I1", "I9"], thickets: ["C3", "C7", "G3", "G7"], portals: [{pos: "E9", targetLevel: '0', targetPos: "E6", type: "door"}], enemies: [{pos: "E5", isBoss: true, type: "summoner", hp: 70}] },
 
     // --- LEVEL 3: MINES ---
     '3-1': { name: "Mines - Collapse", walls: ["B2", "B8", "H2", "H8"], boulders: ["C5", "D5", "E5", "F5", "G5", "E3", "E7"], portals: [{pos: "I9", targetLevel: '3-2', targetPos: "A1", type: "door"}], enemies: [{pos: "E5", type: "golem", hp: 15}] },
     '3-2': { name: "Mines - Golem Hall", walls: ["C3", "C7", "G3", "G7"], boulders: ["B2", "B8", "H2", "H8", "D5", "F5"], portals: [{pos: "I9", targetLevel: '3-3', targetPos: "A1", type: "door"}], enemies: [{pos: "E2", type: "golem", hp: 15}, {pos: "E8", type: "golem", hp: 15}, {pos: "H5", type: "golem", hp: 15}], items: [{pos: "E5", type: "potion", value: 5}] },
     '3-3': { name: "Mines - The Colony", walls: [], boulders: ["C2","C3","C4","C5","C6","C7","C8", "G2","G3","G4","G5","G6","G7","G8"], portals: [{pos: "I9", targetLevel: '3-Boss', targetPos: "E1", type: "door"}], enemies: [{pos: "E4", type: "golem", hp: 15}, {pos: "E6", type: "golem", hp: 15}, {pos: "A5", type: "bat", hp: 4}, {pos: "B5", type: "bat", hp: 4}, {pos: "H2", type: "bat", hp: 4}, {pos: "H8", type: "bat", hp: 4}], items: [{pos: "A9", type: "weapon", value: 2, name: "Rusty Sword"}] },
-    '3-Boss': { name: "Mines - EARTHSHAKER", walls: ["A1", "A9", "I1", "I9"], boulders: ["C3", "C7", "G3", "G7"], portals: [{pos: "E9", targetLevel: '0', targetPos: "E6", type: "door"}], enemies: [{pos: "E5", isBoss: true, type: "shaker", hp: 50}] },
+    '3-Boss': { name: "Mines - EARTHSHAKER", walls: ["A1", "A9", "I1", "I9"], boulders: ["C3", "C7", "G3", "G7"], portals: [{pos: "E9", targetLevel: '0', targetPos: "E6", type: "door"}], enemies: [{pos: "E5", isBoss: true, type: "shaker", hp: 90}] },
 
     // --- LEVEL 4: THE CASTLE ---
     '4-1': { name: "Castle - Gatehouse", walls: ["C3","C7","G3","G7"], spikes: ["C5","D5","E5","F5","G5", "E3","E7","E4","E6","A5","B5","E1","E2","E8","E9","H5","I5"], portals: [{pos: "I9", targetLevel: '4-2', targetPos: "A1", type: "door"}], enemies: [{pos: "D4", type: "guard", hp: 12},{pos: "F4", type: "guard", hp: 12},{pos: "D6", type: "guard", hp: 12},{pos: "F6", type: "guard", hp: 12},] },
     '4-2': { name: "Castle - Clockwork Hall", walls: ["B2","B8","H2","H8"], spikes: ["C2","C4","C6","C8", "E2","E4","E6","E8", "G2","G4","G6","G8"], portals: [{pos: "I9", targetLevel: '4-3', targetPos: "A1", type: "door"}], enemies: [ {pos: "E5", type: "guard", hp: 12}, {pos: "C5", type: "guard", hp: 12}, {pos: "G5", type: "guard", hp: 12},{pos: "F5", type: "guard", hp: 12},{pos: "D5", type: "guard", hp: 12}], items: [] },
     '4-3': { name: "Castle - Royal Quarters", walls: [], spikes: ["B2","B3","B4","B5","B6","B7","B8", "H2","H3","H4","H5","H6","H7","H8"], portals: [{pos: "I9", targetLevel: '4-Boss', targetPos: "E1", type: "door"}], enemies: [ {pos: "E5", type: "guard", hp: 12}, {pos: "A5", type: "mage", hp: 6}, {pos: "I5", type: "mage", hp: 6} ], items: [{pos: "I1", type: "weapon", value: 2, name: "Steel Sword"},{pos: "A9", type: "potion", value: 5}] },
-    '4-Boss': { name: "Castle - THE MAD KING", walls: ["A1","A9","I1","I9"], spikes: ["C3","C7","G3","G7"], portals: [{pos: "E9", targetLevel: '0', targetPos: "E6", type: "door"}], enemies: [{pos: "E5", isBoss: true, type: "king", hp: 60}] },
+    '4-Boss': { name: "Castle - THE MAD KING", walls: ["A1","A9","I1","I9"], spikes: ["C3","C7","G3","G7"], portals: [{pos: "E9", targetLevel: '0', targetPos: "E6", type: "door"}], enemies: [{pos: "E5", isBoss: true, type: "king", hp: 100}] },
 
     // --- LEVEL 5: THE VOID ---
     '5-1': { 
@@ -103,19 +103,19 @@ const LEVELS = {
         name: "Void - ENTROPY", 
         walls: [], 
         portals: [{pos: "E5", targetLevel: '0', targetPos: "E6", type: "door"}], // Spawns after win
-        enemies: [{pos: "E5", isBoss: true, type: "entropy", hp: 80}] 
+        enemies: [{pos: "E5", isBoss: true, type: "entropy", hp: 120}] 
     },
 
     // --- EX LEVELS ---
     'EX-1-1': { name: "EX-1: Rabid Tunnels", walls: ["B2", "D2", "F2", "H2", "B8", "D8", "F8", "H8"], hazards: ["C5", "E5", "G5"], portals: [ { pos: "I5", targetLevel: 'EX-1-2', targetPos: "A5", type: "door" } ], enemies: [ {pos: "E3", type: "fast", hp: 4}, {pos: "E7", type: "fast", hp: 4} ] },
     'EX-1-2': { name: "EX-1: Toxic Nest", walls: ["C3", "C7", "G3", "G7"], hazards: ["A1","A2","A3","A7","A8","A9", "I1","I2","I3","I7","I8","I9"], portals: [ { pos: "E9", targetLevel: 'EX-1-3', targetPos: "E1", type: "door" } ], enemies: [ {pos: "B5", type: "fast", hp: 4}, {pos: "H4", type: "fast", hp: 4},{pos: "H6", type: "fast", hp: 4}, {pos: "E6", type: "melee", hp: 12},{pos: "E4", type: "melee", hp: 12} ] },
     'EX-1-3': { name: "EX-1: The Swarm", walls: [], hazards: ["E5"], portals: [ { pos: "I9", targetLevel: 'EX-1-Boss', targetPos: "A1", type: "door" } ], enemies: [ {pos: "C3", type: "fast", hp: 4}, {pos: "G3", type: "fast", hp: 4}, {pos: "C7", type: "fast", hp: 4},{pos: "G5", type: "fast", hp: 4},{pos: "C5", type: "fast", hp: 4}, {pos: "G7", type: "fast", hp: 4} ], items: [ {pos: "A9", type: "potion", value: 5}, {pos: "I1", type: "weapon", value: 2, name: "Rusty Sword"} ] },
-    'EX-1-Boss': { name: "EX-BOSS: PLAGUE KING", walls: ["B2", "B8", "H2", "H8"], hazards: ["A1", "A9", "I1", "I9"], portals: [ { pos: "E5", targetLevel: '0', targetPos: "A9", type: "door" } ], enemies: [{pos: "E5", isBoss: true, type: "summoner", hp: 40}] },
+    'EX-1-Boss': { name: "EX-BOSS: PLAGUE KING", walls: ["B2", "B8", "H2", "H8"], hazards: ["A1", "A9", "I1", "I9"], portals: [ { pos: "E5", targetLevel: '0', targetPos: "A9", type: "door" } ], enemies: [{pos: "E5", isBoss: true, type: "summoner", hp: 70}] },
 
     'EX-2-1': { name: "EX-2: Poison Flow", walls: ["B2","B8","H2","H8"], rivers: ["D1","D2","D3","D4","D5","D6","D7","D8", "F1","F2","F3","F4","F5","F6","F7","F8"], thickets: ["C3","C4","C5","C6","C7", "G3","G4","G5","G6","G7"], hazards:  ["C3","C4","C5","C6","C7", "G3","G4","G5","G6","G7", "D9", "F9"], portals: [{pos: "E9", targetLevel: 'EX-2-2', targetPos: "A5", type: "door"}], enemies: [{pos: "A5", type: "fast", hp: 6}, {pos: "I5", type: "fast", hp: 6}, {pos: "E4", type: "ranged"},{pos: "E6", type: "ranged"} ] },
     'EX-2-2': { name: "EX-2: Thorny Mud", walls: ["B2","B4","B6","B8", "H2","H4","H6","H8"], thickets: ["C2","C3","C4","C5","C6","C7","C8", "E2","E3","E4","E5","E6","E7","E8", "G2","G3","G4","G5","G6","G7","G8"], hazards: ["C2","C3","C4","C5","C6","C7","C8", "G2","G3","G4","G5","G6","G7","G8"], portals: [{pos: "I5", targetLevel: 'EX-2-3', targetPos: "A5", type: "door"}], enemies: [{pos: "D5", type: "fast", hp: 6}, {pos: "F5", type: "fast", hp: 6}, {pos: "E9", type: "ranged"},{pos: "E1", type: "ranged"},{pos: "I5", type: "ranged"}] },
     'EX-2-3': { name: "EX-2: The Drain", walls: [], rivers: ["B2","B3","B4","B5","B6","B7","B8", "H2","H3","H4","H5","H6","H7","H8"], thickets: ["A1","A9","I1","I9"], hazards: ["E5", "D5", "F5", "E4", "E6"], portals: [{pos: "E9", targetLevel: 'EX-2-Boss', targetPos: "E1", type: "door"}], enemies: [{pos: "C5", type: "fast", hp: 8}, {pos: "G5", type: "fast", hp: 8}, {pos: "E2", type: "ranged"}, {pos: "E8", type: "ranged"}], items: [{pos: "A4", type: "potion", value: 5}, {pos: "A6", type: "weapon", value: 2, name: "Rusty Sword"}] },
-    'EX-2-Boss': { name: "EX-BOSS: SWAMP HYDRA", walls: ["A1","A9","I1","I9"], thickets: ["D4","D5","D6", "F4","F5","F6", "E4","E6"], hazards:  ["D4","D5","D6", "F4","F5","F6", "E4","E6"], portals: [{pos: "E9", targetLevel: '0', targetPos: "C9", type: "door"}], enemies: [{pos: "E5", isBoss: true, type: "hydra", hp: 60}] },
+    'EX-2-Boss': { name: "EX-BOSS: SWAMP HYDRA", walls: ["A1","A9","I1","I9"], thickets: ["D4","D5","D6", "F4","F5","F6", "E4","E6"], hazards:  ["D4","D5","D6", "F4","F5","F6", "E4","E6"], portals: [{pos: "E9", targetLevel: '0', targetPos: "C9", type: "door"}], enemies: [{pos: "E5", isBoss: true, type: "hydra", hp: 90}] },
 
     // --- EX-3: FROZEN DEPTHS ---
     'EX-3-1': { 
@@ -140,7 +140,7 @@ const LEVELS = {
     'EX-3-Boss': { 
         name: "EX-BOSS: ICE QUEEN", walls: ["A1","A9","I1","I9"], ice: ["B2","B8","H2","H8", "C3","C7","G3","G7"],
         portals: [{pos: "E9", targetLevel: '0', targetPos: "E9", type: "door"}], 
-        enemies: [{pos: "E5", isBoss: true, type: "summoner", hp: 50}] 
+        enemies: [{pos: "E5", isBoss: true, type: "summoner", hp: 80}] 
     },
 
     // --- EX-4: THE CLOCKWORK DUNGEON ---
@@ -175,7 +175,7 @@ const LEVELS = {
         name: "EX-BOSS: GEAR GRINDER", 
         walls: [], 
         portals: [{pos: "E9", targetLevel: '0', targetPos: "G9", type: "door"}], 
-        enemies: [{pos: "E5", isBoss: true, type: "gear", hp: 70}] 
+        enemies: [{pos: "E5", isBoss: true, type: "gear", hp: 110}] 
     },
 };
 
@@ -432,15 +432,15 @@ function loadLevel(levelId, startCoord) {
     if (levelData.enemies) {
         levelData.enemies.forEach((data, index) => {
             const ePos = parseCoord(data.pos);
-            let eHp = data.isBoss ? 50 : standardEnemyHp; 
+            let eHp = data.isBoss ? 60 : standardEnemyHp; 
             if (data.type === 'ranged' || data.type === 'mage' || data.type === 'wraith') eHp = 6;
             if (data.type === 'fast' || data.type === 'leech') eHp = 8;
             if (data.type === 'bat') eHp = 6;
             if (data.type === 'yeti') eHp = 15;
-            if (data.type === 'entropy') eHp = 80;
+            if (data.type === 'entropy') eHp = 120;
             if (data.type === 'sentinel') eHp = 10;
             if (data.type === 'welder') eHp = 10;
-            if (data.type === 'gear') eHp = 70;
+            if (data.type === 'gear') eHp = 110;
             if (data.hp) eHp = data.hp;
 
             enemies.push({
@@ -1074,6 +1074,7 @@ function processOneEnemyTurn(enemy) {
         let targetRadius = 0;
         if (pct < 0.75) targetRadius = 1; if (pct < 0.50) targetRadius = 2; if (pct < 0.25) targetRadius = 3; 
         if (targetRadius > voidRadius) { voidRadius = targetRadius; log("THE VOID IS COLLAPSING!"); document.getElementById('grid').classList.add('screen-shake'); setTimeout(() => document.getElementById('grid').classList.remove('screen-shake'), 400); return true; }
+        
         enemy.summonCooldown = (enemy.summonCooldown || 0) + 1;
         if (enemy.summonCooldown >= 4) {
              const openSpots = [{x: enemy.x-1, y: enemy.y}, {x: enemy.x+1, y: enemy.y}, {x: enemy.x, y: enemy.y-1}, {x: enemy.x, y: enemy.y+1}].filter(p => p.x >=0 && p.x <9 && p.y >=0 && p.y <9 && !isWall(p.x, p.y));
@@ -1151,7 +1152,14 @@ function processOneEnemyTurn(enemy) {
     } else { if (dx === 1 && dy === 1) canAttack = true; }
 
     if (canAttack) { 
-         let dmg = (enemy.isBoss && enemy.hp < 15) ? 4 : 1;
+         let dmg = 1;
+         
+         // Boss Damage Buff
+         if (enemy.isBoss) {
+             dmg = 2; // Base Boss Damage
+             if (enemy.hp < enemy.maxHp / 2) dmg = 4; // Enraged Damage
+         }
+
          if (enemy.type === 'golem') dmg = 3; 
          if (enemy.type === 'guard' || enemy.type === 'yeti' || enemy.type === 'mimic') dmg = 3; 
          if (enemy.type === 'leech') dmg = 0; 
@@ -1196,7 +1204,10 @@ function processOneEnemyTurn(enemy) {
         if (d < minMoveDist) { minMoveDist = d; bestMove = {x: tx, y: ty}; }
     }
 
-    if (bestMove) { enemy.x = bestMove.x; enemy.y = bestMove.y; return true; }
+    if (bestMove) { 
+        enemy.x = bestMove.x; enemy.y = bestMove.y; 
+        return true; 
+    }
     return false;
 }
 
