@@ -12,8 +12,20 @@ const TUTORIAL_MESSAGES = {
 };
 
 const LEVELS = {
+    // --- NEW STARTING MENU ---
     '0': {
-        name: "Main Menu",
+        name: "The Beginning",
+        walls: [],
+        portals: [
+            { pos: "A1", targetLevel: 'Level-Select', targetPos: "E6", type: "portal", label: "W1" },
+            { pos: "I5", type: "door", redirect: "index.html" },
+        ],
+        enemies: [], items: []
+    },
+
+    // --- WORLD SELECTION (Formerly Level 0) ---
+    'Level-Select': {
+        name: "World 1 - The Introduction",
         walls: ["B2", "C2", "D2", "E2", "F2", "G2", "H2", "I2"], 
         portals: [
             { pos: "A1", targetLevel: '1-1', targetPos: "A1", type: "portal", label: "1" },
@@ -21,8 +33,8 @@ const LEVELS = {
             { pos: "E1", targetLevel: '3-1', targetPos: "A1", type: "portal", label: "3" },
             { pos: "G1", targetLevel: '4-1', targetPos: "A1", type: "portal", label: "4" },
             { pos: "I1", targetLevel: '5-1', targetPos: "A1", type: "portal", label: "5" },
+            { pos: "I5", targetLevel: '0', targetPos: "E6", type: "door" },
             { pos: "A5", type: "inventory", label: "📦" },
-            { pos: "I5", type: "portal", label: "🏠", redirect: "index.html" },
             { pos: "E4", targetLevel: 'Tutorial-1', targetPos: "E2", type: "portal", label: "?" } 
         ],
         enemies: [], items: []
@@ -32,31 +44,31 @@ const LEVELS = {
     'Tutorial-1': { name: "Tutorial: Movement", walls: ["C3","C4","C5","C6","C7", "G3","G4","G5","G6","G7"], portals: [{ pos: "E8", targetLevel: 'Tutorial-2', targetPos: "E2", type: "door" }] },
     'Tutorial-2': { name: "Tutorial: Attacking", walls: ["D4","D5","D6", "F4","F5","F6"], portals: [{ pos: "E8", targetLevel: 'Tutorial-3', targetPos: "E2", type: "door" }], enemies: [{ pos: "E5", hp: 5 }] },
     'Tutorial-3': { name: "Tutorial: Defense", walls: [], portals: [{ pos: "E8", targetLevel: 'Tutorial-Boss', targetPos: "E2", type: "door" }], enemies: [{ pos: "E5", hp: 8 }] },
-    'Tutorial-Boss': { name: "Tutorial: Final Exam", walls: ["A1","A9","I1","I9"], portals: [{ pos: "E8", targetLevel: '0', targetPos: "E4", type: "door" }], enemies: [{ pos: "D5"},{ pos: "F5"}] },
+    'Tutorial-Boss': { name: "Tutorial: Final Exam", walls: ["A1","A9","I1","I9"], portals: [{ pos: "E8", targetLevel: 'Level-Select', targetPos: "E4", type: "door" }], enemies: [{ pos: "D5"},{ pos: "F5"}] },
 
     // --- LEVEL 1: SEWERS ---
     '1-1': { name: "Sewers - The Tunnels", walls: ["B3", "B5", "B6", "D2", "D4", "D5", "F4", "F5", "F7", "H4", "H6"], hazards: ["C4", "C5", "G3", "G4", "E6", "F6"], portals: [ { pos: "I9", targetLevel: '1-2', targetPos: "A1", type: "door" } ], enemies: [{pos: "C8"}, {pos: "E1"}, {pos: "A5"}] },
     '1-2': { name: "Sewers - Sludge Pit", walls: ["C3", "C4", "C5", "C6", "G3", "G4", "G5", "G6"], hazards: ["D4", "D5", "E4", "E5", "F4", "F5"], portals: [ { pos: "I9", targetLevel: '1-3', targetPos: "A1", type: "door" } ], enemies: [{pos: "E3"}, {pos: "E6"}, {pos: "B5"}, {pos: "H4"}, {pos: "H8"}] },
     '1-3': { name: "Sewers - The Armory", walls: ["C2", "C3", "C4", "G2", "G3", "G4", "C7", "D7", "F7", "G7",], portals: [ { pos: "I9", targetLevel: '1-Boss', targetPos: "E1", type: "door" } ], enemies: [{pos: "E3"}, {pos: "E5"}, {pos: "E7"}, {pos: "E1"}, {pos: "E9"}], items: [{pos: "A9", type: "weapon", value: 2, name: "Rusty Sword"}, {pos: "I1", type: "potion", value: 5}] },
-    '1-Boss': { name: "Sewers - BOSS FIGHT", walls: [], portals: [ { pos: "E9", targetLevel: '0', targetPos: "E6", type: "door" } ], enemies: [{pos: "E5", isBoss: true}] },
+    '1-Boss': { name: "Sewers - BOSS FIGHT", walls: [], portals: [ { pos: "E9", targetLevel: 'Level-Select', targetPos: "E6", type: "door" } ], enemies: [{pos: "E5", isBoss: true}] },
     
     // --- LEVEL 2: FOREST ---
     '2-1': { name: "Forest - Overgrowth", walls: ["B2", "B3", "B4", "H6", "H7", "H8"], thickets: ["C2", "C3", "C4", "D2", "D3", "G6", "G7", "F6", "F7"], portals: [{pos: "I9", targetLevel: '2-2', targetPos: "A1", type: "door"}], enemies: [{pos: "D5"}, {pos: "G2"}, {pos: "B8"}] },
     '2-2': { name: "Forest - Rapids", walls: ["A5", "B5", "H5", "I5"], rivers: ["E1", "E2", "E3", "E4", "E5", "E6", "E7", "E8", "E9"], thickets: ["D2", "D8", "F2", "F8"], portals: [{pos: "I9", targetLevel: '2-3', targetPos: "A1", type: "door"}], enemies: [{pos: "C5"}, {pos: "G5"}, {pos: "F1"}] },
     '2-3': { name: "Forest - Spider Nest", walls: ["C3", "C7", "G3", "G7", "E5"], portals: [{pos: "I9", targetLevel: '2-Boss', targetPos: "E1", type: "door"}], enemies: [ {pos: "C5", type: "ranged"}, {pos: "G5", type: "ranged"}, {pos: "E3", type: "ranged"} ], items: [ {pos: "A9", type: "potion", value: 5}, {pos: "E9", type: "weapon", value: 2, name: "Rusty Sword"} ] },
-    '2-Boss': { name: "Forest - BROODMOTHER", walls: ["A1", "A9", "I1", "I9"], thickets: ["C3", "C7", "G3", "G7"], portals: [{pos: "E9", targetLevel: '0', targetPos: "E6", type: "door"}], enemies: [{pos: "E5", isBoss: true, type: "summoner"}] },
+    '2-Boss': { name: "Forest - BROODMOTHER", walls: ["A1", "A9", "I1", "I9"], thickets: ["C3", "C7", "G3", "G7"], portals: [{pos: "E9", targetLevel: 'Level-Select', targetPos: "E6", type: "door"}], enemies: [{pos: "E5", isBoss: true, type: "summoner"}] },
 
     // --- LEVEL 3: MINES ---
     '3-1': { name: "Mines - Collapse", walls: ["B2", "B8", "H2", "H8"], boulders: ["C5", "D5", "E5", "F5", "G5", "E3", "E7"], portals: [{pos: "I9", targetLevel: '3-2', targetPos: "A1", type: "door"}], enemies: [{pos: "E5", type: "golem", hp: 15}] },
     '3-2': { name: "Mines - Golem Hall", walls: ["C3", "C7", "G3", "G7"], boulders: ["B2", "B8", "H2", "H8", "D5", "F5"], portals: [{pos: "I9", targetLevel: '3-3', targetPos: "A1", type: "door"}], enemies: [{pos: "E2", type: "golem", hp: 15}, {pos: "E8", type: "golem", hp: 15}, {pos: "H5", type: "golem", hp: 15}], items: [{pos: "E5", type: "potion", value: 5}] },
     '3-3': { name: "Mines - The Colony", walls: [], boulders: ["C2","C3","C4","C5","C6","C7","C8", "G2","G3","G4","G5","G6","G7","G8"], portals: [{pos: "I9", targetLevel: '3-Boss', targetPos: "E1", type: "door"}], enemies: [{pos: "E4", type: "golem", hp: 15}, {pos: "E6", type: "golem", hp: 15}, {pos: "A5", type: "bat", hp: 4}, {pos: "B5", type: "bat", hp: 4}, {pos: "H2", type: "bat", hp: 4}, {pos: "H8", type: "bat", hp: 4}], items: [{pos: "A9", type: "weapon", value: 2, name: "Rusty Sword"}] },
-    '3-Boss': { name: "Mines - EARTHSHAKER", walls: ["A1", "A9", "I1", "I9"], boulders: ["C3", "C7", "G3", "G7"], portals: [{pos: "E9", targetLevel: '0', targetPos: "E6", type: "door"}], enemies: [{pos: "E5", isBoss: true, type: "shaker", hp: 50}] },
+    '3-Boss': { name: "Mines - EARTHSHAKER", walls: ["A1", "A9", "I1", "I9"], boulders: ["C3", "C7", "G3", "G7"], portals: [{pos: "E9", targetLevel: 'Level-Select', targetPos: "E6", type: "door"}], enemies: [{pos: "E5", isBoss: true, type: "shaker", hp: 50}] },
 
     // --- LEVEL 4: THE CASTLE ---
     '4-1': { name: "Castle - Gatehouse", walls: ["C3","C7","G3","G7"], spikes: ["C5","D5","E5","F5","G5", "E3","E7","E4","E6","A5","B5","E1","E2","E8","E9","H5","I5"], portals: [{pos: "I9", targetLevel: '4-2', targetPos: "A1", type: "door"}], enemies: [{pos: "D4", type: "guard", hp: 12},{pos: "F4", type: "guard", hp: 12},{pos: "D6", type: "guard", hp: 12},{pos: "F6", type: "guard", hp: 12},] },
     '4-2': { name: "Castle - Clockwork Hall", walls: ["B2","B8","H2","H8"], spikes: ["C2","C4","C6","C8", "E2","E4","E6","E8", "G2","G4","G6","G8"], portals: [{pos: "I9", targetLevel: '4-3', targetPos: "A1", type: "door"}], enemies: [ {pos: "E5", type: "guard", hp: 12}, {pos: "C5", type: "guard", hp: 12}, {pos: "G5", type: "guard", hp: 12},{pos: "F5", type: "guard", hp: 12},{pos: "D5", type: "guard", hp: 12}], items: [] },
     '4-3': { name: "Castle - Royal Quarters", walls: [], spikes: ["B2","B3","B4","B5","B6","B7","B8", "H2","H3","H4","H5","H6","H7","H8"], portals: [{pos: "I9", targetLevel: '4-Boss', targetPos: "E1", type: "door"}], enemies: [ {pos: "E5", type: "guard", hp: 12}, {pos: "A5", type: "mage", hp: 6}, {pos: "I5", type: "mage", hp: 6} ], items: [{pos: "I1", type: "weapon", value: 2, name: "Steel Sword"},{pos: "A9", type: "potion", value: 5}] },
-    '4-Boss': { name: "Castle - THE MAD KING", walls: ["A1","A9","I1","I9"], spikes: ["C3","C7","G3","G7"], portals: [{pos: "E9", targetLevel: '0', targetPos: "E6", type: "door"}], enemies: [{pos: "E5", isBoss: true, type: "king", hp: 60}] },
+    '4-Boss': { name: "Castle - THE MAD KING", walls: ["A1","A9","I1","I9"], spikes: ["C3","C7","G3","G7"], portals: [{pos: "E9", targetLevel: 'Level-Select', targetPos: "E6", type: "door"}], enemies: [{pos: "E5", isBoss: true, type: "king", hp: 60}] },
 
     // --- LEVEL 5: THE VOID ---
     '5-1': { 
@@ -102,7 +114,7 @@ const LEVELS = {
     '5-Boss': { 
         name: "Void - ENTROPY", 
         walls: [], 
-        portals: [{pos: "E5", targetLevel: '0', targetPos: "E6", type: "door"}], // Spawns after win
+        portals: [{pos: "E5", targetLevel: 'Level-Select', targetPos: "E6", type: "door"}], // Spawns after win
         enemies: [{pos: "E5", isBoss: true, type: "entropy", hp: 80}] 
     },
 
@@ -110,12 +122,12 @@ const LEVELS = {
     'EX-1-1': { name: "EX-1: Rabid Tunnels", walls: ["B2", "D2", "F2", "H2", "B8", "D8", "F8", "H8"], hazards: ["C5", "E5", "G5"], portals: [ { pos: "I5", targetLevel: 'EX-1-2', targetPos: "A5", type: "door" } ], enemies: [ {pos: "E3", type: "fast", hp: 4}, {pos: "E7", type: "fast", hp: 4} ] },
     'EX-1-2': { name: "EX-1: Toxic Nest", walls: ["C3", "C7", "G3", "G7"], hazards: ["A1","A2","A3","A7","A8","A9", "I1","I2","I3","I7","I8","I9"], portals: [ { pos: "E9", targetLevel: 'EX-1-3', targetPos: "E1", type: "door" } ], enemies: [ {pos: "B5", type: "fast", hp: 4}, {pos: "H4", type: "fast", hp: 4},{pos: "H6", type: "fast", hp: 4}, {pos: "E6", type: "melee", hp: 12},{pos: "E4", type: "melee", hp: 12} ] },
     'EX-1-3': { name: "EX-1: The Swarm", walls: [], hazards: ["E5"], portals: [ { pos: "I9", targetLevel: 'EX-1-Boss', targetPos: "A1", type: "door" } ], enemies: [ {pos: "C3", type: "fast", hp: 4}, {pos: "G3", type: "fast", hp: 4}, {pos: "C7", type: "fast", hp: 4},{pos: "G5", type: "fast", hp: 4},{pos: "C5", type: "fast", hp: 4}, {pos: "G7", type: "fast", hp: 4} ], items: [ {pos: "A9", type: "potion", value: 5}, {pos: "I1", type: "weapon", value: 2, name: "Rusty Sword"} ] },
-    'EX-1-Boss': { name: "EX-BOSS: PLAGUE KING", walls: ["B2", "B8", "H2", "H8"], hazards: ["A1", "A9", "I1", "I9"], portals: [ { pos: "E5", targetLevel: '0', targetPos: "A9", type: "door" } ], enemies: [{pos: "E5", isBoss: true, type: "summoner", hp: 40}] },
+    'EX-1-Boss': { name: "EX-BOSS: PLAGUE KING", walls: ["B2", "B8", "H2", "H8"], hazards: ["A1", "A9", "I1", "I9"], portals: [ { pos: "E5", targetLevel: 'Level-Select', targetPos: "A9", type: "door" } ], enemies: [{pos: "E5", isBoss: true, type: "summoner", hp: 40}] },
 
     'EX-2-1': { name: "EX-2: Poison Flow", walls: ["B2","B8","H2","H8"], rivers: ["D1","D2","D3","D4","D5","D6","D7","D8", "F1","F2","F3","F4","F5","F6","F7","F8"], thickets: ["C3","C4","C5","C6","C7", "G3","G4","G5","G6","G7"], hazards:  ["C3","C4","C5","C6","C7", "G3","G4","G5","G6","G7", "D9", "F9"], portals: [{pos: "E9", targetLevel: 'EX-2-2', targetPos: "A5", type: "door"}], enemies: [{pos: "A5", type: "fast", hp: 6}, {pos: "I5", type: "fast", hp: 6}, {pos: "E4", type: "ranged"},{pos: "E6", type: "ranged"} ] },
     'EX-2-2': { name: "EX-2: Thorny Mud", walls: ["B2","B4","B6","B8", "H2","H4","H6","H8"], thickets: ["C2","C3","C4","C5","C6","C7","C8", "E2","E3","E4","E5","E6","E7","E8", "G2","G3","G4","G5","G6","G7","G8"], hazards: ["C2","C3","C4","C5","C6","C7","C8", "G2","G3","G4","G5","G6","G7","G8"], portals: [{pos: "I5", targetLevel: 'EX-2-3', targetPos: "A5", type: "door"}], enemies: [{pos: "D5", type: "fast", hp: 6}, {pos: "F5", type: "fast", hp: 6}, {pos: "E9", type: "ranged"},{pos: "E1", type: "ranged"},{pos: "I5", type: "ranged"}] },
     'EX-2-3': { name: "EX-2: The Drain", walls: [], rivers: ["B2","B3","B4","B5","B6","B7","B8", "H2","H3","H4","H5","H6","H7","H8"], thickets: ["A1","A9","I1","I9"], hazards: ["E5", "D5", "F5", "E4", "E6"], portals: [{pos: "E9", targetLevel: 'EX-2-Boss', targetPos: "E1", type: "door"}], enemies: [{pos: "C5", type: "fast", hp: 8}, {pos: "G5", type: "fast", hp: 8}, {pos: "E2", type: "ranged"}, {pos: "E8", type: "ranged"}], items: [{pos: "A4", type: "potion", value: 5}, {pos: "A6", type: "weapon", value: 2, name: "Rusty Sword"}] },
-    'EX-2-Boss': { name: "EX-BOSS: SWAMP HYDRA", walls: ["A1","A9","I1","I9"], thickets: ["D4","D5","D6", "F4","F5","F6", "E4","E6"], hazards:  ["D4","D5","D6", "F4","F5","F6", "E4","E6"], portals: [{pos: "E9", targetLevel: '0', targetPos: "C9", type: "door"}], enemies: [{pos: "E5", isBoss: true, type: "hydra", hp: 60}] },
+    'EX-2-Boss': { name: "EX-BOSS: SWAMP HYDRA", walls: ["A1","A9","I1","I9"], thickets: ["D4","D5","D6", "F4","F5","F6", "E4","E6"], hazards:  ["D4","D5","D6", "F4","F5","F6", "E4","E6"], portals: [{pos: "E9", targetLevel: 'Level-Select', targetPos: "C9", type: "door"}], enemies: [{pos: "E5", isBoss: true, type: "hydra", hp: 60}] },
 
     // --- EX-3: FROZEN DEPTHS ---
     'EX-3-1': { 
@@ -139,7 +151,7 @@ const LEVELS = {
     },
     'EX-3-Boss': { 
         name: "EX-BOSS: ICE QUEEN", walls: ["A1","A9","I1","I9"], ice: ["B2","B8","H2","H8", "C3","C7","G3","G7"],
-        portals: [{pos: "E9", targetLevel: '0', targetPos: "E9", type: "door"}], 
+        portals: [{pos: "E9", targetLevel: 'Level-Select', targetPos: "E9", type: "door"}], 
         enemies: [{pos: "E5", isBoss: true, type: "summoner", hp: 50}] 
     },
 
@@ -174,16 +186,142 @@ const LEVELS = {
     'EX-4-Boss': { 
         name: "EX-BOSS: GEAR GRINDER", 
         walls: [], 
-        portals: [{pos: "E9", targetLevel: '0', targetPos: "G9", type: "door"}], 
+        portals: [{pos: "E9", targetLevel: 'Level-Select', targetPos: "G9", type: "door"}], 
         enemies: [{pos: "E5", isBoss: true, type: "gear", hp: 70}] 
     },
+
+    'World-2-Select': {
+        name: "World 2 - The Swamp",
+        walls: ["B2", "C2", "D2", "E2", "F2", "G2", "H2", "I2"], 
+        portals: [
+            { pos: "A1", targetLevel: 'W2-1', targetPos: "E6", type: "portal", label: "1" },
+            { pos: "C1", targetLevel: 'W2-2', targetPos: "E6", type: "portal", label: "2" },
+            { pos: "E1", targetLevel: 'W2-3', targetPos: "E6", type: "portal", label: "3" },
+            { pos: "G1", targetLevel: 'W2-4', targetPos: "E6", type: "portal", label: "4" },
+            { pos: "I1", targetLevel: 'W2-5', targetPos: "E6", type: "portal", label: "5" },
+            { pos: "I5", targetLevel: '0', targetPos: "E6", type: "door" },
+            { pos: "A5", type: "inventory", label: "📦" },
+        ],
+        enemies: [], items: []
+    },
+    'W2-1': { 
+        name: "Level 1 - Muddy Water", 
+        walls: ["I2","H2","B2","D2","F2","G2"], 
+        portals: [
+            { pos: "A1", targetLevel: 'W2-1-1', targetPos: "A1", type: "portal", label: "1" },
+            { pos: "C1", targetLevel: 'W2-1-2', targetPos: "A1", type: "portal", label: "2" },
+            { pos: "E1", targetLevel: 'W2-1-3', targetPos: "A1", type: "portal", label: "3" },
+            { pos: "E9", targetLevel: 'World-2-Select', targetPos: "E6", type: "door" },
+            { pos: "I1", type: "portal", label: "B" },
+        ],
+    },
+
+        'W2-1-1': { 
+        name: "Stage 1 - Getting Wet", 
+        walls: ["B3","C2","D3","F3","G2","H3","B7","C8","D7","F7","G8","H7","E6","E4"], 
+        enemies: [
+            { pos: "C3"}, { pos: "G3"}, { pos: "C7"}, { pos: "G7"}, { pos: "E3"}, { pos: "E7"}, { pos: "E5"},{pos: "C5"}, {pos: "G5"}
+        ],
+        hazards: ["A5","E1","I5","E9"],
+        portals: [
+            { pos: "I9", targetLevel: 'W2-1', targetPos: "E6", type: "door" },
+        ],
+    },
+
+        'W2-1-2': { 
+        name: "Stage 2 - Getting Dirty", 
+        walls: ["A4","A5","A6","I4","I5","I6","D1","E1","F1","D9","E9","F9"], 
+        enemies: [{pos: "G2"},{pos: "G3"},{pos: "H3"},{pos: "B7"},{pos: "C7"},{pos: "C8"},{pos: "G7"},{pos: "I8", type:"fast"},{pos: "H9", type:"fast"}],
+        hazards: ["D4","D5","D6","F4","F5","F6","E4","E6","E5"],
+        portals: [
+            { pos: "I9", targetLevel: 'W2-1', targetPos: "E6", type: "door" },
+        ],
+    },
+
+        'W2-1-3': { 
+        name: "Stage 3 - Big Fight", 
+        walls: ["C1","A3","G9","I7","G1","I3","A7","C9"], 
+        enemies: [{pos: "H1"},{pos: "I2"},{pos: "A8"},{pos: "B9"},{pos: "H9"},{pos: "I8"},{pos: "I1", type: "fast"},{pos: "A9", type: "fast"},{pos: "H8", type: "fast"}], 
+        hazards: ["A4","A5","A6","I4","I5","I6","D1","E1","F1","D9","E9","F9"],
+        portals: [
+            { pos: "I9", targetLevel: 'W2-1', targetPos: "E6", type: "door" },
+        ],
+    },
+
+'W2-1-4': { 
+        name: "Boss Fight - The Mud Monster", 
+        walls: ["A1","A9","I1","I9"], 
+        hazards: [], // Starts clean, gets dirty as boss moves
+        portals: [
+            { pos: "E9", targetLevel: 'W2-1', targetPos: "E6", type: "door" }, // Exit
+        ],
+        enemies: [{ pos: "E5", isBoss: true, type: "mud_monster", hp: 100 }] 
+    },
+        'W2-2': { 
+        name: "Level 2 - Muddy Plants", 
+        walls: ["I2","H2","B2","D2","F2","G2"], 
+        portals: [
+            { pos: "A1", targetLevel: 'W2-2-1', targetPos: "A1", type: "portal", label: "1" },
+            { pos: "C1", targetLevel: 'W2-2-2', targetPos: "A1", type: "portal", label: "2" },
+            { pos: "E1", targetLevel: 'W2-2-3', targetPos: "A1", type: "portal", label: "3" },
+            { pos: "E9", targetLevel: 'World-2-Select', targetPos: "E6", type: "door" },
+            { pos: "I1", type: "portal", label: "B" },
+        ],
+    },
+
+        'W2-2-1': { 
+        name: "Stage 1 - Small Obstacles", 
+        walls: [], 
+        enemies: [
+            
+        ],
+        hazards: [],
+        thickets: [],
+        portals: [
+            { pos: "I9", targetLevel: 'W2-2', targetPos: "E6", type: "door" },
+        ],
+    },
+
+        'W2-2-2': { 
+        name: "Stage 2 - Thorny Paths", 
+        walls: [], 
+        enemies: [],
+        hazards: [],
+        thickets: [],
+        portals: [
+            { pos: "I9", targetLevel: 'W2-2', targetPos: "E6", type: "door" },
+        ],
+    },
+
+        'W2-2-3': { 
+        name: "Stage 3 - Muddy Manouvers", 
+        walls: [], 
+        enemies: [], 
+        hazards: [],
+        thickets: [],
+        portals: [
+            { pos: "I9", targetLevel: 'W2-2', targetPos: "E6", type: "door" },
+        ],
+    },
+
+'W2-2-4': { 
+        name: "Boss Fight - The Swampy Seconds", 
+        walls: ["A1","A9","I1","I9"], 
+        hazards: [], // Starts clean, gets dirty as boss moves
+        thickets: [], // Starts clear, grows as boss moves
+        portals: [
+            { pos: "E9", targetLevel: 'W2-2', targetPos: "E6", type: "door" }, // Exit
+        ],
+        enemies: [{ pos: "E5", isBoss: true, type: "mud_monster", hp: 100 }] 
+    },
+
 };
 
 // --------------------------------
 
 let currentLevelId = '0'; 
 let player = { 
-    x: 0, y: 0, hp: 10, maxHp: 10, damage: 2, 
+    x: 0, y: 0, hp: 15, maxHp: 15, damage: 2, 
     wasHit: false, hasCharm: false, hasThorns: false,
     hasFrostHit: false, energySapped: false 
 };
@@ -193,7 +331,7 @@ let boulders = [];
 let tempWalls = []; // For Welders
 let playerActionsLeft = 2; 
 
-let gameProgress = { level1Complete: false, level2Complete: false, level3Complete: false, level4Complete: false };
+let gameProgress = { level1Complete: false, level2Complete: false, level3Complete: false, level4Complete: false, level5Complete: false };
 let spikesActive = false; 
 let turnCounter = 0; 
 let voidRadius = 0; 
@@ -273,10 +411,10 @@ function loadGame() {
         conveyorDir = state.conveyorDir || 1;
         bossRotation = state.bossRotation || 0;
 
-        if (currentLevelId === '0') applyMainMenuUnlocks();
+        // UPDATED: Check for level '0' as well
+        if (currentLevelId === 'Level-Select' || currentLevelId === '0' || currentLevelId === 'World-2-Select') applyGlobalUnlocks();
 
         document.querySelector('h1').textContent = LEVELS[currentLevelId].name;
-        log("Progress Loaded!");
         drawGrid();
         updateStats();
         return true;
@@ -302,22 +440,48 @@ function respawn() {
     saveGame(); location.reload();
 }
 
-function applyMainMenuUnlocks() {
+function applyGlobalUnlocks() {
+    // World 1 Unlocks
     if (gameProgress.level1Complete) {
-        if(LEVELS['0'].walls.includes("C2")) LEVELS['0'].walls.splice(LEVELS['0'].walls.indexOf("C2"), 1);
-        if(!LEVELS['0'].portals.some(p => p.targetLevel === 'EX-1-1')) LEVELS['0'].portals.push({ pos: "A9", targetLevel: 'EX-1-1', targetPos: "A1", type: "portal", label: "EX1" });
+        if(LEVELS['Level-Select'].walls.includes("C2")) LEVELS['Level-Select'].walls.splice(LEVELS['Level-Select'].walls.indexOf("C2"), 1);
+        if(!LEVELS['Level-Select'].portals.some(p => p.targetLevel === 'EX-1-1')) LEVELS['Level-Select'].portals.push({ pos: "A9", targetLevel: 'EX-1-1', targetPos: "A1", type: "portal", label: "EX1" });
     }
     if (gameProgress.level2Complete) {
-        if(LEVELS['0'].walls.includes("E2")) LEVELS['0'].walls.splice(LEVELS['0'].walls.indexOf("E2"), 1);
-        if(!LEVELS['0'].portals.some(p => p.targetLevel === 'EX-2-1')) LEVELS['0'].portals.push({ pos: "C9", targetLevel: 'EX-2-1', targetPos: "A1", type: "portal", label: "EX2" });
+        if(LEVELS['Level-Select'].walls.includes("E2")) LEVELS['Level-Select'].walls.splice(LEVELS['Level-Select'].walls.indexOf("E2"), 1);
+        if(!LEVELS['Level-Select'].portals.some(p => p.targetLevel === 'EX-2-1')) LEVELS['Level-Select'].portals.push({ pos: "C9", targetLevel: 'EX-2-1', targetPos: "A1", type: "portal", label: "EX2" });
     }
     if (gameProgress.level3Complete) {
-        if(LEVELS['0'].walls.includes("G2")) LEVELS['0'].walls.splice(LEVELS['0'].walls.indexOf("G2"), 1);
-        if(!LEVELS['0'].portals.some(p => p.targetLevel === 'EX-3-1')) LEVELS['0'].portals.push({ pos: "E9", targetLevel: 'EX-3-1', targetPos: "A1", type: "portal", label: "EX3" });
+        if(LEVELS['Level-Select'].walls.includes("G2")) LEVELS['Level-Select'].walls.splice(LEVELS['Level-Select'].walls.indexOf("G2"), 1);
+        if(!LEVELS['Level-Select'].portals.some(p => p.targetLevel === 'EX-3-1')) LEVELS['Level-Select'].portals.push({ pos: "E9", targetLevel: 'EX-3-1', targetPos: "A1", type: "portal", label: "EX3" });
     }
     if (gameProgress.level4Complete) {
-        if(LEVELS['0'].walls.includes("I2")) LEVELS['0'].walls.splice(LEVELS['0'].walls.indexOf("I2"), 1);
-        if(!LEVELS['0'].portals.some(p => p.targetLevel === 'EX-4-1')) LEVELS['0'].portals.push({ pos: "G9", targetLevel: 'EX-4-1', targetPos: "A1", type: "portal", label: "EX4" });
+        if(LEVELS['Level-Select'].walls.includes("I2")) LEVELS['Level-Select'].walls.splice(LEVELS['Level-Select'].walls.indexOf("I2"), 1);
+        if(!LEVELS['Level-Select'].portals.some(p => p.targetLevel === 'EX-4-1')) LEVELS['Level-Select'].portals.push({ pos: "G9", targetLevel: 'EX-4-1', targetPos: "A1", type: "portal", label: "EX4" });
+    }
+    if (gameProgress.level5Complete) {
+        // This adds the "W2" portal specifically to Level '0'
+        const startMenu = LEVELS['0'];
+        if (startMenu && !startMenu.portals.some(p => p.label === "W2")) {
+            startMenu.portals.push({ 
+                pos: "C1", 
+                targetLevel: 'World-2-Select', 
+                targetPos: "E6", 
+                type: "portal", 
+                label: "W2" 
+            });
+            log("A new path has opened in the Beginning!");
+        }
+    }
+
+    // World 2 Unlocks
+    if (gameProgress.w2l1Complete) {
+        const hub = LEVELS['World-2-Select'];
+        // Remove Wall at C2 to open path to Level 2
+        const wIndex = hub.walls.indexOf("C2");
+        if (wIndex > -1) {
+            hub.walls.splice(wIndex, 1);
+            log("Path to Level 2 is open!");
+        }
     }
 }
 
@@ -358,7 +522,7 @@ function initGame() {
         mainCol.insertBefore(bossHud, grid);
     }
 
-    if (!loadGame()) loadLevel('0', "E6");
+    if (!loadGame()) loadLevel('0', "E8");
 }
 
 function triggerDamage(x, y, amount, isPlayer) {
@@ -397,8 +561,36 @@ function triggerAttackAnim(x, y, type) {
 }
 
 function loadLevel(levelId, startCoord) {
-    currentLevelId = levelId;
-    if (levelId === '0') applyMainMenuUnlocks();
+currentLevelId = levelId;
+    
+// --- SPECIAL BOSS RESET ---
+    // If we are loading the Mud Monster level, clear the hazard array so it starts fresh
+    if (levelId === 'W2-1-4') {
+        LEVELS['W2-1-4'].hazards = [];
+    }
+
+    // Check for unlocks (existing logic)
+    if (levelId === 'Level-Select' || levelId === '0' || levelId === 'World-2-Select') applyGlobalUnlocks();
+    
+    // --- NEW: World 2 Boss Unlock Logic ---
+    if (levelId === 'W2-1') {
+        if (gameProgress.w2l1s1 && gameProgress.w2l1s2 && gameProgress.w2l1s3) {
+            // 1. Remove the wall at I2
+            const wIndex = LEVELS['W2-1'].walls.indexOf("I2");
+            if (wIndex > -1) LEVELS['W2-1'].walls.splice(wIndex, 1);
+
+            // 2. Activate the Boss Portal (B) at I1
+            const bossPort = LEVELS['W2-1'].portals.find(p => p.label === "B");
+            if (bossPort) {
+                bossPort.targetLevel = 'W2-1-4';
+                bossPort.targetPos = "E9"; // Spawns player at bottom
+            }
+            // Optional: Notify player
+            if (gameProgress.w2l1s3) log("The Mud Monster's lair is open!"); 
+        }
+    }
+    // --------------------------------------
+
     
     const levelData = LEVELS[levelId];
     document.querySelector('h1').textContent = levelData.name;
@@ -412,21 +604,24 @@ function loadLevel(levelId, startCoord) {
 
     if (TUTORIAL_MESSAGES[levelId]) showTutorial(levelId);
 
-    // HP Scaling
-    if (levelId.endsWith('-3') || levelId.endsWith('-Boss') || levelId.startsWith('EX-') || levelId.startsWith('4-')) {
-        if(player.maxHp < 15) player.maxHp = 15;
-    } else {
-        if(player.maxHp < 10) player.maxHp = 10;
-    }
-
-    if (levelId === '0' || levelId.endsWith('-1')) {
-        player.hp = player.maxHp; player.damage = 2; log("Stats Reset/Healed.");
+    // --- UPDATED HP LOGIC: ALWAYS 15 ---
+    player.maxHp = 15; 
+    
+    // Heal on specific transition levels (Start, World Select, or x-1 levels)
+    if (levelId === '0' || levelId === 'Level-Select' || levelId.endsWith('-1')) {
+        player.hp = player.maxHp; 
+        player.damage = 2; 
+        log("Stats Reset/Healed.");
     } 
+    
+    // Ensure HP doesn't exceed Max (if we healed via items above max, this caps it)
     if (player.hp > player.maxHp) player.hp = player.maxHp;
 
+    // --- ENEMY LOADING ---
     let standardEnemyHp = 10; 
     if (levelId.startsWith('4-')) standardEnemyHp = 12; 
-    if (levelId.endsWith('-3')) standardEnemyHp = 15;
+// Increase HP for Stage 3s, BUT EXCLUDE World 2 (W2)
+if (levelId.endsWith('-3') && !levelId.startsWith('W2')) standardEnemyHp = 15;
 
     enemies = [];
     if (levelData.enemies) {
@@ -434,7 +629,12 @@ function loadLevel(levelId, startCoord) {
             const ePos = parseCoord(data.pos);
             let eHp = data.isBoss ? 50 : standardEnemyHp; 
             if (data.type === 'ranged' || data.type === 'mage' || data.type === 'wraith') eHp = 6;
-            if (data.type === 'fast' || data.type === 'leech') eHp = 8;
+            if (data.type === 'fast') eHp = 4;
+            if (data.type === 'leech') eHp = 8;
+            if (data.type === 'golem') eHp = 15;
+            if (data.type === 'guard') eHp = 12;
+            if (data.type === 'hydra') eHp = 60;
+            if (data.type === 'summoner') eHp = 50;
             if (data.type === 'bat') eHp = 6;
             if (data.type === 'yeti') eHp = 15;
             if (data.type === 'entropy') eHp = 80;
@@ -565,13 +765,22 @@ function drawGrid() {
                 cell.appendChild(pIcon);
             } else if (enemyHere) {
                 const eIcon = document.createElement('span');
+
+                // --- CUSTOM IMAGE FOR NORMAL ENEMIES ---
+                if (!enemyHere.isBoss && enemyHere.type === 'melee') {
+                    cell.classList.add('enemy-normal');
+                    // No text content needed since we'll use a background image
+                }
+
                 if (enemyHere.isBoss) {
                     if (enemyHere.type === 'entropy') {
                         eIcon.textContent = 'Ø'; cell.classList.add('boss', 'boss-entropy');
                     } else if (enemyHere.type === 'hydra') {
                         eIcon.textContent = '🐍'; cell.classList.add('boss'); 
                     } else if (enemyHere.type === 'gear') {
-                        eIcon.textContent = '⚙️'; cell.classList.add('boss', 'boss-gear'); 
+                        eIcon.textContent = '⚙️'; cell.classList.add('boss', 'boss-gear');                         
+                    } else if (enemyHere.type === 'mud_monster') {
+                       eIcon.textContent = ''; cell.classList.add('boss', 'boss-mud');
                     } else {
                         eIcon.textContent = 'B'; cell.classList.add('boss');
                     }
@@ -598,8 +807,10 @@ function drawGrid() {
                     eIcon.textContent = '🧲'; cell.classList.add('enemy', 'enemy-sentinel');
                 } else if (enemyHere.type === 'welder') {
                     eIcon.textContent = '🔥'; cell.classList.add('enemy', 'enemy-welder');
+                } else if (enemyHere.type === 'slime') {
+                    eIcon.textContent = ''; cell.classList.add('enemy', 'enemy-slime');
                 } else {
-                    eIcon.textContent = 'E'; cell.classList.add('enemy');
+                    cell.classList.add('enemy'); 
                 }
                 if (enemyHere.wasHit) cell.classList.add('enemy-hit-anim');
                 cell.appendChild(eIcon);
@@ -619,7 +830,7 @@ function drawGrid() {
                 if (portalHere.type === 'door') {
                     const allEnemiesDead = enemies.filter(e => e.alive).length === 0;
                     if (allEnemiesDead) {
-                        const portIcon = document.createElement('span'); portIcon.textContent = "D"; 
+                        const portIcon = document.createElement('span'); 
                         cell.classList.add('door'); cell.appendChild(portIcon);
                     }
                 } else {
@@ -739,13 +950,42 @@ document.addEventListener('keydown', (e) => {
     cheatBuffer += e.key;
     if (cheatBuffer.length > 20) cheatBuffer = cheatBuffer.slice(-20); // Keep buffer small
     
-    if (cheatBuffer.endsWith("1234567890")) {
+    if (cheatBuffer.endsWith("devmodeon")) {
         // Unlock all paths
         gameProgress.level1Complete = true;
         gameProgress.level2Complete = true;
         gameProgress.level3Complete = true;
         gameProgress.level4Complete = true;
-        applyMainMenuUnlocks();
+        gameProgress.level5Complete = true;
+        applyGlobalUnlocks();
+
+        // --- NEW: Unlock World 2 Boss ---
+        gameProgress.w2l1s1 = true;
+        gameProgress.w2l1s2 = true;
+        gameProgress.w2l1s3 = true;
+        
+        // --- NEW: W2 L1 Complete ---
+        gameProgress.w2l1Complete = true;
+
+        // If currently in the hub, apply the changes instantly
+        if (currentLevelId === 'W2-1') {
+            const wIndex = LEVELS['W2-1'].walls.indexOf("I2");
+            if (wIndex > -1) LEVELS['W2-1'].walls.splice(wIndex, 1);
+            
+            const bossPort = LEVELS['W2-1'].portals.find(p => p.label === "B");
+            if (bossPort) {
+                bossPort.targetLevel = 'W2-1-4';
+                bossPort.targetPos = "E9";
+            }
+            log("CHEAT: Mud Monster lair opened!");
+        }
+        
+        // Instant update for W2 Select
+        if (currentLevelId === 'World-2-Select') {
+             applyGlobalUnlocks();
+             drawGrid();
+        }
+        // --------------------------------
 
         // Unlock specific EX Relics only (Removed IronStomach/Antidote)
         player.hasCharm = true;
@@ -758,7 +998,6 @@ document.addEventListener('keydown', (e) => {
         drawGrid();
         saveGame();
     }
-
     if (document.getElementById('tutorial-overlay').style.display === 'block') return;
     if (document.getElementById('inventory-overlay').style.display === 'block') return;
     if (player.hp <= 0) return;
@@ -798,6 +1037,9 @@ function playerAttack() {
     let hitSomething = false;
     const directions = [{x:0, y:-1}, {x:0, y:1}, {x:-1, y:0}, {x:1, y:0}];
     
+    const isWorld2 = currentLevelId.startsWith('World-2') || currentLevelId.startsWith('W2');
+    const isWorld1 = currentLevelId.startsWith('3-') || currentLevelId.startsWith('2-') || currentLevelId.startsWith('EX') || currentLevelId.startsWith('1-') || currentLevelId.startsWith('4-') || currentLevelId.startsWith('5-');
+
     directions.forEach(dir => {
         const targetX = player.x + dir.x;
         const targetY = player.y + dir.y;
@@ -809,12 +1051,18 @@ function playerAttack() {
         if (enemy) {
             hitSomething = true;
             let dmg = player.damage;
+            
+            // --- WORLD 2 BOSS DAMAGE BOOST ---
+            if (currentLevelId === 'W2-1-4') dmg = 4;
+            // ---------------------------------
+            
             triggerAttackAnim(enemy.x, enemy.y, 'anim-slash');
             enemy.hp -= dmg; enemy.wasHit = true; 
             triggerDamage(enemy.x, enemy.y, dmg, false);
             log(`Hit Enemy for ${dmg} damage!`);
 
-            if (player.hasFrostHit && enemy.hp > 0) {
+            // --- GLACIAL GEM (Applies if unlocked AND in World 1) ---
+            if (player.hasFrostHit && isWorld1 && enemy.hp > 0) {
                 if (Math.random() < 0.25) {
                     enemy.stunned = true;
                     log("Glacial Gem FREEZES the enemy!");
@@ -822,6 +1070,7 @@ function playerAttack() {
                 }
             }
 
+            // Mage Teleport Logic
             if (enemy.type === 'mage' && enemy.hp > 0) {
                 let safeSpots = [];
                 for(let my=0; my<9; my++) {
@@ -829,6 +1078,7 @@ function playerAttack() {
                         if (!isWall(mx, my) && !isBoulder(mx, my) && !enemies.some(e=>e.x===mx && e.y===my && e.alive) && (mx!==player.x || my!==player.y)) {
                             safeSpots.push({x:mx, y:my});
                         }
+
                     }
                 }
                 if (safeSpots.length > 0) {
@@ -836,18 +1086,56 @@ function playerAttack() {
                     enemy.x = spot.x; enemy.y = spot.y;
                     log("Mage blinked away!");
                 }
+                
+                // --- MUD MONSTER SPLIT MECHANIC ---
+            if (enemy.type === 'mud_monster' && enemy.alive) {
+                // 50% chance to spawn a slime on hit
+                if (Math.random() < 0.5) {
+                    const openSpots = [
+                        {x: enemy.x-1, y: enemy.y}, {x: enemy.x+1, y: enemy.y}, 
+                        {x: enemy.x, y: enemy.y-1}, {x: enemy.x, y: enemy.y+1}
+                    ].filter(p => p.x >=0 && p.x <9 && p.y >=0 && p.y <9 && !isWall(p.x, p.y) && !isBoulder(p.x, p.y) && !enemies.some(e => e.alive && e.x === p.x && e.y === p.y) && !(player.x === p.x && player.y === p.y));
+                    
+                    if (openSpots.length > 0) {
+                        const spawn = openSpots[Math.floor(Math.random() * openSpots.length)];
+                        enemies.push({ 
+                            id: enemies.length, 
+                            x: spawn.x, y: spawn.y, 
+                            hp: 3, maxHp: 3, // Weak minions
+                            alive: true, type: 'slime', wasHit: false 
+                        });
+                        log("The boss splashes! A Slime spawns.");
+                    }
+                }
+            }
             }
 
             if (enemy.hp <= 0) {
                 enemy.alive = false;
                 log(enemy.isBoss ? "BOSS DEFEATED!" : "Enemy defeated!");
-                if (enemy.type === 'entropy') { voidRadius = 0; log("The Void collapses!"); drawGrid(); }
 
+                // M Portal Logic
+                if (gameProgress.level5Complete) {
+                    const startMenu = LEVELS['0'];
+                    if (startMenu && !startMenu.portals.some(p => p.label === "M")) {
+                        startMenu.portals.push({ 
+                            pos: "I9", 
+                            targetLevel: 'World-2-Select', 
+                            targetPos: "E5", 
+                            type: "portal", 
+                            label: "M" 
+                        });
+                        log("A new path has opened in the Beginning!");
+                    }
+                }
+
+                // Relic Drops
                 if (currentLevelId === 'EX-1-Boss' && enemy.isBoss) items.push({ id: items.length, x: 4, y: 1, type: "relic", value: 0, name: "Vampiric Charm", collected: false });
                 else if (currentLevelId === 'EX-2-Boss' && enemy.isBoss) items.push({ id: items.length, x: 4, y: 5, type: "relic", value: 0, name: "Hydra Scale", collected: false });
                 else if (currentLevelId === 'EX-3-Boss' && enemy.isBoss) items.push({ id: items.length, x: 4, y: 5, type: "relic", value: 0, name: "Glacial Gem", collected: false });
                 
-                if (player.hasCharm && player.hp < player.maxHp) {
+                // --- VAMPIRIC CHARM (Applies if unlocked AND in World 1) ---
+                if (player.hasCharm && isWorld1 && player.hp < player.maxHp) {
                     player.hp += 1; triggerHeal(player.x, player.y, 1);
                 }
             }
@@ -929,6 +1217,20 @@ function handleTurn(dx, dy) {
 
     if (targetPortal && targetPortal.type === 'inventory') { openInventory(); return; }
     if (targetPortal && targetPortal.redirect) { window.location.href = targetPortal.redirect; return; }
+    if (targetPortal) {
+        // --- NEW: Track World 2 Stage Completion ---
+        if (currentLevelId === 'W2-1-1') gameProgress.w2l1s1 = true;
+        if (currentLevelId === 'W2-1-2') gameProgress.w2l1s2 = true;
+        if (currentLevelId === 'W2-1-3') gameProgress.w2l1s3 = true;
+        
+        // --- NEW: Boss 1 Completion ---
+        if (currentLevelId === 'W2-1-4') gameProgress.w2l1Complete = true; 
+        // -------------------------------------------
+
+        if (currentLevelId.includes('-Boss')) gameProgress[`level${currentLevelId[0]}Complete`] = true;
+        loadLevel(targetPortal.targetLevel, targetPortal.targetPos);
+        return; 
+    }
 
     player.x = finalX; player.y = finalY;
     playerActionsLeft -= moveCost;
@@ -955,7 +1257,6 @@ function handleTurn(dx, dy) {
     }
 
     if (currentMap.hazards && currentMap.hazards.includes(`${ALPHABET[finalX]}${finalY+1}`)) {
-        // Removed Iron Stomach logic
         player.hp -= 1; triggerDamage(player.x, player.y, 1, true); log("Toxic Sludge! -1 HP");
     }
 
@@ -976,10 +1277,7 @@ function handleTurn(dx, dy) {
     }
 
     if (targetPortal) {
-        if (currentLevelId === '1-Boss' && targetPortal.targetLevel === '0') gameProgress.level1Complete = true;
-        if (currentLevelId === '2-Boss' && targetPortal.targetLevel === '0') gameProgress.level2Complete = true;
-        if (currentLevelId === '3-Boss' && targetPortal.targetLevel === '0') gameProgress.level3Complete = true;
-        if (currentLevelId === '4-Boss' && targetPortal.targetLevel === '0') gameProgress.level4Complete = true;
+        if (currentLevelId.includes('-Boss')) gameProgress[`level${currentLevelId[0]}Complete`] = true;
         loadLevel(targetPortal.targetLevel, targetPortal.targetPos);
         return; 
     }
@@ -1002,6 +1300,53 @@ function handleTurn(dx, dy) {
 }
 
 function processOneEnemyTurn(enemy) {
+
+// --- MUD MONSTER TRAIL LOGIC ---
+    if (enemy.type === 'mud_monster') {
+        // Mark current spot as hazard before moving
+        const coord = `${ALPHABET[enemy.x]}${enemy.y+1}`;
+        if (!LEVELS[currentLevelId].hazards) LEVELS[currentLevelId].hazards = [];
+        if (!LEVELS[currentLevelId].hazards.includes(coord)) {
+            LEVELS[currentLevelId].hazards.push(coord);
+            // Visual update happens on next drawGrid
+        }
+
+        // --- NEW: Mud Monster Summoning Logic ---
+        if (enemy.isBoss) {
+            enemy.summonCooldown = (enemy.summonCooldown || 0) + 1;
+            // Spawn Slimes every 4 turns
+            if (enemy.summonCooldown >= 4) {
+                 const openSpots = [
+                    {x: enemy.x-1, y: enemy.y}, {x: enemy.x+1, y: enemy.y}, 
+                    {x: enemy.x, y: enemy.y-1}, {x: enemy.x, y: enemy.y+1},
+                    {x: enemy.x-1, y: enemy.y-1}, {x: enemy.x+1, y: enemy.y-1}, 
+                    {x: enemy.x-1, y: enemy.y+1}, {x: enemy.x+1, y: enemy.y+1}
+                 ].filter(p => p.x >=0 && p.x <9 && p.y >=0 && p.y <9 && !isWall(p.x, p.y) && !isBoulder(p.x, p.y) && !enemies.some(e => e.alive && e.x === p.x && e.y === p.y));
+
+                 // Sort randomly to pick different spots
+                 openSpots.sort(() => Math.random() - 0.5);
+
+                 // Spawn up to 1 enemy
+                 if (openSpots.length > 0) {
+                     const spawnCount = 1;
+                     for(let i=0; i<spawnCount; i++) {
+                        const spawn = openSpots[i];
+                        enemies.push({ 
+                            id: enemies.length, 
+                            x: spawn.x, y: spawn.y, 
+                            hp: 10, maxHp: 10, // Normal HP
+                            alive: true, type: 'melee', // Normal Type
+                            wasHit: false 
+                        });
+                     }
+                     log("The Mud Monster flings sludge! Enemies appear!");
+                     enemy.summonCooldown = 0;
+                     return true; // Uses its turn to summon
+                 }
+            }
+        }
+    }
+
     if (enemy.stunned) { return false; }
     if (enemy.isHidden) return false; 
 
@@ -1138,7 +1483,7 @@ function processOneEnemyTurn(enemy) {
         }
     }
 
-    let canAttack = false;
+let canAttack = false;
     if (enemy.isBoss || enemy.type === 'guard' || enemy.type === 'yeti' || enemy.type === 'mimic') { if (dx <= 1 && dy <= 1 && dist > 0) canAttack = true; } 
     else if (enemy.type === 'golem') {
         if (dx <= 1 && dy <= 1 && dist > 0) canAttack = true; 
@@ -1159,7 +1504,23 @@ function processOneEnemyTurn(enemy) {
          if (enemy.type === 'leech') { triggerAttackAnim(player.x, player.y, 'anim-web'); player.energySapped = true; log("Leech drains your energy!"); } 
          else { triggerAttackAnim(player.x, player.y, 'anim-scratch'); player.hp -= dmg; triggerDamage(player.x, player.y, dmg, true); log(`${enemy.type.toUpperCase()} attacks!`); }
          
-         if (player.hasThorns) { enemy.hp -= 1; triggerDamage(enemy.x, enemy.y, 1, false); if (enemy.hp <= 0) { enemy.alive = false; log("Enemy killed by thorns!"); if (player.hasCharm && player.hp < player.maxHp) { player.hp += 1; triggerHeal(player.x, player.y, 1); } } }
+         // --- HYDRA SCALE (Applies if unlocked AND in World 1) ---
+
+    const isWorld2 = currentLevelId.startsWith('World-2') || currentLevelId.startsWith('W2');
+    const isWorld1 = currentLevelId.startsWith('3-') || currentLevelId.startsWith('2-') || currentLevelId.startsWith('EX') || currentLevelId.startsWith('1-') || currentLevelId.startsWith('4-') || currentLevelId.startsWith('5-');
+
+    if (player.hasThorns && isWorld1) { 
+             enemy.hp -= 1; 
+             triggerDamage(enemy.x, enemy.y, 1, false); 
+             if (enemy.hp <= 0) { 
+                 enemy.alive = false; 
+                 log("Enemy killed by thorns!"); 
+                 // Charm check also needs isWorld1
+                 if (player.hasCharm && isWorld1 && player.hp < player.maxHp) { 
+                     player.hp += 1; triggerHeal(player.x, player.y, 1); 
+                 } 
+             } 
+         }
          return true;
     }
 
@@ -1218,14 +1579,23 @@ function moveEnemies() {
             const isHazard = currentMap.hazards && currentMap.hazards.includes(`${ALPHABET[enemy.x]}${enemy.y+1}`);
             const isSpike = currentMap.spikes && currentMap.spikes.includes(`${ALPHABET[enemy.x]}${enemy.y+1}`) && spikesActive;
 
-            if ((isHazard || isSpike) && enemy.type !== 'wraith' && enemy.type !== 'bat') {
+                // MODIFIED LINE: Added && enemy.type !== 'mud_monster' && enemy.type !== 'slime'
+                if ((isHazard || isSpike) && enemy.type !== 'wraith' && enemy.type !== 'bat' && enemy.type !== 'mud_monster' && enemy.type !== 'slime') {
                 if (!enemy.isBoss) {
                     enemy.hp -= 1; triggerDamage(enemy.x, enemy.y, 1, false);
-                    if(enemy.hp <= 0) {
-                        enemy.alive = false; log("Enemy died in trap!");
-                        if (player.hasCharm && player.hp < player.maxHp) { player.hp += 1; triggerHeal(player.x, player.y, 1); }
-                        break;
-                    }
+if(enemy.hp <= 0) {
+    enemy.alive = false; log("Enemy died in trap!");
+    
+    // Check World 2 status
+    const isWorld2 = currentLevelId.startsWith('World-2') || currentLevelId.startsWith('W2');
+    
+    // Only heal if we have the charm AND we are NOT in World 2
+    if (player.hasCharm && !isWorld2 && player.hp < player.maxHp) { 
+        player.hp += 1; 
+        triggerHeal(player.x, player.y, 1); 
+    }
+    break;
+}
                 }
             }
 
@@ -1271,13 +1641,14 @@ function openInventory() {
         li.innerHTML = `<span class="inv-icon">${icon}</span><div><strong>${name}</strong><br><small style="color:#aaa;">${desc}</small></div>`;
         list.appendChild(li); foundAny = true;
     }
-    if (player.hasCharm) addItem("Vampiric Charm", "🧿", "Heals +1 HP on Kill");
-    if (player.hasThorns) addItem("Hydra Scale", "🐲", "Reflects 1 DMG on hit"); 
-    if (player.hasFrostHit) addItem("Glacial Gem", "❄️", "Chance to Freeze on hit"); 
+    if (player.hasCharm) addItem("Vampiric Charm", "🧿", "Heals +1 HP on Kill <span style='color:#ef4444'>(World 1 Only)</span>");
+    if (player.hasThorns) addItem("Hydra Scale", "🐲", "Reflects 1 DMG on hit <span style='color:#ef4444'>(World 1 Only)</span>"); 
+    if (player.hasFrostHit) addItem("Glacial Gem", "❄️", "Chance to Freeze on hit <span style='color:#ef4444'>(World 1 Only)</span>"); 
 
     if (!foundAny) list.innerHTML = '<li class="inv-item" style="justify-content:center; color:#777;">No relics collected yet.</li>';
     document.getElementById('inventory-overlay').style.display = 'block';
 }
+
 function closeInventory() { document.getElementById('inventory-overlay').style.display = 'none'; }
 
 const audio = document.getElementById('bgm');
