@@ -57,19 +57,20 @@ body {
 }
 
 /* --- ENTITIES & OVERRIDES --- */
-.wall { 
-    background-color: #111 !important; 
-    color: #777; 
-    z-index: 1; 
-    border-color: #444 !important;
+.wall {
+    background-image: url('wall.png');
+    background-size: cover; 
+    background-position: center;
+    background-repeat: no-repeat;
+    image-rendering: pixelated; 
 }
-.wall::after { content: "#"; }
 
 .door {
-    background-color: #8B4513 !important; 
-    color: #fff;
-    z-index: 1;
-    border: 2px solid #deb887 !important;
+    background-image: url('door.png');
+    background-size: cover; 
+    background-position: center;
+    background-repeat: no-repeat;
+    image-rendering: pixelated; 
 }
 
 .portal { background-color: #8b5cf6 !important; color: white; z-index: 1; }
@@ -109,7 +110,6 @@ body {
 
 /* Entities */
 .player {
-    background-color: transparent !important;
     background-image: url('player.png');
     background-size: cover; 
     background-position: center;
@@ -121,7 +121,19 @@ body {
 .player span {
     display: none;
 }
+
 .enemy { background-color: #ef4444 !important; color: white; z-index: 2; }  
+
+.enemy-normal {
+    background-image: url('enemy.png');
+    background-size: cover; 
+    background-position: center;
+    background-repeat: no-repeat;
+    image-rendering: pixelated; 
+    z-index: 2;
+    /* We remove the red background color so the image is clear */
+    background-color: transparent !important; 
+}
 
 .boss {
     background-color: #7f1d1d !important; 
@@ -515,3 +527,26 @@ body {
     animation: spin 4s infinite linear;
 }
 @keyframes spin { 100% { transform: rotate(360deg); } }
+
+/* --- W2 BOSS: MUD MONSTER --- */
+.boss-mud {
+    background-color: #3e2723 !important; /* Dark Mud */
+    border: 4px double #8d6e63 !important;
+    box-shadow: 0 0 15px #5d4037;
+    animation: pulseMud 2s infinite;
+}
+.boss-mud::after { content: "☣"; color: #76ff03; font-size: 20px; }
+
+@keyframes pulseMud {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); border-color: #76ff03; }
+    100% { transform: scale(1); }
+}
+
+.enemy-slime {
+    background-color: #7cb342 !important; /* Slime Green */
+    border-radius: 50%;
+    border: 2px solid #33691e !important;
+    font-size: 10px;
+}
+.enemy-slime::after { content: "●"; }
