@@ -271,12 +271,12 @@ const LEVELS = {
 
         'W2-2-1': { 
         name: "Stage 1 - Small Obstacles", 
-        walls: [], 
+        walls: ["C1","D1","E1","F1","G1","C9","D9","E9","F9","G9","I3","I4","I5","I6","I7","A3","A4","A5","A6","A7"], 
         enemies: [
-            
+            { pos: "I1", type: "fast"}, { pos: "A9", type: "fast"}, {pos: "E5", type: "golem"},{pos: "D5"}, {pos: "F5"},{pos: "E4"},{pos: "E6"}
         ],
-        hazards: [],
-        thickets: [],
+        hazards: ["D2","E2","F2","D8","E8","F8","B5","H5","H4","H6","B4","B6"],
+        thickets: ["A1","A2","B1","B2","H1","H2","I1","I2","A8","A9","B8","B9","H8","H9","I8","I9"],
         portals: [
             { pos: "I9", targetLevel: 'W2-2', targetPos: "E6", type: "door" },
         ],
@@ -284,10 +284,10 @@ const LEVELS = {
 
         'W2-2-2': { 
         name: "Stage 2 - Thorny Paths", 
-        walls: [], 
-        enemies: [],
-        hazards: [],
-        thickets: [],
+        walls: ["A3","A4","A6","A7","I3","I4","I6","I7","C1","D1","F1","G1","C9","D9","F9","G9"], 
+        enemies: [{ pos:"I1", type:"golem"}, { pos:"A9", type:"golem"},{pos: "D5"},{pos: "F5"},{pos: "E4"},{pos: "E6"},{pos: "E5", type:"fast"}],
+        hazards: ["E1","E2","E3","E7","E8","E9","B5","H5","A5","C5","G5","I5"],
+        thickets: ["D4","E4","F4","D6","E6","F6","D5","E5","F5"],
         portals: [
             { pos: "I9", targetLevel: 'W2-2', targetPos: "E6", type: "door" },
         ],
@@ -295,24 +295,35 @@ const LEVELS = {
 
         'W2-2-3': { 
         name: "Stage 3 - Muddy Manouvers", 
-        walls: [], 
-        enemies: [], 
-        hazards: [],
-        thickets: [],
+        walls: ["A2","B2","C2","C5","C6","C7","D2","E2","A3","B3","C3","D3","E3","A9","B9","C9","F6","F7","G6","G7"], 
+        enemies: [{pos: "A5", type:"golem"},{pos: "A6", type:"golem"},{pos: "A7", type:"golem"},{pos: "B5", type:"fast"},{pos: "B6", type:"fast"},{pos: "B7", type:"fast"},{pos: "A4"},{pos: "B4"},{pos: "A8"},{pos: "B8"},], 
+        hazards: ["C4","C8","F5","I4","H8","E7"],
+        thickets: ["F2","G2","H2","F3","G3","H3","I2","I3","D8","H5","E4","I8"],
         portals: [
             { pos: "I9", targetLevel: 'W2-2', targetPos: "E6", type: "door" },
         ],
     },
 
 'W2-2-4': { 
-        name: "Boss Fight - The Swampy Seconds", 
+        name: "Boss Fight - The Tangler", 
         walls: ["A1","A9","I1","I9"], 
-        hazards: [], // Starts clean, gets dirty as boss moves
+        hazards: [], 
         thickets: [], // Starts clear, grows as boss moves
         portals: [
             { pos: "E9", targetLevel: 'W2-2', targetPos: "E6", type: "door" }, // Exit
         ],
-        enemies: [{ pos: "E5", isBoss: true, type: "mud_monster", hp: 100 }] 
+        enemies: [{ pos: "E5", isBoss: true, type: "tangler", hp: 100 }] 
+    },
+            'W2-3': { 
+        name: "Level 3 - Swampy Forests", 
+        walls: ["I2","H2","B2","D2","F2","G2","A2","C2","E2"], 
+        portals: [
+            { pos: "A1", targetLevel: 'W2-3-1', targetPos: "A1", type: "portal", label: "1" },
+            { pos: "C1", targetLevel: 'W2-3-2', targetPos: "A1", type: "portal", label: "2" },
+            { pos: "E1", targetLevel: 'W2-3-3', targetPos: "A1", type: "portal", label: "3" },
+            { pos: "E9", targetLevel: 'World-2-Select', targetPos: "E6", type: "door" },
+            { pos: "I1", type: "portal", label: "B" },
+        ],
     },
 
 };
@@ -483,6 +494,16 @@ function applyGlobalUnlocks() {
             log("Path to Level 2 is open!");
         }
     }
+
+        if (gameProgress.w2l2Complete) {
+        const hub = LEVELS['World-2-Select'];
+        // Remove Wall at E2 to open path to Level 3
+        const wIndex = hub.walls.indexOf("E2");
+        if (wIndex > -1) {
+            hub.walls.splice(wIndex, 1);
+            log("Path to Level 3 is open!");
+        }
+    }
 }
 
 function initGame() {
@@ -569,6 +590,11 @@ currentLevelId = levelId;
         LEVELS['W2-1-4'].hazards = [];
     }
 
+    // --- NEW: Reset Tangler Thickets ---
+    if (levelId === 'W2-2-4') {
+        LEVELS['W2-2-4'].thickets = [];
+    }
+
     // Check for unlocks (existing logic)
     if (levelId === 'Level-Select' || levelId === '0' || levelId === 'World-2-Select') applyGlobalUnlocks();
     
@@ -587,6 +613,21 @@ currentLevelId = levelId;
             }
             // Optional: Notify player
             if (gameProgress.w2l1s3) log("The Mud Monster's lair is open!"); 
+        }
+    }
+
+        if (levelId === 'W2-2') {
+        if (gameProgress.w2l2s1 && gameProgress.w2l2s2 && gameProgress.w2l2s3) {
+            // 1. Remove the wall at I2
+            const wIndex = LEVELS['W2-2'].walls.indexOf("I2");
+            if (wIndex > -1) LEVELS['W2-2'].walls.splice(wIndex, 1);
+
+            // 2. Activate the Boss Portal (B) at I1
+            const bossPort = LEVELS['W2-2'].portals.find(p => p.label === "B");
+            if (bossPort) {
+                bossPort.targetLevel = 'W2-2-4';
+                bossPort.targetPos = "E9"; // Spawns player at bottom
+            }
         }
     }
     // --------------------------------------
@@ -608,11 +649,11 @@ currentLevelId = levelId;
     player.maxHp = 15; 
     
     // Heal on specific transition levels (Start, World Select, or x-1 levels)
-    if (levelId === '0' || levelId === 'Level-Select' || levelId.endsWith('-1')) {
+    if (levelId === '0' || levelId === 'Level-Select' || levelId === 'World-2-Select' || levelId.endsWith('-1') || levelId.startsWith('W2')) {
         player.hp = player.maxHp; 
         player.damage = 2; 
         log("Stats Reset/Healed.");
-    } 
+    }
     
     // Ensure HP doesn't exceed Max (if we healed via items above max, this caps it)
     if (player.hp > player.maxHp) player.hp = player.maxHp;
@@ -790,7 +831,7 @@ function drawGrid() {
                 } else if (enemyHere.type === 'mage') {
                     eIcon.textContent = 'M'; cell.classList.add('enemy', 'enemy-mage');
                 } else if (enemyHere.type === 'fast') {
-                    eIcon.textContent = 'F'; cell.classList.add('enemy', 'enemy-fast');
+                    eIcon.textContent = ''; cell.classList.add('enemy', 'enemy-fast');
                 } else if (enemyHere.type === 'bat') {
                     eIcon.textContent = 'W'; cell.classList.add('enemy', 'enemy-bat');
                 } else if (enemyHere.type === 'golem') {
@@ -835,7 +876,7 @@ function drawGrid() {
                     }
                 } else {
                     const portIcon = document.createElement('span');
-                    if (portalHere.type === 'inventory') { portIcon.textContent = "📦"; cell.classList.add('portal'); cell.style.backgroundColor = "#d4af37"; } 
+                    if (portalHere.type === 'inventory') { portIcon.textContent = "📦"; cell.classList.add('portal'); } 
                     else { portIcon.textContent = portalHere.label; cell.classList.add('portal'); }
                     cell.appendChild(portIcon);
                 }
@@ -907,6 +948,18 @@ function consumeAction() {
         drawGrid();
         setTimeout(() => {
             log("-- Enemy Turn --");
+
+            // --- NEW: THE TANGLER PASSIVE (Thicket = Energy Sap) ---
+            if (currentLevelId === 'W2-2-4') {
+                const currentMap = LEVELS[currentLevelId];
+                // Check if player is standing on a thicket
+                if (currentMap.thickets && currentMap.thickets.includes(`${ALPHABET[player.x]}${player.y+1}`)) {
+                    player.energySapped = true;
+                    log("Vines wrap around your legs! (Energy Sapped)");
+                }
+            }
+            // -------------------------------------------------------
+
             moveEnemies();
             
             if (player.energySapped) {
@@ -963,9 +1016,15 @@ document.addEventListener('keydown', (e) => {
         gameProgress.w2l1s1 = true;
         gameProgress.w2l1s2 = true;
         gameProgress.w2l1s3 = true;
-        
+
+        gameProgress.w2l2s1 = true;
+        gameProgress.w2l2s2 = true;
+        gameProgress.w2l2s3 = true;
+
         // --- NEW: W2 L1 Complete ---
         gameProgress.w2l1Complete = true;
+        
+        gameProgress.w2l2Complete = true;
 
         // If currently in the hub, apply the changes instantly
         if (currentLevelId === 'W2-1') {
@@ -978,6 +1037,17 @@ document.addEventListener('keydown', (e) => {
                 bossPort.targetPos = "E9";
             }
             log("CHEAT: Mud Monster lair opened!");
+        }
+
+                if (currentLevelId === 'W2-2') {
+            const wIndex = LEVELS['W2-2'].walls.indexOf("I2");
+            if (wIndex > -1) LEVELS['W2-2'].walls.splice(wIndex, 1);
+            
+            const bossPort = LEVELS['W2-2'].portals.find(p => p.label === "B");
+            if (bossPort) {
+                bossPort.targetLevel = 'W2-2-4';
+                bossPort.targetPos = "E9";
+            }
         }
         
         // Instant update for W2 Select
@@ -1054,6 +1124,7 @@ function playerAttack() {
             
             // --- WORLD 2 BOSS DAMAGE BOOST ---
             if (currentLevelId === 'W2-1-4') dmg = 4;
+            if (currentLevelId === 'W2-2-4') dmg = 4;
             // ---------------------------------
             
             triggerAttackAnim(enemy.x, enemy.y, 'anim-slash');
@@ -1222,9 +1293,15 @@ function handleTurn(dx, dy) {
         if (currentLevelId === 'W2-1-1') gameProgress.w2l1s1 = true;
         if (currentLevelId === 'W2-1-2') gameProgress.w2l1s2 = true;
         if (currentLevelId === 'W2-1-3') gameProgress.w2l1s3 = true;
+
+        if (currentLevelId === 'W2-2-1') gameProgress.w2l2s1 = true;
+        if (currentLevelId === 'W2-2-2') gameProgress.w2l2s2 = true;
+        if (currentLevelId === 'W2-2-3') gameProgress.w2l2s3 = true;
         
         // --- NEW: Boss 1 Completion ---
         if (currentLevelId === 'W2-1-4') gameProgress.w2l1Complete = true; 
+
+        if (currentLevelId === 'W2-2-4') gameProgress.w2l2Complete = true;
         // -------------------------------------------
 
         if (currentLevelId.includes('-Boss')) gameProgress[`level${currentLevelId[0]}Complete`] = true;
@@ -1343,6 +1420,85 @@ function processOneEnemyTurn(enemy) {
                      enemy.summonCooldown = 0;
                      return true; // Uses its turn to summon
                  }
+            }
+        }
+    }
+
+    // --- THE TANGLER BOSS LOGIC ---
+    if (enemy.isBoss && enemy.type === 'tangler') {
+        
+        // 1. LEAVE A TRAIL (Turn floor into Thicket)
+        const coord = `${ALPHABET[enemy.x]}${enemy.y+1}`;
+        if (!LEVELS[currentLevelId].thickets) LEVELS[currentLevelId].thickets = [];
+        if (!LEVELS[currentLevelId].thickets.includes(coord)) {
+            LEVELS[currentLevelId].thickets.push(coord);
+            // Visual update happens on next drawGrid
+        }
+
+        // 2. ACTIVE ABILITY: ROOT DOWN OR SUMMON (Every 3 turns)
+        enemy.summonCooldown = (enemy.summonCooldown || 0) + 1;
+        
+        if (enemy.summonCooldown >= 3) {
+            // Roll a dice: 25% chance to Summon Enemies, 75% chance to Spawn Thickets
+            const isSummoning = Math.random() < 0.25;
+
+            if (isSummoning) {
+                // --- SUMMONING LOGIC ---
+                // Find empty spots around the BOSS
+                const openSpots = [
+                    {x: enemy.x-1, y: enemy.y}, {x: enemy.x+1, y: enemy.y}, 
+                    {x: enemy.x, y: enemy.y-1}, {x: enemy.x, y: enemy.y+1},
+                    {x: enemy.x-1, y: enemy.y-1}, {x: enemy.x+1, y: enemy.y-1}, 
+                    {x: enemy.x-1, y: enemy.y+1}, {x: enemy.x+1, y: enemy.y+1}
+                ].filter(p => p.x >=0 && p.x <9 && p.y >=0 && p.y <9 && !isWall(p.x, p.y) && !isBoulder(p.x, p.y) && !enemies.some(e => e.alive && e.x === p.x && e.y === p.y));
+
+                // Sort randomly
+                openSpots.sort(() => Math.random() - 0.5);
+
+                if (openSpots.length > 0) {
+                    // Spawn 1 enemy (Thorn Sprig)
+                    const spawn = openSpots[0];
+                    enemies.push({ 
+                        id: enemies.length, 
+                        x: spawn.x, y: spawn.y, 
+                        hp: 4, maxHp: 4, 
+                        alive: true, type: 'fast', // "Fast" type puts immediate pressure on player
+                        wasHit: false 
+                    });
+                    
+                    log("The Tangler shakes! A Thorn Sprig drops!");
+                    triggerAttackAnim(enemy.x, enemy.y, 'anim-web'); 
+                    enemy.summonCooldown = 0;
+                    return true; // Used turn to summon
+                }
+            } else {
+                // --- ROOT DOWN LOGIC (Original Thicket Spawn) ---
+                // Find empty spots around the PLAYER
+                const nearby = [
+                    {x: player.x+1, y: player.y}, {x: player.x-1, y: player.y}, 
+                    {x: player.x, y: player.y+1}, {x: player.x, y: player.y-1},
+                    {x: player.x+1, y: player.y+1}, {x: player.x-1, y: player.y-1}
+                ].filter(p => 
+                    p.x >=0 && p.x <9 && p.y >=0 && p.y <9 && 
+                    !isWall(p.x, p.y) && 
+                    !LEVELS[currentLevelId].thickets.includes(`${ALPHABET[p.x]}${p.y+1}`) &&
+                    !(p.x === player.x && p.y === player.y) 
+                );
+
+                if (nearby.length > 0) {
+                    nearby.sort(() => Math.random() - 0.5);
+                    const count = Math.min(2, nearby.length);
+                    
+                    for(let i=0; i<count; i++) {
+                        const p = nearby[i];
+                        LEVELS[currentLevelId].thickets.push(`${ALPHABET[p.x]}${p.y+1}`);
+                    }
+                    
+                    log("Roots burst from the ground around you!");
+                    triggerAttackAnim(player.x, player.y, 'anim-web'); 
+                    enemy.summonCooldown = 0;
+                    return true; // Used turn to spawn roots
+                }
             }
         }
     }
