@@ -295,7 +295,7 @@ const LEVELS = {
 
         'W2-2-3': { 
         name: "Stage 3 - Muddy Manouvers", 
-        walls: ["A2","B2","C2","C5","C6","C7","D2","E2","A3","B3","C3","D3","E3","A9","B9","C9","F6","F7","G6","G7"], 
+        walls: ["A2","B2","C5","C6","C7","D2","E2","A3","B3","D3","E3","A9","B9","C9","F6","F7","G6","G7"], 
         enemies: [{pos: "A5", type:"golem"},{pos: "A6", type:"golem"},{pos: "A7", type:"golem"},{pos: "B5", type:"fast"},{pos: "B6", type:"fast"},{pos: "B7", type:"fast"},{pos: "A4"},{pos: "B4"},{pos: "A8"},{pos: "B8"},], 
         hazards: ["C4","C8","F5","I4","H8","E7"],
         thickets: ["F2","G2","H2","F3","G3","H3","I2","I3","D8","H5","E4","I8"],
