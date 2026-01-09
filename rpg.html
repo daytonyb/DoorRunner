@@ -14,17 +14,21 @@
     <div id="game-container">
         <div id="grid"></div>
         
-        <div id="ui-panel">
-            <div class="stat-box">
-                <h3>Stats</h3>
-                <p>HP: <span id="player-hp">100</span></p>
-                <p>Enemies: <span id="enemy-count">0</span></p>
-            </div>
-            <div class="log-box" id="game-log">
-                <div class="log-entry">Setup complete.</div>
-            </div>
-        </div>
+<div id="ui-panel">
+    <div class="stat-box">
+        <h3>Stats</h3>
+        <p>HP: <span id="player-hp">100</span></p>
+        <p>Enemies: <span id="enemy-count">0</span></p>
+        <p>Score: <span id="score-display" style="color: #fbbf24;">0</span></p>
     </div>
+    <div class="log-box" id="game-log">
+        <div class="log-entry">Setup complete.</div>
+    </div>
+    <div style="margin-top: 10px; display: flex; gap: 5px;">
+        <button class="btn" onclick="showHighScores()" style="font-size: 12px; flex: 1;">🏆 Scores</button>
+        <button class="btn" onclick="if(confirm('Restart?')) resetGame()" style="font-size: 12px; flex: 1; background:#555;">Reset</button>
+    </div>
+</div>
 
     <div id="combat-screen">
         <h2 style="color: #ef4444;">COMBAT!</h2>
@@ -58,6 +62,14 @@
         <source src="Eternal Spiral.mp3" type="audio/mpeg">
         Your browser does not support the audio element.
     </audio>
+
+    <div id="score-overlay" style="display:none;">
+    <h2 id="score-title">Level Records</h2>
+    <div id="score-list-container">
+        <ul id="score-list"></ul>
+    </div>
+    <button class="btn" onclick="closeScores()">Close</button>
+</div>
 
     <script src="rpg.js"></script>
     
