@@ -18,9 +18,17 @@ const LEVELS = {
         walls: [],
         portals: [
             { pos: "A1", targetLevel: 'Level-Select', targetPos: "E6", type: "portal", label: "W1" },
+            { pos: "C1", targetLevel: 'World-2-Select', targetPos: "E6", type: "portal", label: "W2" },
+            { pos: "E9", targetLevel: 'Endless-Start', targetPos: "E9", type: "portal", label: "∞" }, // ENDLESS MODE PORTAL
             { pos: "I5", type: "door", redirect: "index.html" },
         ],
         enemies: [], items: []
+    },
+
+    // --- ENDLESS MODE CONTAINER (Populated Dynamically) ---
+    'Endless': {
+        name: "Endless Dungeon",
+        walls: [], enemies: [], items: [], portals: []
     },
 
     // --- WORLD SELECTION (Formerly Level 0) ---
@@ -205,7 +213,7 @@ const LEVELS = {
         enemies: [], items: []
     },
     'W2-1': { 
-        name: "Level 1 - Muddy Water", 
+        name: "210 Muddy Water", 
         walls: ["I2","H2","B2","D2","F2","G2"], 
         portals: [
             { pos: "A1", targetLevel: 'W2-1-1', targetPos: "A1", type: "portal", label: "1" },
@@ -217,7 +225,7 @@ const LEVELS = {
     },
 
         'W2-1-1': { 
-        name: "Stage 1 - Getting Wet", 
+        name: "211 - Getting Wet", 
         walls: ["B3","C2","D3","F3","G2","H3","B7","C8","D7","F7","G8","H7","E6","E4"], 
         enemies: [
             { pos: "C3"}, { pos: "G3"}, { pos: "C7"}, { pos: "G7"}, { pos: "E3"}, { pos: "E7"}, { pos: "E5"},{pos: "C5"}, {pos: "G5"}
@@ -229,7 +237,7 @@ const LEVELS = {
     },
 
         'W2-1-2': { 
-        name: "Stage 2 - Getting Dirty", 
+        name: "212 - Getting Dirty", 
         walls: ["A4","A5","A6","I4","I5","I6","D1","E1","F1","D9","E9","F9"], 
         enemies: [{pos: "G2"},{pos: "G3"},{pos: "H3"},{pos: "B7"},{pos: "C7"},{pos: "C8"},{pos: "G7"},{pos: "I8", type:"fast"},{pos: "H9", type:"fast"}],
         hazards: ["D4","D5","D6","F4","F5","F6","E4","E6","E5"],
@@ -239,7 +247,7 @@ const LEVELS = {
     },
 
         'W2-1-3': { 
-        name: "Stage 3 - Big Fight", 
+        name: "213 Big Fight", 
         walls: ["C1","A3","G9","I7","G1","I3","A7","C9"], 
         enemies: [{pos: "H1"},{pos: "I2"},{pos: "A8"},{pos: "B9"},{pos: "H9"},{pos: "I8"},{pos: "I1", type: "fast"},{pos: "A9", type: "fast"},{pos: "H8", type: "fast"}], 
         hazards: ["A4","A5","A6","I4","I5","I6","D1","E1","F1","D9","E9","F9"],
@@ -249,7 +257,7 @@ const LEVELS = {
     },
 
 'W2-1-4': { 
-        name: "Boss Fight - The Mud Monster", 
+        name: "21B The Mud Monster", 
         walls: ["A1","A9","I1","I9"], 
         hazards: [], // Starts clean, gets dirty as boss moves
         portals: [
@@ -258,7 +266,7 @@ const LEVELS = {
         enemies: [{ pos: "E5", isBoss: true, type: "mud_monster", hp: 100 }] 
     },
         'W2-2': { 
-        name: "Level 2 - Muddy Plants", 
+        name: "220 Muddy Plants", 
         walls: ["I2","H2","B2","D2","F2","G2"], 
         portals: [
             { pos: "A1", targetLevel: 'W2-2-1', targetPos: "A1", type: "portal", label: "1" },
@@ -270,7 +278,7 @@ const LEVELS = {
     },
 
         'W2-2-1': { 
-        name: "Stage 1 - Small Obstacles", 
+        name: "221 Small Obstacles", 
         walls: ["C1","D1","E1","F1","G1","C9","D9","E9","F9","G9","I3","I4","I5","I6","I7","A3","A4","A5","A6","A7"], 
         enemies: [
             { pos: "I1", type: "fast"}, { pos: "A9", type: "fast"}, {pos: "E5", type: "golem"},{pos: "D5"}, {pos: "F5"},{pos: "E4"},{pos: "E6"}
@@ -283,7 +291,7 @@ const LEVELS = {
     },
 
         'W2-2-2': { 
-        name: "Stage 2 - Thorny Paths", 
+        name: "222 Thorny Paths", 
         walls: ["A3","A4","A6","A7","I3","I4","I6","I7","C1","D1","F1","G1","C9","D9","F9","G9"], 
         enemies: [{ pos:"I1", type:"golem"}, { pos:"A9", type:"golem"},{pos: "D5"},{pos: "F5"},{pos: "E4"},{pos: "E6"},{pos: "E5", type:"fast"}],
         hazards: ["E1","E2","E3","E7","E8","E9","B5","H5","A5","C5","G5","I5"],
@@ -294,8 +302,8 @@ const LEVELS = {
     },
 
         'W2-2-3': { 
-        name: "Stage 3 - Muddy Manouvers", 
-        walls: ["A2","B2","C5","C6","C7","D2","E2","A3","B3","D3","E3","A9","B9","C9","F6","F7","G6","G7"], 
+        name: "223 Muddy Manouvers", 
+        walls: ["A2","C5","C6","C7","E2","A3","B3","E3","A9","B9","C9","F6","F7","G6","G7"], 
         enemies: [{pos: "A5", type:"golem"},{pos: "A6", type:"golem"},{pos: "A7", type:"golem"},{pos: "B5", type:"fast"},{pos: "B6", type:"fast"},{pos: "B7", type:"fast"},{pos: "A4"},{pos: "B4"},{pos: "A8"},{pos: "B8"},], 
         hazards: ["C4","C8","F5","I4","H8","E7"],
         thickets: ["F2","G2","H2","F3","G3","H3","I2","I3","D8","H5","E4","I8"],
@@ -305,7 +313,7 @@ const LEVELS = {
     },
 
 'W2-2-4': { 
-        name: "Boss Fight - The Tangler", 
+        name: "22B - The Tangler", 
         walls: ["A1","A9","I1","I9"], 
         hazards: [], 
         thickets: [], // Starts clear, grows as boss moves
@@ -315,8 +323,8 @@ const LEVELS = {
         enemies: [{ pos: "E5", isBoss: true, type: "tangler", hp: 100 }] 
     },
             'W2-3': { 
-        name: "Level 3 - Swampy Forests", 
-        walls: ["I2","H2","B2","D2","F2","G2","A2","C2","E2"], 
+        name: "230 Swampy Forests", 
+        walls: ["I2","H2","B2","D2","F2","G2","I3"], 
         portals: [
             { pos: "A1", targetLevel: 'W2-3-1', targetPos: "A1", type: "portal", label: "1" },
             { pos: "C1", targetLevel: 'W2-3-2', targetPos: "A1", type: "portal", label: "2" },
@@ -325,7 +333,60 @@ const LEVELS = {
             { pos: "I1", type: "portal", label: "B" },
         ],
     },
+            'W2-3-1': { 
+        name: "231 The Roots", 
+        walls: ["F3","G3","G4","D7","C7","C6","F7","G7","G6"], 
+        enemies: [
+            { pos:"E4", type: "ranged"}, { pos:"F5", type: "ranged"}, { pos:"E6", type: "ranged"}, { pos:"D5", type: "ranged"}, {pos: "D4", type: "fast"}, {pos: "D6", type: "fast"}, {pos: "F4", type: "fast"}, {pos: "F6", type: "fast"}, {pos: "E3"}, {pos: "E7"}, {pos: "C5"}, {pos: "G5"}
+        ],
+        hazards: ["E1","A5","I5","E9","C3","D3","C4"],
+        thickets: ["B2","B8","H2","H8"],
+        portals: [
+            { pos: "I9", targetLevel: 'W2-3', targetPos: "E6", type: "door" },
+        ],
+    },
+                'W2-3-2': { 
+        name: "232 The Trunks", 
+        walls: ["A7","B7","C7","A8","B8","C8","G1","H1","I1","G2","H2","I2","A9","B9","C9","G3","H3","I3","A5","B6","A6","D8","D9","E9","E1","F1","F2","H4","I4","I5"],
+        enemies: [
+            {pos: "I8", type: "golem"},{pos: "H9", type: "golem"},
+            {pos: "G8", type: "ranged"},{pos: "H7", type: "ranged"},
+            {pos: "F7", type: "fast"},{pos: "G6", type: "fast"},
+            {pos: "E6"},{pos: "F5"}
+        ],
+        hazards: ["A4","B5","C6","D7","E8","F9","D1","E2","F3","G4","H5","I6"],
+        thickets: ["A3","B4","C5","D6","E7","F8","G9","C1","D2","E3","F4","G5","H6","I7"],
+        portals: [
+            { pos: "I9", targetLevel: 'W2-3', targetPos: "E6", type: "door" },
+        ],
+    },
+                    'W2-3-3': { 
+        name: "233 The Canopy", 
+        walls: [], 
+        enemies: [
+            {pos: "G9", type: "golem"},{pos: "I7", type: "golem"},{pos: "I9", type: "golem"},
+            {pos: "F8", type: "ranged"},{pos: "H6", type: "ranged"},
+            {pos: "D7", type: "fast"},{pos: "G4", type: "fast"},{pos: "D4", type: "fast"},
+            {pos: "A7"},{pos: "G1"},{pos: "H9"},{pos: "I8"}
+        ],
+        hazards: ["B2","E2","H2","B5","E5","H5","B8","E8","H8"],
+        thickets: ["G1","H1","I1","G2","H2","I2","G3","H3","I3","D4","D5","D6","E4","E5","E6","F4","F5","F6","A7","B7","C7","A8","B8","C8","A9","B9","C9"],
+        portals: [
+            { pos: "I9", targetLevel: 'W2-3', targetPos: "E6", type: "door" },
+        ],
+    },
+                    'W2-3-4': { 
+        name: "23B ", 
+        walls: [], 
+        enemies: [
 
+        ],
+        hazards: [],
+        thickets: [],
+        portals: [
+            { pos: "I9", targetLevel: 'W2-3', targetPos: "E6", type: "door" },
+        ],
+    },
 };
 
 // --------------------------------
@@ -350,6 +411,10 @@ let conveyorDir = 1; // 1 = Normal, -1 = Reversed
 let bossRotation = 0; // 0, 1, 2, 3 (x90 degrees)
 let inputLocked = false; // INPUT THROTTLE VARIABLE
 let cheatBuffer = ""; // CHEAT CODE BUFFER
+let currentLevelScore = 0; // Tracks points in the current level
+let highScores = {};       // Saves the best score for every level
+let endlessDepth = 0; // Tracks endless mode progress
+let endlessBiome = "biome-sewer"; // Tracks current visual theme for endless mode
 
 function parseCoord(coordString) {
     const colChar = coordString.charAt(0).toUpperCase();
@@ -391,7 +456,12 @@ function saveGame() {
         turnCounter: turnCounter,
         voidRadius: voidRadius,
         conveyorDir: conveyorDir,
-        bossRotation: bossRotation
+        bossRotation: bossRotation,
+        currentLevelScore: currentLevelScore,
+        highScores: highScores,
+        endlessDepth: endlessDepth,
+        endlessBiome: endlessBiome,
+        generatedLevel: LEVELS['Endless'] 
     };
     localStorage.setItem('rpgSave', JSON.stringify(gameState));
 }
@@ -422,7 +492,15 @@ function loadGame() {
         conveyorDir = state.conveyorDir || 1;
         bossRotation = state.bossRotation || 0;
 
-        // UPDATED: Check for level '0' as well
+        currentLevelScore = state.currentLevelScore || 0;
+        highScores = state.highScores || {};
+
+        endlessDepth = state.endlessDepth || 0;
+        endlessBiome = state.endlessBiome || "biome-sewer";
+        if (state.generatedLevel) {
+            LEVELS['Endless'] = state.generatedLevel;
+        }
+
         if (currentLevelId === 'Level-Select' || currentLevelId === '0' || currentLevelId === 'World-2-Select') applyGlobalUnlocks();
 
         document.querySelector('h1').textContent = LEVELS[currentLevelId].name;
@@ -447,6 +525,9 @@ function respawn() {
     // Reset mechanics
     voidRadius = 0; turnCounter = 0; player.energySapped = false;
     conveyorDir = 1; bossRotation = 0;
+    
+    // Reset endless
+    endlessDepth = 0;
 
     saveGame(); location.reload();
 }
@@ -581,58 +662,169 @@ function triggerAttackAnim(x, y, type) {
     setTimeout(() => el.remove(), 600);
 }
 
-function loadLevel(levelId, startCoord) {
-currentLevelId = levelId;
+// --- ENDLESS MODE GENERATOR ---
+function generateEndlessLevel(depth) {
+    // 1. Determine Difficulty & Biome
+    const biomes = ['biome-sewer', 'biome-forest', 'biome-mine', 'biome-castle', 'biome-void', 'biome-ice', 'biome-toxic'];
+    endlessBiome = biomes[Math.floor(depth / 3) % biomes.length]; 
     
-// --- SPECIAL BOSS RESET ---
-    // If we are loading the Mud Monster level, clear the hazard array so it starts fresh
-    if (levelId === 'W2-1-4') {
-        LEVELS['W2-1-4'].hazards = [];
+    const enemyCount = 2 + Math.floor(depth / 2); 
+    
+    // 2. Initialize Empty Level with all feature arrays
+    const newLevel = {
+        name: `Endless Depth: ${depth}`,
+        walls: [],
+        enemies: [],
+        items: [],
+        portals: [{ pos: "E1", targetLevel: 'Endless-Next', targetPos: "E9", type: "door" }],
+        
+        // Initialize arrays for all possible features
+        hazards: [],
+        thickets: [],
+        ice: [],
+        spikes: [],
+        rivers: [],
+        boulders: [],
+        biome: endlessBiome 
+    };
+
+    // 3. Generate Random Walls & Environmental Features
+    for (let y = 1; y < 8; y++) {
+        for (let x = 1; x < 8; x++) {
+            // Keep the center path (E column, index 4) clear for movement
+            if (x === 4) continue; 
+            
+            const coord = `${ALPHABET[x]}${y+1}`;
+
+            // 3a. Chance for a Wall (20%)
+            if (Math.random() < 0.2) {
+                newLevel.walls.push(coord);
+                continue; // If it's a wall, don't put floor hazards here
+            }
+
+            // 3b. Add Biome-Specific Features
+            const rng = Math.random();
+
+            if (endlessBiome === 'biome-sewer') {
+                // 10% chance for Toxic Sludge
+                if (rng < 0.1) newLevel.hazards.push(coord);
+            } 
+            else if (endlessBiome === 'biome-toxic') {
+                // 15% chance for Sludge, 5% for Poison River
+                if (rng < 0.15) newLevel.hazards.push(coord);
+                else if (rng < 0.20) newLevel.rivers.push(coord);
+            }
+            else if (endlessBiome === 'biome-forest') {
+                // 15% chance for Thickets (Trees)
+                if (rng < 0.15) newLevel.thickets.push(coord);
+            }
+            else if (endlessBiome === 'biome-ice') {
+                // 20% chance for Ice Tiles
+                if (rng < 0.2) newLevel.ice.push(coord);
+            }
+            else if (endlessBiome === 'biome-castle') {
+                // 10% chance for Spikes
+                if (rng < 0.1) newLevel.spikes.push(coord);
+            }
+            else if (endlessBiome === 'biome-mine') {
+                // 5% chance for Breakable Boulders
+                if (rng < 0.05) newLevel.boulders.push(coord);
+            }
+        }
     }
 
-    // --- NEW: Reset Tangler Thickets ---
-    if (levelId === 'W2-2-4') {
-        LEVELS['W2-2-4'].thickets = [];
+    // 4. Place Enemies
+    const enemyTypes = ['melee', 'ranged', 'fast', 'bat'];
+    
+    if (depth > 5) enemyTypes.push('guard', 'mage', 'golem');
+    if (depth > 10) enemyTypes.push('leech', 'sentinel', 'wraith');
+
+    let placedEnemies = 0;
+    while (placedEnemies < enemyCount) {
+        const x = Math.floor(Math.random() * 9);
+        const y = Math.floor(Math.random() * 7) + 1; 
+        const coord = `${ALPHABET[x]}${y+1}`;
+        
+        // Don't spawn on walls, hazards, or existing enemies
+        const isSafe = !newLevel.walls.includes(coord) && 
+                       !newLevel.hazards.includes(coord) &&
+                       !newLevel.rivers.includes(coord) &&
+                       !newLevel.boulders.includes(coord) &&
+                       !newLevel.enemies.some(e => e.pos === coord);
+
+        if (isSafe) {
+            const type = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
+            const hp = 10 + Math.floor(depth / 2);
+            newLevel.enemies.push({ pos: coord, type: type, hp: hp });
+            placedEnemies++;
+        }
     }
 
-    // Check for unlocks (existing logic)
+    // 5. Add Loot 
+    if (Math.random() < 0.5) { // Increased loot chance slightly since game is harder now
+        const x = Math.floor(Math.random() * 9);
+        const y = Math.floor(Math.random() * 8);
+        const coord = `${ALPHABET[x]}${y+1}`;
+        if (!newLevel.walls.includes(coord) && !newLevel.rivers.includes(coord)) {
+             newLevel.items.push({ pos: coord, type: "potion", value: 5 });
+        }
+    }
+
+    LEVELS['Endless'] = newLevel;
+}
+
+function loadLevel(levelId, startCoord) {
+    
+    // --- ENDLESS MODE INTERCEPT ---
+    if (levelId === 'Endless-Start') {
+        endlessDepth = 1;
+        generateEndlessLevel(endlessDepth);
+        levelId = 'Endless';
+        
+        // HEAL ONLY AT THE START OF A NEW RUN
+        player.hp = player.maxHp;
+        log("Endless Run Started: HP Restored.");
+        
+    } else if (levelId === 'Endless-Next') {
+        endlessDepth++;
+        currentLevelScore += 50; // Bonus points for clearing a floor
+        generateEndlessLevel(endlessDepth);
+        levelId = 'Endless';
+        
+        // OPTIONAL: Small heal between floors? Uncomment line below to enable
+        // player.hp = Math.min(player.hp + 2, player.maxHp); 
+    }
+    
+    currentLevelId = levelId;
+    currentLevelScore = 0;
+    
+    // --- SPECIAL BOSS RESET ---
+    if (levelId === 'W2-1-4') LEVELS['W2-1-4'].hazards = [];
+    if (levelId === 'W2-2-4') LEVELS['W2-2-4'].thickets = [];
+
+    // Check for unlocks
     if (levelId === 'Level-Select' || levelId === '0' || levelId === 'World-2-Select') applyGlobalUnlocks();
     
-    // --- NEW: World 2 Boss Unlock Logic ---
-    if (levelId === 'W2-1') {
-        if (gameProgress.w2l1s1 && gameProgress.w2l1s2 && gameProgress.w2l1s3) {
-            // 1. Remove the wall at I2
-            const wIndex = LEVELS['W2-1'].walls.indexOf("I2");
-            if (wIndex > -1) LEVELS['W2-1'].walls.splice(wIndex, 1);
-
-            // 2. Activate the Boss Portal (B) at I1
-            const bossPort = LEVELS['W2-1'].portals.find(p => p.label === "B");
-            if (bossPort) {
-                bossPort.targetLevel = 'W2-1-4';
-                bossPort.targetPos = "E9"; // Spawns player at bottom
-            }
-            // Optional: Notify player
-            if (gameProgress.w2l1s3) log("The Mud Monster's lair is open!"); 
-        }
+    // --- World 2 Boss Unlock Logic ---
+    if (levelId === 'W2-1' && gameProgress.w2l1s1 && gameProgress.w2l1s2 && gameProgress.w2l1s3) {
+        const wIndex = LEVELS['W2-1'].walls.indexOf("I2");
+        if (wIndex > -1) LEVELS['W2-1'].walls.splice(wIndex, 1);
+        const bossPort = LEVELS['W2-1'].portals.find(p => p.label === "B");
+        if (bossPort) { bossPort.targetLevel = 'W2-1-4'; bossPort.targetPos = "E9"; }
+    }
+    if (levelId === 'W2-2' && gameProgress.w2l2s1 && gameProgress.w2l2s2 && gameProgress.w2l2s3) {
+        const wIndex = LEVELS['W2-2'].walls.indexOf("I2");
+        if (wIndex > -1) LEVELS['W2-2'].walls.splice(wIndex, 1);
+        const bossPort = LEVELS['W2-2'].portals.find(p => p.label === "B");
+        if (bossPort) { bossPort.targetLevel = 'W2-2-4'; bossPort.targetPos = "E9"; }
+    }
+    if (levelId === 'W2-3' && gameProgress.w2l3s1 && gameProgress.w2l3s2 && gameProgress.w2l3s3) {
+        const wIndex = LEVELS['W2-3'].walls.indexOf("I2");
+        if (wIndex > -1) LEVELS['W2-3'].walls.splice(wIndex, 1);
+        const bossPort = LEVELS['W2-3'].portals.find(p => p.label === "B");
+        if (bossPort) { bossPort.targetLevel = 'W2-3-4'; bossPort.targetPos = "E9"; }
     }
 
-        if (levelId === 'W2-2') {
-        if (gameProgress.w2l2s1 && gameProgress.w2l2s2 && gameProgress.w2l2s3) {
-            // 1. Remove the wall at I2
-            const wIndex = LEVELS['W2-2'].walls.indexOf("I2");
-            if (wIndex > -1) LEVELS['W2-2'].walls.splice(wIndex, 1);
-
-            // 2. Activate the Boss Portal (B) at I1
-            const bossPort = LEVELS['W2-2'].portals.find(p => p.label === "B");
-            if (bossPort) {
-                bossPort.targetLevel = 'W2-2-4';
-                bossPort.targetPos = "E9"; // Spawns player at bottom
-            }
-        }
-    }
-    // --------------------------------------
-
-    
     const levelData = LEVELS[levelId];
     document.querySelector('h1').textContent = levelData.name;
     const start = parseCoord(startCoord);
@@ -645,24 +837,21 @@ currentLevelId = levelId;
 
     if (TUTORIAL_MESSAGES[levelId]) showTutorial(levelId);
 
-    // --- UPDATED HP LOGIC: ALWAYS 15 ---
-    player.maxHp = 15; 
-    
-    // Heal on specific transition levels (Start, World Select, or x-1 levels)
+    // --- UPDATED HP LOGIC ---
+    // Only reset stats on main menu or standard level start (Removed 'Endless' from here)
     if (levelId === '0' || levelId === 'Level-Select' || levelId === 'World-2-Select' || levelId.endsWith('-1') || levelId.startsWith('W2')) {
         player.hp = player.maxHp; 
         player.damage = 2; 
         log("Stats Reset/Healed.");
     }
     
-    // Ensure HP doesn't exceed Max (if we healed via items above max, this caps it)
+    // Ensure HP doesn't exceed Max
     if (player.hp > player.maxHp) player.hp = player.maxHp;
 
     // --- ENEMY LOADING ---
     let standardEnemyHp = 10; 
     if (levelId.startsWith('4-')) standardEnemyHp = 12; 
-// Increase HP for Stage 3s, BUT EXCLUDE World 2 (W2)
-if (levelId.endsWith('-3') && !levelId.startsWith('W2')) standardEnemyHp = 15;
+    if (levelId.endsWith('-3') && !levelId.startsWith('W2')) standardEnemyHp = 15;
 
     enemies = [];
     if (levelData.enemies) {
@@ -734,7 +923,8 @@ function drawGrid() {
     gridEl.className = ''; 
     const currentMap = LEVELS[currentLevelId];
 
-    if (currentLevelId.includes('EX-2')) gridEl.classList.add('biome-toxic'); 
+    if (currentLevelId === 'Endless') gridEl.classList.add(currentMap.biome || 'biome-sewer');
+    else if (currentLevelId.includes('EX-2')) gridEl.classList.add('biome-toxic'); 
     else if (currentLevelId.includes('EX-3')) gridEl.classList.add('biome-ice');
     else if (currentLevelId.includes('EX-4') || currentLevelId.includes('4-')) gridEl.classList.add('biome-castle');
     else if (currentLevelId.includes('5-')) gridEl.classList.add('biome-void');
@@ -915,6 +1105,9 @@ function drawGrid() {
 function updateStats() {
     let hpText = player.hp + " / " + player.maxHp;
     if (player.hasCharm) hpText += " 🧿";
+
+    const scoreEl = document.getElementById('score-display');
+    if (scoreEl) scoreEl.textContent = currentLevelScore;
     
     document.getElementById('player-hp').textContent = hpText;
     const aliveCount = enemies.filter(e => e.alive).length;
@@ -1021,6 +1214,9 @@ document.addEventListener('keydown', (e) => {
         gameProgress.w2l2s2 = true;
         gameProgress.w2l2s3 = true;
 
+        gameProgress.w2l3s1 = true;
+        gameProgress.w2l3s2 = true;
+        gameProgress.w2l3s3 = true;
         // --- NEW: W2 L1 Complete ---
         gameProgress.w2l1Complete = true;
         
@@ -1049,7 +1245,18 @@ document.addEventListener('keydown', (e) => {
                 bossPort.targetPos = "E9";
             }
         }
-        
+
+        if (currentLevelId === 'W2-3') {
+            const wIndex = LEVELS['W2-3'].walls.indexOf("I2");
+            if (wIndex > -1) LEVELS['W2-3'].walls.splice(wIndex, 1);
+
+            const bossPort = LEVELS['W2-3'].portals.find(p => p.label === "B");
+            if (bossPort) {
+                bossPort.targetLevel = 'W2-3-4';
+                bossPort.targetPos = "E9";
+            }
+        }
+
         // Instant update for W2 Select
         if (currentLevelId === 'World-2-Select') {
              applyGlobalUnlocks();
@@ -1108,7 +1315,7 @@ function playerAttack() {
     const directions = [{x:0, y:-1}, {x:0, y:1}, {x:-1, y:0}, {x:1, y:0}];
     
     const isWorld2 = currentLevelId.startsWith('World-2') || currentLevelId.startsWith('W2');
-    const isWorld1 = currentLevelId.startsWith('3-') || currentLevelId.startsWith('2-') || currentLevelId.startsWith('EX') || currentLevelId.startsWith('1-') || currentLevelId.startsWith('4-') || currentLevelId.startsWith('5-');
+    const isWorld1 = currentLevelId.startsWith('3-') || currentLevelId.startsWith('2-') || currentLevelId.startsWith('EX') || currentLevelId.startsWith('1-') || currentLevelId.startsWith('4-') || currentLevelId.startsWith('5-') || currentLevelId === 'Endless';
 
     directions.forEach(dir => {
         const targetX = player.x + dir.x;
@@ -1185,20 +1392,12 @@ function playerAttack() {
                 enemy.alive = false;
                 log(enemy.isBoss ? "BOSS DEFEATED!" : "Enemy defeated!");
 
-                // M Portal Logic
-                if (gameProgress.level5Complete) {
-                    const startMenu = LEVELS['0'];
-                    if (startMenu && !startMenu.portals.some(p => p.label === "M")) {
-                        startMenu.portals.push({ 
-                            pos: "I9", 
-                            targetLevel: 'World-2-Select', 
-                            targetPos: "E5", 
-                            type: "portal", 
-                            label: "M" 
-                        });
-                        log("A new path has opened in the Beginning!");
-                    }
-                }
+                let points = 100; // Standard enemy
+                if (enemy.isBoss) points = 1000;
+                else if (enemy.type === 'fast' || enemy.type === 'slime' || enemy.type === 'bat') points = 50;
+                else if (enemy.type === 'golem' || enemy.type === 'guard') points = 150;
+                
+                currentLevelScore += points;
 
                 // Relic Drops
                 if (currentLevelId === 'EX-1-Boss' && enemy.isBoss) items.push({ id: items.length, x: 4, y: 1, type: "relic", value: 0, name: "Vampiric Charm", collected: false });
@@ -1297,12 +1496,24 @@ function handleTurn(dx, dy) {
         if (currentLevelId === 'W2-2-1') gameProgress.w2l2s1 = true;
         if (currentLevelId === 'W2-2-2') gameProgress.w2l2s2 = true;
         if (currentLevelId === 'W2-2-3') gameProgress.w2l2s3 = true;
-        
+
+        if (currentLevelId === 'W2-3-1') gameProgress.w2l3s1 = true;
+        if (currentLevelId === 'W2-3-2') gameProgress.w2l3s2 = true;
+        if (currentLevelId === 'W2-3-3') gameProgress.w2l3s3 = true;
+
         // --- NEW: Boss 1 Completion ---
         if (currentLevelId === 'W2-1-4') gameProgress.w2l1Complete = true; 
 
         if (currentLevelId === 'W2-2-4') gameProgress.w2l2Complete = true;
         // -------------------------------------------
+
+        if (LEVELS[currentLevelId].enemies && LEVELS[currentLevelId].enemies.length > 0) {
+            const oldBest = highScores[currentLevelId] || 0;
+            if (currentLevelScore > oldBest) {
+                highScores[currentLevelId] = currentLevelScore;
+                log(`New Record! Score: ${currentLevelScore}`);
+            }
+        }
 
         if (currentLevelId.includes('-Boss')) gameProgress[`level${currentLevelId[0]}Complete`] = true;
         loadLevel(targetPortal.targetLevel, targetPortal.targetPos);
@@ -1311,6 +1522,9 @@ function handleTurn(dx, dy) {
 
     player.x = finalX; player.y = finalY;
     playerActionsLeft -= moveCost;
+
+    currentLevelScore -= 2; // Lose 2 points for every step taken
+    updateStats();
 
     if (currentMap.levers && currentMap.levers.includes(`${ALPHABET[finalX]}${finalY+1}`)) {
         conveyorDir *= -1;
@@ -1335,14 +1549,24 @@ function handleTurn(dx, dy) {
 
     if (currentMap.hazards && currentMap.hazards.includes(`${ALPHABET[finalX]}${finalY+1}`)) {
         player.hp -= 1; triggerDamage(player.x, player.y, 1, true); log("Toxic Sludge! -1 HP");
+
+        currentLevelScore -= 2; // Lose 2 points for every step taken
+    updateStats();
     }
+
+
 
     if (voidRadius > 0) {
         if (finalX < voidRadius || finalX >= GRID_SIZE - voidRadius || finalY < voidRadius || finalY >= GRID_SIZE - voidRadius) {
             player.hp -= 5; triggerDamage(player.x, player.y, 5, true);
             log("THE VOID CONSUMES YOU! -5 HP");
+
+            currentLevelScore -= 100; // Big penalty for void
+            updateStats();
         }
     }
+
+    
 
     if (currentMap.rivers && currentMap.rivers.includes(`${ALPHABET[finalX]}${finalY+1}`)) {
         setTimeout(() => {
@@ -1660,10 +1884,13 @@ let canAttack = false;
          if (enemy.type === 'leech') { triggerAttackAnim(player.x, player.y, 'anim-web'); player.energySapped = true; log("Leech drains your energy!"); } 
          else { triggerAttackAnim(player.x, player.y, 'anim-scratch'); player.hp -= dmg; triggerDamage(player.x, player.y, dmg, true); log(`${enemy.type.toUpperCase()} attacks!`); }
          
+    currentLevelScore -= 2; // Lose 2 points for every step taken
+        updateStats();
+
          // --- HYDRA SCALE (Applies if unlocked AND in World 1) ---
 
     const isWorld2 = currentLevelId.startsWith('World-2') || currentLevelId.startsWith('W2');
-    const isWorld1 = currentLevelId.startsWith('3-') || currentLevelId.startsWith('2-') || currentLevelId.startsWith('EX') || currentLevelId.startsWith('1-') || currentLevelId.startsWith('4-') || currentLevelId.startsWith('5-');
+    const isWorld1 = currentLevelId.startsWith('3-') || currentLevelId.startsWith('2-') || currentLevelId.startsWith('EX') || currentLevelId.startsWith('1-') || currentLevelId.startsWith('4-') || currentLevelId.startsWith('5-') || currentLevelId === 'Endless';
 
     if (player.hasThorns && isWorld1) { 
              enemy.hp -= 1; 
@@ -1813,6 +2040,37 @@ if (audio) {
     function startMusic() { if (audio.paused) audio.play().catch(e=>console.log(e)); document.removeEventListener('keydown', startMusic); document.removeEventListener('click', startMusic); }
     document.addEventListener('keydown', startMusic);
     document.addEventListener('click', startMusic);
+}
+
+function showHighScores() {
+    const list = document.getElementById('score-list');
+    list.innerHTML = '';
+    
+    // Get all levels we have scores for
+    const playedLevels = Object.keys(highScores);
+    
+    if (playedLevels.length === 0) {
+        list.innerHTML = '<li style="color:#777; padding:10px;">No records yet.</li>';
+    } else {
+        playedLevels.sort(); // Sort level IDs alphabetically
+        playedLevels.forEach(lid => {
+            if (!LEVELS[lid]) return; 
+            
+            const li = document.createElement('li');
+            li.className = 'score-entry';
+            
+            // Clean up name (remove "Sewers - " etc for brevity if you want)
+            let name = LEVELS[lid].name;
+            
+            li.innerHTML = `<span>${name}</span> <span>${highScores[lid]} pts</span>`;
+            list.appendChild(li);
+        });
+    }
+    document.getElementById('score-overlay').style.display = 'block';
+}
+
+function closeScores() {
+    document.getElementById('score-overlay').style.display = 'none';
 }
 
 initGame();
