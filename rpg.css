@@ -579,3 +579,44 @@ body {
     content: "🥀"; /* Wilted Flower / Rose */
     font-size: 24px;
 }
+
+/* --- HIGH SCORE MENU --- */
+#score-overlay {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 350px;
+    background-color: #1a1a1a;
+    border: 4px double #fbbf24; /* Gold border */
+    padding: 20px;
+    z-index: 3000;
+    text-align: center;
+    box-shadow: 0 0 25px rgba(0,0,0,0.9);
+}
+
+#score-title { 
+    color: #fbbf24; 
+    margin-top: 0; 
+    border-bottom: 1px solid #333; 
+    padding-bottom: 10px; 
+}
+
+#score-list-container {
+    max-height: 300px;
+    overflow-y: auto;
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+#score-list { list-style: none; padding: 0; margin: 0; }
+
+.score-entry {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px dashed #444;
+    font-size: 14px;
+}
+
+.score-entry span:last-child { color: #fbbf24; font-weight: bold; }
+
