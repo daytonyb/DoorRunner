@@ -324,7 +324,7 @@ const LEVELS = {
     },
             'W2-3': { 
         name: "230 Swampy Forests", 
-        walls: ["I2","H2","B2","D2","F2","G2","I3"], 
+        walls: ["I2","H2","B2","D2","F2","G2"], 
         portals: [
             { pos: "A1", targetLevel: 'W2-3-1', targetPos: "A1", type: "portal", label: "1" },
             { pos: "C1", targetLevel: 'W2-3-2', targetPos: "A1", type: "portal", label: "2" },
@@ -375,17 +375,21 @@ const LEVELS = {
             { pos: "I9", targetLevel: 'W2-3', targetPos: "E6", type: "door" },
         ],
     },
-                    'W2-3-4': { 
-        name: "23B ", 
-        walls: [], 
-        enemies: [
-
-        ],
-        hazards: [],
+'W2-3-4': { 
+        name: "23B - The Storm Wing", 
+        // Walls placed to create "killing zones" for the push mechanic
+        walls: [
+            "A1","A2","A8","A9", 
+            "I1","I2","I8","I9",
+            "C5","G5", "E3", "E7" // Central pillars to get slammed into
+        ], 
+        hazards: [], 
         thickets: [],
         portals: [
-            { pos: "I9", targetLevel: 'W2-3', targetPos: "E6", type: "door" },
+            { pos: "E9", targetLevel: 'W2-3', targetPos: "E6", type: "door" }, 
         ],
+        // Boss HP 80. Type 'zephyr'
+        enemies: [{ pos: "E5", isBoss: true, type: "zephyr", hp: 100 }] 
     },
 };
 
@@ -696,7 +700,7 @@ function generateEndlessLevel(depth) {
             
             const coord = `${ALPHABET[x]}${y+1}`;
 
-            // 3a. Chance for a Wall (20%)
+            // 3a. Chance for a Wall
             if (Math.random() < 0.2) {
                 newLevel.walls.push(coord);
                 continue; // If it's a wall, don't put floor hazards here
@@ -706,38 +710,33 @@ function generateEndlessLevel(depth) {
             const rng = Math.random();
 
             if (endlessBiome === 'biome-sewer') {
-                // 10% chance for Toxic Sludge
-                if (rng < 0.1) newLevel.hazards.push(coord);
+                if (rng < 0.2) newLevel.hazards.push(coord);
             } 
             else if (endlessBiome === 'biome-toxic') {
-                // 15% chance for Sludge, 5% for Poison River
                 if (rng < 0.15) newLevel.hazards.push(coord);
-                else if (rng < 0.20) newLevel.rivers.push(coord);
+                else if (rng < 0.1) newLevel.rivers.push(coord);
             }
             else if (endlessBiome === 'biome-forest') {
-                // 15% chance for Thickets (Trees)
                 if (rng < 0.15) newLevel.thickets.push(coord);
+                else if (rng < 0.1) newLevel.hazards.push(coord);
             }
             else if (endlessBiome === 'biome-ice') {
-                // 20% chance for Ice Tiles
                 if (rng < 0.2) newLevel.ice.push(coord);
             }
             else if (endlessBiome === 'biome-castle') {
-                // 10% chance for Spikes
-                if (rng < 0.1) newLevel.spikes.push(coord);
+                if (rng < 0.2) newLevel.spikes.push(coord);
             }
             else if (endlessBiome === 'biome-mine') {
-                // 5% chance for Breakable Boulders
-                if (rng < 0.05) newLevel.boulders.push(coord);
+                if (rng < 0.1) newLevel.boulders.push(coord);
             }
         }
     }
 
     // 4. Place Enemies
-    const enemyTypes = ['melee', 'ranged', 'fast', 'bat'];
+    const enemyTypes = ['melee', 'ranged', 'fast','leech'];
     
-    if (depth > 5) enemyTypes.push('guard', 'mage', 'golem');
-    if (depth > 10) enemyTypes.push('leech', 'sentinel', 'wraith');
+    if (depth > 5) enemyTypes.push('guard', 'mage','bat');
+    if (depth > 10) enemyTypes.push('sentinel', 'wraith','golem');
 
     let placedEnemies = 0;
     while (placedEnemies < enemyCount) {
@@ -752,8 +751,12 @@ function generateEndlessLevel(depth) {
                        !newLevel.boulders.includes(coord) &&
                        !newLevel.enemies.some(e => e.pos === coord);
 
-        if (isSafe) {
-            const type = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
+if (isSafe) {
+            let type = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
+
+            if (type === 'bat' && Math.random() < 0.50) {
+                type = 'melee'; 
+            }
             const hp = 10 + Math.floor(depth / 2);
             newLevel.enemies.push({ pos: coord, type: type, hp: hp });
             placedEnemies++;
@@ -761,7 +764,7 @@ function generateEndlessLevel(depth) {
     }
 
     // 5. Add Loot 
-    if (Math.random() < 0.5) { // Increased loot chance slightly since game is harder now
+    if (Math.random() < 0.5) {
         const x = Math.floor(Math.random() * 9);
         const y = Math.floor(Math.random() * 8);
         const coord = `${ALPHABET[x]}${y+1}`;
@@ -969,6 +972,7 @@ function drawGrid() {
             const isRiver = currentMap.rivers && currentMap.rivers.includes(`${ALPHABET[x]}${y+1}`);
             const isSpike = currentMap.spikes && currentMap.spikes.includes(`${ALPHABET[x]}${y+1}`);
             const isIce = currentMap.ice && currentMap.ice.includes(`${ALPHABET[x]}${y+1}`);
+            const isWindWarning = currentMap.windWarnings && currentMap.windWarnings.includes(`${ALPHABET[x]}${y+1}`);
             const warpHere = currentMap.warps && currentMap.warps.find(w => w.pos === `${ALPHABET[x]}${y+1}`);
 
             const belt = currentMap.conveyors && currentMap.conveyors.find(b => b.y === y);
@@ -1012,6 +1016,11 @@ function drawGrid() {
                         eIcon.textContent = '⚙️'; cell.classList.add('boss', 'boss-gear');                         
                     } else if (enemyHere.type === 'mud_monster') {
                        eIcon.textContent = ''; cell.classList.add('boss', 'boss-mud');
+                    } else if (enemyHere.type === 'tangler') {
+                        eIcon.textContent = '🥀'; cell.classList.add('boss', 'boss-tangler');
+                    } else if (enemyHere.type === 'zephyr') {
+                        // --- NEW: Zephyr Icon ---
+                        eIcon.textContent = ''; cell.classList.add('boss', 'boss-zephyr');
                     } else {
                         eIcon.textContent = 'B'; cell.classList.add('boss');
                     }
@@ -1076,6 +1085,7 @@ function drawGrid() {
             if (isThicket) cell.classList.add('thicket');
             if (isRiver) cell.classList.add('river');
             if (isIce) cell.classList.add('tile-ice');
+            if (isWindWarning) cell.classList.add('tile-wind-warning');
             if (warpHere) cell.classList.add('warp-tile');
             if (isSpikeActive) {
                 if (spikesActive) cell.classList.add('spike-active');
@@ -1315,7 +1325,7 @@ function playerAttack() {
     const directions = [{x:0, y:-1}, {x:0, y:1}, {x:-1, y:0}, {x:1, y:0}];
     
     const isWorld2 = currentLevelId.startsWith('World-2') || currentLevelId.startsWith('W2');
-    const isWorld1 = currentLevelId.startsWith('3-') || currentLevelId.startsWith('2-') || currentLevelId.startsWith('EX') || currentLevelId.startsWith('1-') || currentLevelId.startsWith('4-') || currentLevelId.startsWith('5-') || currentLevelId === 'Endless';
+    const isWorld1 = currentLevelId.startsWith('3-') || currentLevelId.startsWith('2-') || currentLevelId.startsWith('EX') || currentLevelId.startsWith('1-') || currentLevelId.startsWith('4-') || currentLevelId.startsWith('5-');
 
     directions.forEach(dir => {
         const targetX = player.x + dir.x;
@@ -1332,6 +1342,7 @@ function playerAttack() {
             // --- WORLD 2 BOSS DAMAGE BOOST ---
             if (currentLevelId === 'W2-1-4') dmg = 4;
             if (currentLevelId === 'W2-2-4') dmg = 4;
+            if (currentLevelId === 'W2-3-4') dmg = 4;
             // ---------------------------------
             
             triggerAttackAnim(enemy.x, enemy.y, 'anim-slash');
@@ -1415,9 +1426,40 @@ function playerAttack() {
             boulder.hp -= dmg; triggerDamage(boulder.x, boulder.y, dmg, false);
             if (boulder.hp <= 0) {
                 log("Boulder destroyed!");
-                if (Math.random() < 0.1) {
+const roll = Math.random();
+
+                // 1. Chance to Spawn Enemy (e.g., 20%)
+                if (roll < 0.2) {
+                    enemies.push({
+                        id: enemies.length,
+                        x: boulder.x, 
+                        y: boulder.y,
+                        hp: 10, 
+                        maxHp: 10, 
+                        alive: true, 
+                        type: 'melee',
+                        wasHit: false 
+                    });
+                    log("A Melee Enemy grew out of the rubble!");
+                } 
+
+                else if (roll >= 0.2 && roll < 0.3) {
+                    enemies.push({
+                        id: enemies.length,
+                        x: boulder.x, 
+                        y: boulder.y,
+                        hp: 15, 
+                        maxHp: 15, 
+                        alive: true, 
+                        type: 'golem',
+                        wasHit: false 
+                    });
+                    log("A Golem erupted out of the rubble!");
+                }
+                // 2. Chance to Drop Loot (e.g., if no enemy spawned, 10% chance for potion)
+                else if (roll > 0.8) { 
                     items.push({ x: boulder.x, y: boulder.y, type: "potion", value: 3, name: "Small Potion", collected: false });
-                    log("Found a small potion in the rubble!");
+                    log("Found a small potion!");
                 }
             }
         } else if (tempWallIdx !== -1) {
@@ -1831,6 +1873,144 @@ function processOneEnemyTurn(enemy) {
         }
     }
 
+// --- BOSS: ZEPHYR (NO FEATHERS VERSION) ---
+    if (enemy.isBoss && enemy.type === "zephyr") {
+        
+        // Initialize State
+        if (enemy.swoopStage === undefined) enemy.swoopStage = 0;
+        enemy.internalTurn = (enemy.internalTurn || 0) + 1;
+
+        // --- MECHANIC 1: TURBULENCE (Passive Wind) ---
+        // Every 3 turns, push player randomly.
+        if (enemy.internalTurn % 3 === 0) {
+            const windDirs = [{x:0, y:-1}, {x:0, y:1}, {x:-1, y:0}, {x:1, y:0}];
+            const gust = windDirs[Math.floor(Math.random() * windDirs.length)];
+            const wx = player.x + gust.x;
+            const wy = player.y + gust.y;
+
+            if (wx >= 0 && wx < 9 && wy >= 0 && wy < 9 && !isWall(wx, wy) && !isBoulder(wx, wy)) {
+                player.x = wx; 
+                player.y = wy;
+                log("Turbulence throws you off balance!");
+                const grid = document.getElementById('grid');
+                if(grid) {
+                    grid.classList.add('screen-shake');
+                    setTimeout(() => grid.classList.remove('screen-shake'), 400);
+                }
+            }
+        }
+
+        // --- MECHANIC 2: SWOOP TRIGGER (15% Chance) ---
+        if (enemy.swoopStage === 0 && Math.random() < 0.15) {
+            log("Zephyr screeches! SKY DIVE INCOMING!");
+            enemy.swoopStage = 1; 
+            return true; 
+        }
+
+        // --- STATE 1: POSITIONING ---
+        if (enemy.swoopStage === 1) {
+            if (!LEVELS[currentLevelId].windWarnings) LEVELS[currentLevelId].windWarnings = [];
+
+            let targetType = ''; 
+            const distTop = player.y; const distBottom = 8 - player.y;
+            const distLeft = player.x; const distRight = 8 - player.x;
+            const min = Math.min(distTop, distBottom, distLeft, distRight);
+            
+            if (min === distLeft) {
+                targetType = 'row'; enemy.x = 0; enemy.y = player.y; enemy.dashTarget = { x: 8, y: player.y };
+            } else if (min === distRight) {
+                targetType = 'row'; enemy.x = 8; enemy.y = player.y; enemy.dashTarget = { x: 0, y: player.y };
+            } else if (min === distTop) {
+                targetType = 'col'; enemy.x = player.x; enemy.y = 0; enemy.dashTarget = { x: player.x, y: 8 };
+            } else {
+                targetType = 'col'; enemy.x = player.x; enemy.y = 8; enemy.dashTarget = { x: player.x, y: 0 };
+            }
+
+            LEVELS[currentLevelId].windWarnings = []; 
+            if (targetType === 'row') {
+                for(let i=0; i<9; i++) LEVELS[currentLevelId].windWarnings.push(`${ALPHABET[i]}${enemy.y+1}`);
+            } else {
+                for(let i=0; i<9; i++) LEVELS[currentLevelId].windWarnings.push(`${ALPHABET[enemy.x]}${i+1}`);
+            }
+            
+            log("Zephyr clings to the wall...");
+            triggerAttackAnim(enemy.x, enemy.y, 'anim-web'); 
+            enemy.swoopStage = 2; 
+            return true; 
+        }
+
+        // --- STATE 2: THE DASH ---
+        if (enemy.swoopStage === 2) {
+            log("ZEPHYR SWOOPS!");
+            LEVELS[currentLevelId].windWarnings = []; 
+
+            let hitPlayer = false;
+            if (enemy.y === enemy.dashTarget.y && player.y === enemy.y) hitPlayer = true; 
+            if (enemy.x === enemy.dashTarget.x && player.x === enemy.x) hitPlayer = true; 
+
+            triggerAttackAnim(enemy.x, enemy.y, 'anim-slash');
+            enemy.x = enemy.dashTarget.x;
+            enemy.y = enemy.dashTarget.y;
+            triggerAttackAnim(enemy.x, enemy.y, 'anim-slash');
+
+            if (hitPlayer) {
+                player.hp -= 5; 
+                triggerDamage(player.x, player.y, 5, true);
+                log("Direct Hit! (-5 HP)");
+                document.getElementById('grid').classList.add('screen-shake');
+                setTimeout(() => document.getElementById('grid').classList.remove('screen-shake'), 400);
+            } else {
+                log("Zephyr misses!");
+            }
+
+            enemy.swoopStage = 0; 
+            return true; 
+        }
+
+        // --- STATE 0: NORMAL BEHAVIOR (Melee Chase) ---
+        if (enemy.swoopStage === 0) {
+            
+            // 1. Check for Melee Attack (Range 1)
+            const dx = Math.abs(player.x - enemy.x);
+            const dy = Math.abs(player.y - enemy.y);
+            
+            if (dx <= 1 && dy <= 1) {
+                triggerAttackAnim(player.x, player.y, 'anim-scratch');
+                player.hp -= 2; 
+                triggerDamage(player.x, player.y, 2, true);
+                log("Zephyr slashes you! (-2 HP)");
+                return true; 
+            }
+
+            // 2. Movement Logic (Self-Contained)
+            const moves = [{x:0, y:-1}, {x:0, y:1}, {x:-1, y:0}, {x:1, y:0}];
+            moves.sort((a, b) => {
+                const distA = Math.abs(player.x - (enemy.x + a.x)) + Math.abs(player.y - (enemy.y + a.y));
+                const distB = Math.abs(player.x - (enemy.x + b.x)) + Math.abs(player.y - (enemy.y + b.y));
+                return distA - distB;
+            });
+
+            for (let m of moves) {
+                const tx = enemy.x + m.x;
+                const ty = enemy.y + m.y;
+                if (tx >= 0 && tx < 9 && ty >= 0 && ty < 9) {
+                    if (!isWall(tx, ty) && !isBoulder(tx, ty) && 
+                        !(tx === player.x && ty === player.y) &&
+                        !enemies.some(e => e.alive && e.x === tx && e.y === ty)) {
+                        
+                        enemy.x = tx;
+                        enemy.y = ty;
+                        break; 
+                    }
+                }
+            }
+
+            // REMOVED: The Storm Quill (Feather) logic block is gone.
+            
+            return true; 
+        }
+    }
+
     if (enemy.isBoss && (enemy.type === "summoner" || enemy.type === "king")) {
         enemy.summonCooldown = (enemy.summonCooldown || 0) + 1;
         let limit = 5; 
@@ -1890,7 +2070,7 @@ let canAttack = false;
          // --- HYDRA SCALE (Applies if unlocked AND in World 1) ---
 
     const isWorld2 = currentLevelId.startsWith('World-2') || currentLevelId.startsWith('W2');
-    const isWorld1 = currentLevelId.startsWith('3-') || currentLevelId.startsWith('2-') || currentLevelId.startsWith('EX') || currentLevelId.startsWith('1-') || currentLevelId.startsWith('4-') || currentLevelId.startsWith('5-') || currentLevelId === 'Endless';
+    const isWorld1 = currentLevelId.startsWith('3-') || currentLevelId.startsWith('2-') || currentLevelId.startsWith('EX') || currentLevelId.startsWith('1-') || currentLevelId.startsWith('4-') || currentLevelId.startsWith('5-');
 
     if (player.hasThorns && isWorld1) { 
              enemy.hp -= 1; 
