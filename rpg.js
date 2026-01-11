@@ -199,8 +199,8 @@ const LEVELS = {
     },
 
     'World-2-Select': {
-        name: "World 2 - The Swamp",
-        walls: ["B2", "C2", "D2", "E2", "F2", "G2", "H2", "I2"], 
+        name: "200 - The Swamp",
+        walls: ["B2", "C2", "D2", "E2", "F2", "G2", "H2", "I2","G3"], 
         portals: [
             { pos: "A1", targetLevel: 'W2-1', targetPos: "E6", type: "portal", label: "1" },
             { pos: "C1", targetLevel: 'W2-2', targetPos: "E6", type: "portal", label: "2" },
@@ -388,8 +388,10 @@ const LEVELS = {
         portals: [
             { pos: "E9", targetLevel: 'W2-3', targetPos: "E6", type: "door" }, 
         ],
-        // Boss HP 80. Type 'zephyr'
-        enemies: [{ pos: "E5", isBoss: true, type: "zephyr", hp: 100 }] 
+        enemies: [
+            { pos: "E5", isBoss: true, type: "zephyr", hp: 100 },
+            { pos: "E5", isBoss: true, hp: 75}
+        ] 
     },
 };
 
@@ -587,6 +589,16 @@ function applyGlobalUnlocks() {
         if (wIndex > -1) {
             hub.walls.splice(wIndex, 1);
             log("Path to Level 3 is open!");
+        }
+    }
+
+    if (gameProgress.w2l3Complete) {
+        const hub = LEVELS['World-2-Select'];
+        // Remove Wall at G2 to open path to Level 4
+        const wIndex = hub.walls.indexOf("G2");
+        if (wIndex > -1) {
+            hub.walls.splice(wIndex, 1);
+            log("Path to Level 4 is open!");
         }
     }
 }
@@ -1019,7 +1031,6 @@ function drawGrid() {
                     } else if (enemyHere.type === 'tangler') {
                         eIcon.textContent = '🥀'; cell.classList.add('boss', 'boss-tangler');
                     } else if (enemyHere.type === 'zephyr') {
-                        // --- NEW: Zephyr Icon ---
                         eIcon.textContent = ''; cell.classList.add('boss', 'boss-zephyr');
                     } else {
                         eIcon.textContent = 'B'; cell.classList.add('boss');
@@ -1231,6 +1242,8 @@ document.addEventListener('keydown', (e) => {
         gameProgress.w2l1Complete = true;
         
         gameProgress.w2l2Complete = true;
+
+        gameProgress.w2l3Complete = true;
 
         // If currently in the hub, apply the changes instantly
         if (currentLevelId === 'W2-1') {
@@ -1547,6 +1560,8 @@ function handleTurn(dx, dy) {
         if (currentLevelId === 'W2-1-4') gameProgress.w2l1Complete = true; 
 
         if (currentLevelId === 'W2-2-4') gameProgress.w2l2Complete = true;
+
+        if (currentLevelId === 'W2-3-4') gameProgress.w2l3Complete = true;
         // -------------------------------------------
 
         if (LEVELS[currentLevelId].enemies && LEVELS[currentLevelId].enemies.length > 0) {
@@ -1873,15 +1888,27 @@ function processOneEnemyTurn(enemy) {
         }
     }
 
-// --- BOSS: ZEPHYR (NO FEATHERS VERSION) ---
+// --- BOSS: ZEPHYR (FAIR TURBULENCE) ---
     if (enemy.isBoss && enemy.type === "zephyr") {
         
-        // Initialize State
+        // 1. SPEED GAUGE MECHANIC
+        if (enemy.speedGauge === undefined) enemy.speedGauge = 0;
+        enemy.speedGauge += 2;
+        if (enemy.speedGauge < 3) {
+            log("Zephyr hovers, waiting for an opening...");
+            return true; 
+        }
+        enemy.speedGauge -= 3;
+        
+        // ---------------------------------------------------------
+        
         if (enemy.swoopStage === undefined) enemy.swoopStage = 0;
         enemy.internalTurn = (enemy.internalTurn || 0) + 1;
+        
+        // TRACKER: Did the wind push the player this turn?
+        let pushedThisTurn = false; 
 
-        // --- MECHANIC 1: TURBULENCE (Passive Wind) ---
-        // Every 3 turns, push player randomly.
+        // --- MECHANIC 1: TURBULENCE ---
         if (enemy.internalTurn % 3 === 0) {
             const windDirs = [{x:0, y:-1}, {x:0, y:1}, {x:-1, y:0}, {x:1, y:0}];
             const gust = windDirs[Math.floor(Math.random() * windDirs.length)];
@@ -1892,6 +1919,7 @@ function processOneEnemyTurn(enemy) {
                 player.x = wx; 
                 player.y = wy;
                 log("Turbulence throws you off balance!");
+                pushedThisTurn = true; // MARK AS PUSHED
                 const grid = document.getElementById('grid');
                 if(grid) {
                     grid.classList.add('screen-shake');
@@ -1900,7 +1928,7 @@ function processOneEnemyTurn(enemy) {
             }
         }
 
-        // --- MECHANIC 2: SWOOP TRIGGER (15% Chance) ---
+        // --- MECHANIC 2: SWOOP TRIGGER ---
         if (enemy.swoopStage === 0 && Math.random() < 0.15) {
             log("Zephyr screeches! SKY DIVE INCOMING!");
             enemy.swoopStage = 1; 
@@ -1967,14 +1995,14 @@ function processOneEnemyTurn(enemy) {
             return true; 
         }
 
-        // --- STATE 0: NORMAL BEHAVIOR (Melee Chase) ---
+        // --- STATE 0: NORMAL BEHAVIOR ---
         if (enemy.swoopStage === 0) {
-            
-            // 1. Check for Melee Attack (Range 1)
+            // Melee Check
             const dx = Math.abs(player.x - enemy.x);
             const dy = Math.abs(player.y - enemy.y);
             
-            if (dx <= 1 && dy <= 1) {
+            // ATTACK ONLY IF NOT PUSHED THIS TURN
+            if (dx <= 1 && dy <= 1 && !pushedThisTurn) {
                 triggerAttackAnim(player.x, player.y, 'anim-scratch');
                 player.hp -= 2; 
                 triggerDamage(player.x, player.y, 2, true);
@@ -1982,7 +2010,7 @@ function processOneEnemyTurn(enemy) {
                 return true; 
             }
 
-            // 2. Movement Logic (Self-Contained)
+            // Movement (He will still move if he couldn't attack)
             const moves = [{x:0, y:-1}, {x:0, y:1}, {x:-1, y:0}, {x:1, y:0}];
             moves.sort((a, b) => {
                 const distA = Math.abs(player.x - (enemy.x + a.x)) + Math.abs(player.y - (enemy.y + a.y));
@@ -2004,9 +2032,6 @@ function processOneEnemyTurn(enemy) {
                     }
                 }
             }
-
-            // REMOVED: The Storm Quill (Feather) logic block is gone.
-            
             return true; 
         }
     }
