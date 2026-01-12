@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wacky Wizard Level Maker</title>
+    <link rel="stylesheet" href="rpg.css">
+    <style>
+        body { flex-direction: row; gap: 30px; align-items: flex-start; padding: 20px; box-sizing: border-box; }
+        
+        #sidebar {
+            background: #333; padding: 20px; border: 2px solid #555;
+            display: flex; flex-direction: column; gap: 10px; width: 260px;
+            max-height: 90vh; overflow-y: auto; 
+        }
+        
+        h3 { margin: 15px 0 5px 0; color: #fbbf24; font-size: 14px; text-transform: uppercase; border-bottom: 1px solid #555; padding-bottom: 5px; }
+
+        .tool-btn {
+            padding: 8px; cursor: pointer; border: 1px solid #555; background: #222; color: white;
+            font-family: inherit; font-size: 12px; text-align: left;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .tool-btn:hover { background: #444; }
+        .tool-btn.active { border-color: #fbbf24; background: #444; color: #fbbf24; }
+        
+        #output-area { margin-top: 20px; }
+        textarea { width: 100%; height: 100px; background: #111; color: #0f0; border: 1px solid #444; font-family: monospace; font-size: 10px; }
+        
+        #editor-grid {
+            border: 4px solid #666;
+            display: grid;
+            grid-template-columns: repeat(9, 50px);
+            grid-template-rows: repeat(9, 50px);
+            gap: 2px;
+            background-color: #444;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="sidebar">
+        <h2 style="margin-top:0; color:#fbbf24; text-align:center;">Level Maker</h2>
+        
+        <button class="tool-btn" style="background:#14532d; justify-content: center; font-weight:bold;" onclick="exportLevel()">💾 Generate Code</button>
+        <button class="tool-btn" style="background:#555; justify-content: center;" onclick="window.location.href='rpg.html'">↩ Back to Game</button>
+        
+        <h3>Essentials</h3>
+        <button class="tool-btn active" onclick="setTool('wall')">🧱 Wall</button>
+        <button class="tool-btn" onclick="setTool('player')">🧙 Player Start</button>
+        <button class="tool-btn" onclick="setTool('door')">🚪 Door (Exit)</button>
+        <button class="tool-btn" onclick="setTool('erase')">❌ Eraser</button>
+
+        <h3>Terrain & Traps</h3>
+        <button class="tool-btn" onclick="setTool('warp')">🌌 Void Warp (Teleport)</button>
+        <button class="tool-btn" onclick="setTool('hazard')">☣️ Toxic Sludge</button>
+        <button class="tool-btn" onclick="setTool('thicket')">♣ Thicket (Slow)</button>
+        <button class="tool-btn" onclick="setTool('river')">≈ River (Slide)</button>
+        <button class="tool-btn" onclick="setTool('ice')">❄ Ice (Slide)</button>
+        <button class="tool-btn" onclick="setTool('boulder')">🪨 Boulder (Break)</button>
+        <button class="tool-btn" onclick="setTool('spike')">▲ Spikes (Timed)</button>
+
+        <h3>Enemies</h3>
+        <button class="tool-btn" onclick="setTool('enemy-melee')">💀 Melee (Basic)</button>
+        <button class="tool-btn" onclick="setTool('enemy-fast')">⚡ Fast (2 Moves)</button>
+        <button class="tool-btn" onclick="setTool('enemy-ranged')">🏹 Ranged</button>
+        <button class="tool-btn" onclick="setTool('enemy-mage')">🧙 Mage (Blink)</button>
+        <button class="tool-btn" onclick="setTool('enemy-golem')">🗿 Golem (Tank)</button>
+        <button class="tool-btn" onclick="setTool('enemy-guard')">🛡️ Guard (Castle)</button>
+        <button class="tool-btn" onclick="setTool('enemy-bat')">🦇 Bat (Flyer)</button>
+        <button class="tool-btn" onclick="setTool('enemy-leech')">● Leech (Void)</button>
+        <button class="tool-btn" onclick="setTool('enemy-sentinel')">🧲 Sentinel (Pull)</button>
+        <button class="tool-btn" onclick="setTool('enemy-welder')">🔥 Welder</button>
+        <button class="tool-btn" onclick="setTool('enemy-wraith')">👻 Wraith</button>
+        <button class="tool-btn" onclick="setTool('enemy-yeti')">☃️ Yeti</button>
+
+        <h3>Bosses</h3>
+        <button class="tool-btn" onclick="setTool('boss-mud_monster')">☣ Mud Monster</button>
+        <button class="tool-btn" onclick="setTool('boss-tangler')">🥀 The Tangler</button>
+        <button class="tool-btn" onclick="setTool('boss-zephyr')">🦅 Zephyr</button>
+        <button class="tool-btn" onclick="setTool('boss-summoner')">🕷️ Broodmother</button>
+        <button class="tool-btn" onclick="setTool('boss-shaker')">🪨 Earthshaker</button>
+        <button class="tool-btn" onclick="setTool('boss-king')">👑 Mad King</button>
+        <button class="tool-btn" onclick="setTool('boss-entropy')">Ø Entropy</button>
+        <button class="tool-btn" onclick="setTool('boss-hydra')">🐍 Hydra</button>
+        <button class="tool-btn" onclick="setTool('boss-ice')">❄️ Ice Queen</button>
+        <button class="tool-btn" onclick="setTool('boss-gear')">⚙️ Gear Grinder</button>
+
+        <h3>Items</h3>
+        <button class="tool-btn" onclick="setTool('item-potion')">❤️ Potion</button>
+        <button class="tool-btn" onclick="setTool('item-weapon')">⚔️ Weapon (+2)</button>
+
+        <div id="output-area" style="display:none;">
+            <small>Copy this code:</small>
+            <textarea id="level-code" readonly></textarea>
+        </div>
+    </div>
+
+    <div id="editor-grid" class="biome-sewer"></div>
+
+    <script src="editor.js"></script>
+</body>
+</html>
