@@ -19,8 +19,9 @@ const LEVELS = {
         portals: [
             { pos: "A1", targetLevel: 'Level-Select', targetPos: "E6", type: "portal", label: "W1" },
             { pos: "C1", targetLevel: 'World-2-Select', targetPos: "E6", type: "portal", label: "W2" },
-            { pos: "E9", targetLevel: 'Endless-Start', targetPos: "E9", type: "portal", label: "∞" }, // ENDLESS MODE PORTAL
+            { pos: "E9", targetLevel: 'Endless-Start', targetPos: "E9", type: "portal", label: "∞" },
             { pos: "I5", type: "door", redirect: "index.html" },
+            { pos: "I1", type: "portal", redirect: "editor.html", label: "E" }
         ],
         enemies: [], items: []
     },
@@ -28,6 +29,12 @@ const LEVELS = {
     // --- ENDLESS MODE CONTAINER (Populated Dynamically) ---
     'Endless': {
         name: "Endless Dungeon",
+        walls: [], enemies: [], items: [], portals: []
+    },
+
+    // --- CUSTOM LEVEL SLOT ---
+    'Custom': {
+        name: "Custom Level",
         walls: [], enemies: [], items: [], portals: []
     },
 
@@ -603,6 +610,58 @@ function applyGlobalUnlocks() {
     }
 }
 
+function importCustomLevel() {
+    const code = prompt("Paste your Level Code here:");
+    if (!code) return;
+
+    try {
+        const data = JSON.parse(code);
+        
+        // Validation: Only PlayerStart and Door are strictly required.
+        // Walls and Enemies are optional (e.g., an open field or a puzzle level).
+        if (!data.playerStart || !data.door) {
+            alert("Invalid Level Code! Missing Player Start or Door.");
+            return;
+        }
+
+        // Setup the Custom Level in memory
+        // We use (data.walls || []) to default to an empty list if missing.
+        LEVELS['Custom'] = {
+            name: "Custom Level",
+            walls: data.walls || [],
+            enemies: data.enemies || [], 
+            
+            // Convert the editor's "door" coordinate into a game Portal object
+            portals: [ { pos: data.door, targetLevel: '0', targetPos: "E6", type: "door" } ],
+            
+            // Handle new features (Portals/Warps) if you added the update
+            warps: data.warps || [],
+            
+            // Combine editor portals with the exit door
+            // (If you added the Portal tool from the previous step)
+            portals: [ 
+                { pos: data.door, targetLevel: '0', targetPos: "E6", type: "door" },
+                ...(data.portals || []) // Add extra portals if they exist
+            ],
+
+            items: data.items || [],
+            boulders: data.boulders || [],
+            hazards: data.hazards || [],
+            thickets: data.thickets || [],
+            rivers: data.rivers || [],
+            spikes: data.spikes || [],
+            ice: data.ice || []
+        };
+        
+        // Load the level using the playerStart from the editor
+        loadLevel('Custom', data.playerStart);
+
+    } catch (e) {
+        alert("Could not load level. Code might be broken or incomplete.");
+        console.error(e);
+    }
+}
+
 function initGame() {
     const uiPanel = document.getElementById('ui-panel');
     let resetBtn = uiPanel.querySelector('button');
@@ -614,6 +673,18 @@ function initGame() {
         resetBtn.style.marginTop = "10px";
         resetBtn.onclick = () => { if(confirm("Restart from Level 1?")) resetGame(); };
         uiPanel.appendChild(resetBtn);
+    }
+
+let loadBtn = document.getElementById('load-btn');
+    if (!loadBtn) {
+        loadBtn = document.createElement('button');
+        loadBtn.id = 'load-btn';
+        loadBtn.textContent = "📂 Load Custom Level";
+        loadBtn.className = "btn";
+        loadBtn.style.backgroundColor = "#14532d"; // Dark Green
+        loadBtn.style.marginTop = "10px";
+        loadBtn.onclick = importCustomLevel; // Calls the function we wrote above
+        uiPanel.appendChild(loadBtn);
     }
 
     const container = document.getElementById('game-container');
