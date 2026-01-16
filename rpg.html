@@ -15,12 +15,15 @@
         <div id="grid"></div>
         
 <div id="ui-panel">
-    <div class="stat-box">
-        <h3>Stats</h3>
-        <p>HP: <span id="player-hp">100</span></p>
-        <p>Enemies: <span id="enemy-count">0</span></p>
-        <p>Score: <span id="score-display" style="color: #fbbf24;">0</span></p>
+<div class="stat-box">
+    <h3>Stats</h3>
+    <p>HP: <span id="player-hp"></span></p>
+    <div class="hp-bar-container">
+        <div id="player-hp-fill" class="hp-bar-fill"></div>
     </div>
+    <p>Enemies: <span id="enemy-count">0</span></p>
+    <p>Score: <span id="score-display" style="color: #fbbf24;">0</span></p>
+</div>
     <div class="log-box" id="game-log">
         <div class="log-entry">Setup complete.</div>
     </div>
@@ -58,6 +61,13 @@
         <button class="btn" onclick="closeTutorial()">Got it!</button>
     </div>
 
+    <div id="dialogue-overlay">
+    <div id="dialogue-box">
+        <h3 id="dialogue-speaker">???</h3> <p id="dialogue-text">...</p>
+        <small class="blink">Press SPACE to continue ▼</small>
+    </div>
+</div>
+
     <audio id="bgm" loop>
         <source src="Eternal Spiral.mp3" type="audio/mpeg">
         Your browser does not support the audio element.
@@ -71,7 +81,12 @@
     <button class="btn" onclick="closeScores()">Close</button>
 </div>
 
+        <div id="tooltip"></div>
+
+        <script src="story_levels.js"></script>
+
     <script src="rpg.js"></script>
     
 </body>
 </html>
+
