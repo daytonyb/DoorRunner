@@ -1,3 +1,23 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Press+Start+2P&display=swap');
+
+:root {
+    --primary-gold: #fbbf24;
+    --bg-dark: #1a1a1a;
+    --panel-bg: #2d2d2d;
+    --border-color: #444;
+}
+
+h1, h2, h3 {
+    font-family: 'Press Start 2P', cursive;
+    color: var(--primary-gold);
+    text-shadow: 2px 2px #000;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-dark);
+}
+
 body {
     font-family: 'Courier New', Courier, monospace;
     background-color: #222;
@@ -127,13 +147,14 @@ body {
     background-repeat: no-repeat;
     image-rendering: pixelated; 
     z-index: 10;
+    transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .player span {
     display: none;
 }
 
-.enemy {color: white; z-index: 2; }  
+.enemy {color: white; transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275); }  
 
 .enemy-normal {
     background-image: url('enemy.png');
@@ -160,11 +181,13 @@ body {
     border: 3px solid #ef4444 !important;
     font-size: 28px;
     box-shadow: 0 0 15px #ef4444;
+    transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 .boss-enraged {
     background-color: #ff0000 !important;
     border-color: #000 !important;
     animation: pulseAngry 0.5s infinite alternate;
+    transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 /* Enemy Variants */
@@ -662,3 +685,190 @@ body {
     from { opacity: 0.6; }
     to { opacity: 1; }
 }
+
+#tooltip {
+    position: fixed;
+    background: rgba(0, 0, 0, 0.9);
+    border: 1px solid #fbbf24;
+    color: #eee;
+    padding: 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    pointer-events: none; /* Important so it doesn't block clicks */
+    display: none;
+    z-index: 5000;
+    white-space: pre-line; /* Allows line breaks */
+    box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+}
+
+@keyframes idleBob {
+    from { transform: scale(1); }
+    to { transform: scale(1.05); }
+}
+.player { animation: idleBob 1s infinite alternate ease-in-out; }
+.boss { animation: idleBob 0.6s infinite alternate ease-in-out; }
+
+/* --- HP BARS --- */
+.hp-bar-container {
+    width: 100%;
+    height: 10px;
+    background-color: #444;
+    border: 1px solid #666;
+    margin-top: 5px;
+    position: relative;
+    overflow: hidden;
+}
+
+.hp-bar-fill {
+    height: 100%;
+    background-color: #ef4444; /* Red */
+    width: 100%;
+    transition: width 0.3s ease-out;
+}
+
+/* Mini HP bar for enemies inside cells */
+.enemy-hp-container {
+    position: absolute;
+    bottom: 2px;
+    width: 80%;
+    height: 4px;
+    background: #000;
+    border: 1px solid #333;
+    z-index: 5;
+}
+.enemy-hp-fill {
+    height: 100%;
+    background: #ef4444;
+}
+
+/* --- DEATH PARTICLES --- */
+.particle {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    pointer-events: none;
+    z-index: 100;
+    animation: particle-burst 0.6s ease-out forwards;
+}
+
+@keyframes particle-burst {
+    0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+}
+
+/* Red pulse for tiles enemies are planning to attack */
+.tile-intent {
+    position: relative;
+    box-shadow: inset 0 0 10px rgba(239, 68, 68, 0.4);
+}
+
+.tile-intent::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(239, 68, 68, 0.15);
+    animation: intentPulse 1.5s infinite alternate ease-in-out;
+    pointer-events: none;
+}
+
+@keyframes intentPulse {
+    from { opacity: 0.2; }
+    to { opacity: 0.6; }
+}
+
+/* World 3 Theme */
+.biome-magma .cell { background-color: #2b0a0d; border-color: #4a1c1c; }
+
+/* New Mechanic: Crumbling Floor */
+.tile-crumble {
+    background-color: #3e2723 !important;
+    border: 2px dashed #a1887f !important;
+}
+.tile-crumble::after {
+    content: "⚡"; /* A crack symbol */
+    color: #a1887f;
+    opacity: 0.5;
+    font-size: 20px;
+    transform: rotate(90deg);
+}
+
+/* The Pit (Result of crumbling) */
+/* Update this section in your CSS */
+.tile-pit {
+    background-color: #000 !important; /* Pitch black */
+    border: 1px dashed #333 !important; /* subtle dashed border */
+    box-shadow: inset 0 0 10px #000;
+}
+
+.tile-pit::after {
+    content: "✖"; /* Same icon as void tiles */
+    color: #333;
+    font-size: 10px;
+}
+
+/* --- LEVEL 3: EXPLOSIVE CRYSTALS --- */
+.crystal {
+    background-color: #7f1d1d !important; /* Dark Red */
+    border: 2px solid #ef4444 !important; /* Bright Red */
+    border-radius: 50%; /* Roundish like a geode */
+    box-shadow: 0 0 5px #ef4444;
+    z-index: 2;
+}
+.crystal::after {
+    content: "♦";
+    color: #fca5a5;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.crystal-ignited {
+    background-color: #fff !important; /* Flash white */
+    border-color: #ff0000 !important;
+    animation: pulseAngry 0.2s infinite alternate; /* Fast pulse */
+}
+.crystal-ignited::after {
+    content: "3"; /* Countdown visuals or just the symbol */
+    color: #ff0000;
+}
+
+/* --- DIALOGUE SYSTEM --- */
+#dialogue-overlay {
+    display: none; /* Hidden by default */
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 4000;
+    /* Optional: slightly darken the game behind the text */
+    background: rgba(0, 0, 0, 0.2); 
+}
+
+#dialogue-box {
+    position: absolute;
+    bottom: 30px; 
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    max-width: 90%;
+    background-color: #222;
+    border: 4px double #fbbf24; /* Gold border */
+    padding: 20px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.8);
+    font-family: 'Courier New', monospace; /* Or 'Press Start 2P' if you have it */
+    color: #eee;
+}
+
+#dialogue-speaker {
+    margin-top: 0;
+    color: #fbbf24;
+    text-transform: uppercase;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+#dialogue-text {
+    font-size: 16px;
+    line-height: 1.5;
+    min-height: 50px;
+}
+
+.blink { animation: blinker 1s linear infinite; color: #888; }
+@keyframes blinker { 50% { opacity: 0; } }
