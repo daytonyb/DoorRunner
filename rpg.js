@@ -17,11 +17,24 @@ const LEVELS = {
         name: "The Beginning",
         walls: [],
         portals: [
+            { pos: "A1", targetLevel: 'World-Select', targetPos: "E6", type: "portal", label: "W" },
+            { pos: "C1", targetLevel: 'Endless-Start', targetPos: "E9", type: "portal", label: "∞" },
+            { pos: "E9", type: "door", redirect: "index.html" },
+            { pos: "I1", type: "portal", redirect: "editor.html", label: "E" },
+            { pos: "G1", targetLevel: 'Story-Select', targetPos: "E6", type: "portal", label: "S" },
+            { pos: "E2", targetLevel: 'Tutorial-1', targetPos: "E2", type: "portal", label: "?" } 
+        ],
+        enemies: [], items: []
+    },
+
+    'World-Select':{
+        name: "000 - World Selection",
+        walls: [],
+        portals: [
             { pos: "A1", targetLevel: 'Level-Select', targetPos: "E6", type: "portal", label: "W1" },
-            { pos: "C1", targetLevel: 'World-2-Select', targetPos: "E6", type: "portal", label: "W2" },
-            { pos: "E9", targetLevel: 'Endless-Start', targetPos: "E9", type: "portal", label: "∞" },
-            { pos: "I5", type: "door", redirect: "index.html" },
-            { pos: "I1", type: "portal", redirect: "editor.html", label: "E" }
+            { pos: "E1", targetLevel: 'World-2-Select', targetPos: "E6", type: "portal", label: "W2" },
+            { pos: "I1", targetLevel: 'World-3-Select', targetPos: "E6", type: "portal", label: "W3" },
+            { pos: "E9", type: "door", targetLevel: '0', targetPos: "E6" },
         ],
         enemies: [], items: []
     },
@@ -48,18 +61,46 @@ const LEVELS = {
             { pos: "E1", targetLevel: '3-1', targetPos: "A1", type: "portal", label: "3" },
             { pos: "G1", targetLevel: '4-1', targetPos: "A1", type: "portal", label: "4" },
             { pos: "I1", targetLevel: '5-1', targetPos: "A1", type: "portal", label: "5" },
-            { pos: "I5", targetLevel: '0', targetPos: "E6", type: "door" },
+            { pos: "I5", targetLevel: 'World-Select', targetPos: "E6", type: "door" },
             { pos: "A5", type: "inventory", label: "📦" },
-            { pos: "E4", targetLevel: 'Tutorial-1', targetPos: "E2", type: "portal", label: "?" } 
         ],
         enemies: [], items: []
     },
 
     // --- TUTORIAL ---
-    'Tutorial-1': { name: "Tutorial: Movement", walls: ["C3","C4","C5","C6","C7", "G3","G4","G5","G6","G7"], portals: [{ pos: "E8", targetLevel: 'Tutorial-2', targetPos: "E2", type: "door" }] },
-    'Tutorial-2': { name: "Tutorial: Attacking", walls: ["D4","D5","D6", "F4","F5","F6"], portals: [{ pos: "E8", targetLevel: 'Tutorial-3', targetPos: "E2", type: "door" }], enemies: [{ pos: "E5", hp: 5 }] },
-    'Tutorial-3': { name: "Tutorial: Defense", walls: [], portals: [{ pos: "E8", targetLevel: 'Tutorial-Boss', targetPos: "E2", type: "door" }], enemies: [{ pos: "E5", hp: 8 }] },
-    'Tutorial-Boss': { name: "Tutorial: Final Exam", walls: ["A1","A9","I1","I9"], portals: [{ pos: "E8", targetLevel: 'Level-Select', targetPos: "E4", type: "door" }], enemies: [{ pos: "D5"},{ pos: "F5"}] },
+    'Tutorial-1': { name: "Tutorial: Movement", walls: ["C3","C4","C5","C6","C7", "G3","G4","G5","G6","G7"], portals: [{ pos: "E8", targetLevel: 'Tutorial-2', targetPos: "E2", type: "door" }], 
+        speaker: "Old Man",
+        text: [
+            "Welcome Wizard!",
+            "Use WASD or the arrow keys to move.",
+            "Reach the door to continue."
+        ],
+},
+    'Tutorial-2': { name: "Tutorial: Attacking", walls: ["D1","D2","D3","D4","D5","D6","D7","D8","D9","F1","F2","F3","F4","F5","F6","F7","F8","F9"], portals: [{ pos: "E8", targetLevel: 'Tutorial-3', targetPos: "E2", type: "door" }], enemies: [{ pos: "E5", hp: 5 }],
+        speaker: "Old Man",
+        text: [
+            "Now we can introduce attacking!",
+            "Click the spacebar to attack orthogonally.",
+            "You have to defeat all enemies in a room to move on."
+        ],
+},
+    'Tutorial-3': { name: "Tutorial: Defense", walls: [], portals: [{ pos: "E8", targetLevel: 'Tutorial-Boss', targetPos: "E2", type: "door" }], enemies: [{ pos: "E5", hp: 8 }] ,
+        speaker: "Old Man",
+        text: [
+            "Enemies can also attack you!",
+            "Basic enemies only attack diagonally, but you will encounter other types.",
+            "Please note, this game has a turn based combat system, so if you are struggling, just slow down!"
+        ],
+},
+    'Tutorial-Boss': { name: "Tutorial: Final Exam", walls: ["A1","A9","I1","I9"], portals: [{ pos: "E8", targetLevel: '0', targetPos: "E6", type: "door" }], enemies: [{ pos: "D5"},{ pos: "F5"}] ,
+        speaker: "Old Man",
+        text: [
+            "Now for a final test of knowledge!",
+            "After finishing this, feel free to check out our several levels!",
+            "Go into the W portal to explore the 3 different worlds in the game, or check out the ∞ for our endless mode...",
+            "Also check out the S for our story mode, and go to the E do make your own levels and share them with friends!"
+        ],
+},
 
     // --- LEVEL 1: SEWERS ---
     '1-1': { name: "Sewers - The Tunnels", walls: ["B3", "B5", "B6", "D2", "D4", "D5", "F4", "F5", "F7", "H4", "H6"], hazards: ["C4", "C5", "G3", "G4", "E6", "F6"], portals: [ { pos: "I9", targetLevel: '1-2', targetPos: "A1", type: "door" } ], enemies: [{pos: "C8"}, {pos: "E1"}, {pos: "A5"}] },
@@ -95,7 +136,7 @@ const LEVELS = {
     },
     '5-2': { 
         name: "Void - Gravity Well", 
-        walls: [,"C4","C5","C6","G4","G5","G6","D2","E2","F2","D8","E8","F8"], 
+        walls: ["C4","C5","C6","G4","G5","G6","D2","E2","F2","D8","E8","F8"], 
         spikes: [],
         warps: [ {pos: "A1", target: "I9"}, {pos: "I9", target: "A1"}, {pos: "A9", target: "I1"}, {pos: "I1", target: "A9"} ],
         portals: [{pos: "E5", targetLevel: '5-3', targetPos: "A1", type: "door"}], 
@@ -207,14 +248,14 @@ const LEVELS = {
 
     'World-2-Select': {
         name: "200 - The Swamp",
-        walls: ["B2", "C2", "D2", "E2", "F2", "G2", "H2", "I2","G3"], 
+        walls: ["B2", "C2", "D2", "E2", "F2", "G2", "H2", "I2"], 
         portals: [
             { pos: "A1", targetLevel: 'W2-1', targetPos: "E6", type: "portal", label: "1" },
             { pos: "C1", targetLevel: 'W2-2', targetPos: "E6", type: "portal", label: "2" },
             { pos: "E1", targetLevel: 'W2-3', targetPos: "E6", type: "portal", label: "3" },
             { pos: "G1", targetLevel: 'W2-4', targetPos: "E6", type: "portal", label: "4" },
             { pos: "I1", targetLevel: 'W2-5', targetPos: "E6", type: "portal", label: "5" },
-            { pos: "I5", targetLevel: '0', targetPos: "E6", type: "door" },
+            { pos: "I5", targetLevel: 'World-Select', targetPos: "E6", type: "door" },
             { pos: "A5", type: "inventory", label: "📦" },
         ],
         enemies: [], items: []
@@ -384,7 +425,6 @@ const LEVELS = {
     },
 'W2-3-4': { 
         name: "23B - The Storm Wing", 
-        // Walls placed to create "killing zones" for the push mechanic
         walls: [
             "A1","A2","A8","A9", 
             "I1","I2","I8","I9",
@@ -400,7 +440,187 @@ const LEVELS = {
             { pos: "E5", isBoss: true, hp: 75}
         ] 
     },
-};
+            'W2-4': { 
+        name: "240 Swampy Forests", 
+        walls: ["I2","H2","B2","D2","F2","G2","E3","I3"], 
+        portals: [
+            { pos: "A1", targetLevel: 'W2-4-1', targetPos: "A1", type: "portal", label: "1" },
+            { pos: "C1", targetLevel: 'W2-4-2', targetPos: "A1", type: "portal", label: "2" },
+            { pos: "E1", targetLevel: 'W2-4-3', targetPos: "A1", type: "portal", label: "3" },
+            { pos: "E9", targetLevel: 'World-2-Select', targetPos: "E6", type: "door" },
+            { pos: "I1", type: "portal", label: "B" },
+        ],
+    },
+            'W2-4-1': { 
+        name: "241 ", 
+        walls: ["C1","D1","E1","F1","G1","C9","D9","E9","F9","G9","A3","A4","A5","A6","A7","I3","I4","I5","I6","I7","E2","E3","E4","E5","E6","E7","E8","B5","C5","D5","F5","G5","H5"], 
+        enemies: [
+            { pos: "D3", type: "mage"}, {pos: "C4", type: "mage"}, {pos: "F3", type: "mage"}, {pos: "G4", type: "mage"}, {pos: "D7", type: "mage"}, {pos: "C6", type: "mage"}, {pos: "F7", type: "mage"}, {pos: "G6", type: "mage"},{pos: "G3", type: "guard"},{pos:"C7", type: "guard"},
+        ],
+        hazards: [],
+        thickets: [],
+        warps: [
+            {pos: "D4",target: "F6"}, {pos: "F4", target: "D6"}, {pos: "D6", target: "F4"}, {pos: "F6", target: "D4"}, {pos: "D2", target: "F2"}, {pos: "H4", target: "H6"}, {pos: "F8", target: "D8"}, {pos: "B6", target: "B4"},
+        ],
+        portals: [
+            { pos: "I9", targetLevel: 'W2-4', targetPos: "E6", type: "door" },
+        ],
+    },
+                'W2-4-2': { 
+        name: "242 ", 
+        walls: ["A5","B6","A6","D8","D9","E9","E1","F1","F2","H4","I4","I5","G3","C7"],
+        enemies: [
+            {pos: "I8", type: "guard"},{pos: "H9", type: "guard"},{pos: "H8", type: "guard"},
+            {pos: "G8", type: "ranged"},{pos: "H7", type: "ranged"},
+            {pos: "F7", type: "mage"},{pos: "G6", type: "mage"},
+            {pos: "E6"},{pos: "F5"}
+        ],
+        warps: [
+            {pos: "D1", target: "G1"},{pos: "G1", target: "D1"}, {pos: "C9", target: "F9"}, {pos: "F9", target: "C9"},{pos: "I1", target:"A9"},{pos: "A9", target:"I1"},
+        ],
+        portals: [
+            { pos: "I9", targetLevel: 'W2-4', targetPos: "E6", type: "door" },
+        ],
+    },
+                    'W2-4-3': { 
+        name: "243 ", 
+        walls: [], 
+        enemies: [
+            {pos: "G9", type: "golem"},{pos: "I7", type: "golem"},{pos: "I9", type: "golem"},
+            {pos: "F8", type: "ranged"},{pos: "H6", type: "ranged"},
+            {pos: "D7", type: "fast"},{pos: "G4", type: "fast"},{pos: "D4", type: "fast"},
+            {pos: "A7"},{pos: "G1"},{pos: "H9"},{pos: "I8"}
+        ],
+        hazards: ["B2","E2","H2","B5","E5","H5","B8","E8","H8"],
+        thickets: ["G1","H1","I1","G2","H2","I2","G3","H3","I3","D4","D5","D6","E4","E5","E6","F4","F5","F6","A7","B7","C7","A8","B8","C8","A9","B9","C9"],
+        portals: [
+            { pos: "I9", targetLevel: 'W2-4', targetPos: "E6", type: "door" },
+        ],
+    },
+'W2-4-4': { 
+        name: "24B ", 
+        walls: [
+            "A1","A2","A8","A9", 
+            "I1","I2","I8","I9",
+            "C5","G5", "E3", "E7" // Central pillars to get slammed into
+        ], 
+        hazards: [], 
+        thickets: [],
+        portals: [
+            { pos: "E9", targetLevel: 'W2-4', targetPos: "E6", type: "door" }, 
+        ],
+        enemies: [
+            { pos: "E5", isBoss: true, type: "zephyr", hp: 100 },
+            { pos: "E5", isBoss: true, hp: 75}
+        ] 
+    },
+
+        'World-3-Select': {
+        name: "300 - New Introductions",
+        walls: ["B2", "C2", "D2", "E2", "F2", "G2", "H2", "I2"], 
+        portals: [
+            { pos: "A1", targetLevel: 'W3-1', targetPos: "E6", type: "portal", label: "1" },
+            { pos: "C1", targetLevel: 'W3-2', targetPos: "E6", type: "portal", label: "2" },
+            { pos: "E1", targetLevel: 'W3-3', targetPos: "E6", type: "portal", label: "3" },
+            { pos: "G1", targetLevel: 'W3-4', targetPos: "E6", type: "portal", label: "4" },
+            { pos: "I1", targetLevel: 'W3-5', targetPos: "E6", type: "portal", label: "5" },
+            { pos: "I5", targetLevel: 'World-Select', targetPos: "E6", type: "door" },
+            { pos: "A5", type: "inventory", label: "📦" },
+        ],
+        enemies: [], items: []
+    },
+
+        'W3-1': { 
+        name: "310 Muddy Water", 
+        walls: ["I2","H2","B2","D2","F2","G2","I3"], 
+        portals: [
+            { pos: "A1", targetLevel: 'W3-1-1', targetPos: "A1", type: "portal", label: "1" },
+            { pos: "C1", targetLevel: 'W3-1-2', targetPos: "E1", type: "portal", label: "2" },
+            { pos: "E1", targetLevel: 'W3-1-3', targetPos: "A1", type: "portal", label: "3" },
+            { pos: "E9", targetLevel: 'World-3-Select', targetPos: "E6", type: "door" },
+            { pos: "I1", type: "portal", label: "B" },
+        ],
+    },
+
+    'W3-1-1': { 
+        name: "311 Unstable Ground", 
+        walls: ["B1","B2","B3","H1","H2","H3", "B7","B8","B9","H7","H8","H9"], 
+        crumble: [
+            "C4","D4","E4","F4","G4",
+            "C5","D5","E5","F5","G5",
+            "C6","D6","E6","F6","G6"
+        ],
+        enemies: [
+            { pos: "E2", type: "mage"},{ pos: "E8", type: "mage"},
+            {pos: "E1", type: "golem"},{pos: "E9", type: "golem"},
+        ],
+        portals: [
+            { pos: "I9", targetLevel: 'W3-1', targetPos: "E6", type: "door" }
+        ],
+    },
+
+'W3-1-2': { 
+        name: "312 Blast Mining", 
+        walls: [
+            "E4","D4","F4","G1","G2","G3","C1","C2","C3", 
+            "D8","E8","F8"
+        ],
+        crystals: ["E3", "E7", "F6", "D6","E5"], 
+        pits: ["A1","A2","A3","I1","I2","I3"],
+        enemies: [
+            { pos: "E6", type: "golem", hp: 15 }, // Hard to kill normally, easy with crystal
+            { pos: "H6", type: "golem", hp: 15 },
+            { pos: "B6", type: "golem", hp: 15 },
+            { pos: "B9", type: "golem", hp: 15 },
+            { pos: "E9", type: "golem", hp: 15 },
+            { pos: "H9", type: "golem", hp: 15 },
+        ],
+        portals: [
+            { pos: "I9", targetLevel: 'W3-1', targetPos: "E6", type: "door" } // Next level
+        ],
+    },
+
+'W3-1-3': { 
+        name: "313 - Volatile Bridge", 
+        walls: [
+            "C1","C2","C3","C4","C6","C7","C8","C9", 
+            "E1","E2","E3","E4","E6","E7","E8","E9", 
+            "G1","G2","G3","G4","G6","G7","G8","G9"
+        ], 
+        boulders: ["C5", "E5", "G5"], 
+        crystals: ["B5", "D5", "F5"],
+        crumble: [
+            "B4","B5","B6", // Zone 1 floor
+            "D4","D5","D6", // Zone 2 floor
+            "F4","F5","F6", // Zone 3 floor
+            "H4","H5","H6", // Exit zone floor
+            "A5", "I5"      // Start and End
+        ],
+        enemies: [
+            { pos: "D3", type: "golem", hp: 15 }, 
+            { pos: "F7", type: "golem", hp: 15 },
+            { pos: "H2", type: "mage" }, // Snipers at the end
+            { pos: "H8", type: "mage" }
+        ], 
+        portals: [
+            { pos: "I5", targetLevel: 'W3-1', targetPos: "A5", type: "door" }
+        ],
+    },
+
+'W3-1-4': { 
+        name: "31B The Mud Monster", 
+        walls: ["A1","A9","I1","I9"], 
+        hazards: [], 
+        portals: [
+            { pos: "E9", targetLevel: 'W2-1', targetPos: "E6", type: "door" }, // Exit
+        ],
+        enemies: [{ pos: "E5", isBoss: true, type: "mud_monster", hp: 100 }] 
+    },
+}
+
+if (typeof STORY_CAMPAIGN !== 'undefined') {
+    Object.assign(LEVELS, STORY_CAMPAIGN);
+}
 
 // --------------------------------
 
@@ -413,7 +633,8 @@ let player = {
 let enemies = []; 
 let items = []; 
 let boulders = []; 
-let tempWalls = []; // For Welders
+let tempWalls = [];
+let crystals = [];
 let playerActionsLeft = 2; 
 
 let gameProgress = { level1Complete: false, level2Complete: false, level3Complete: false, level4Complete: false, level5Complete: false };
@@ -428,6 +649,8 @@ let currentLevelScore = 0; // Tracks points in the current level
 let highScores = {};       // Saves the best score for every level
 let endlessDepth = 0; // Tracks endless mode progress
 let endlessBiome = "biome-sewer"; // Tracks current visual theme for endless mode
+let dialogueQueue = []; // Holds the lines of text
+let isDialogueOpen = false;
 
 function parseCoord(coordString) {
     const colChar = coordString.charAt(0).toUpperCase();
@@ -438,14 +661,16 @@ function parseCoord(coordString) {
 }
 
 function isWall(x, y) {
-    // Check static walls
+    // Check static walls from level data
     const levelData = LEVELS[currentLevelId];
+    
+    // 1. Standard Walls
     let isStaticWall = levelData.walls.some(w => {
         const c = parseCoord(w);
         return c.x === x && c.y === y;
     });
     
-    // Check temp walls (Welders)
+    // 2. Temp Walls (Created by Welders)
     let isTempWall = tempWalls.some(w => w.x === x && w.y === y);
 
     return isStaticWall || isTempWall;
@@ -533,8 +758,8 @@ function respawn() {
     currentLevelId = '0';
     player.x = 4; player.y = 5; 
     playerActionsLeft = 2;
-    enemies = []; items = []; boulders = []; tempWalls = [];
-    
+    enemies = []; items = []; boulders = []; tempWalls = []; crystals = [];
+
     // Reset mechanics
     voidRadius = 0; turnCounter = 0; player.energySapped = false;
     conveyorDir = 1; bossRotation = 0;
@@ -835,15 +1060,25 @@ function generateEndlessLevel(depth) {
                        !newLevel.enemies.some(e => e.pos === coord);
 
 if (isSafe) {
-            let type = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
+    let type = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
 
-            if (type === 'bat' && Math.random() < 0.50) {
-                type = 'melee'; 
-            }
-            const hp = 10 + Math.floor(depth / 2);
-            newLevel.enemies.push({ pos: coord, type: type, hp: hp });
-            placedEnemies++;
-        }
+    // 1. Calculate the "Base HP" for this depth
+    let hp = 10 + Math.floor(depth / 2);
+
+    // 2. Apply "Type Penalties" (Scale down for glass cannons)
+    if (type === 'fast' || type === 'bat' || type === 'slime') {
+        hp = Math.max(4, Math.floor(hp * 0.4)); // Fast/Bats have 40% health
+    } else if (type === 'ranged' || type === 'mage' || type === 'wraith') {
+        hp = Math.max(6, Math.floor(hp * 0.6)); // Casters have 60% health
+    } else if (type === 'leech') {
+        hp = Math.max(8, Math.floor(hp * 0.8)); // Leeches are slightly weaker
+    } else if (type === 'golem' || type === 'sentinel' || type === 'guard') {
+        hp = Math.floor(hp * 1.5);
+    }
+
+    newLevel.enemies.push({ pos: coord, type: type, hp: hp });
+    placedEnemies++;
+}
     }
 
     // 5. Add Loot 
@@ -866,19 +1101,13 @@ function loadLevel(levelId, startCoord) {
         endlessDepth = 1;
         generateEndlessLevel(endlessDepth);
         levelId = 'Endless';
-        
-        // HEAL ONLY AT THE START OF A NEW RUN
         player.hp = player.maxHp;
         log("Endless Run Started: HP Restored.");
-        
     } else if (levelId === 'Endless-Next') {
         endlessDepth++;
-        currentLevelScore += 50; // Bonus points for clearing a floor
+        currentLevelScore += 50; 
         generateEndlessLevel(endlessDepth);
         levelId = 'Endless';
-        
-        // OPTIONAL: Small heal between floors? Uncomment line below to enable
-        // player.hp = Math.min(player.hp + 2, player.maxHp); 
     }
     
     currentLevelId = levelId;
@@ -887,6 +1116,25 @@ function loadLevel(levelId, startCoord) {
     // --- SPECIAL BOSS RESET ---
     if (levelId === 'W2-1-4') LEVELS['W2-1-4'].hazards = [];
     if (levelId === 'W2-2-4') LEVELS['W2-2-4'].thickets = [];
+
+    // --- RESET CRUMBLING FLOORS FOR 3-1 ---
+    if (levelId === 'W3-1-1') {
+        LEVELS['W3-1-1'].pits = [];
+        LEVELS['W3-1-1'].crumble = [
+            "C4","D4","E4","F4","G4",
+            "C5","D5","E5","F5","G5",
+            "C6","D6","E6","F6","G6"
+        ];
+    }
+
+    // --- RESET WALLS FOR 3-1-2 (Fixes missing walls after explosion) ---
+    if (levelId === 'W3-1-2') {
+        LEVELS['W3-1-2'].walls = [
+            "E4","D4","F4","G1","G2","G3","C1","C2","C3", 
+            "D8","E8","F8"
+        ];
+    }
+    // ------------------------------------------------------------------
 
     // Check for unlocks
     if (levelId === 'Level-Select' || levelId === '0' || levelId === 'World-2-Select') applyGlobalUnlocks();
@@ -910,6 +1158,20 @@ function loadLevel(levelId, startCoord) {
         const bossPort = LEVELS['W2-3'].portals.find(p => p.label === "B");
         if (bossPort) { bossPort.targetLevel = 'W2-3-4'; bossPort.targetPos = "E9"; }
     }
+        if (levelId === 'W2-4' && gameProgress.w2l4s1 && gameProgress.w2l4s2 && gameProgress.w2l4s3) {
+        const wIndex = LEVELS['W2-4'].walls.indexOf("I2");
+        if (wIndex > -1) LEVELS['W2-4'].walls.splice(wIndex, 1);
+        const bossPort = LEVELS['W2-4'].portals.find(p => p.label === "B");
+        if (bossPort) { bossPort.targetLevel = 'W2-4-4'; bossPort.targetPos = "E9"; }
+    }
+
+
+        if (levelId === 'W3-1' && gameProgress.w3l1s1 && gameProgress.w3l1s2 && gameProgress.w3l1s3) {
+        const wIndex = LEVELS['W3-1'].walls.indexOf("I2");
+        if (wIndex > -1) LEVELS['W3-1'].walls.splice(wIndex, 1);
+        const bossPort = LEVELS['W3-1'].portals.find(p => p.label === "B");
+        if (bossPort) { bossPort.targetLevel = 'W3-1-4'; bossPort.targetPos = "E9"; }
+    }
 
     const levelData = LEVELS[levelId];
     document.querySelector('h1').textContent = levelData.name;
@@ -921,17 +1183,14 @@ function loadLevel(levelId, startCoord) {
     conveyorDir = 1; bossRotation = 0;
     tempWalls = [];
 
-    if (TUTORIAL_MESSAGES[levelId]) showTutorial(levelId);
-
-    // --- UPDATED HP LOGIC ---
-    // Only reset stats on main menu or standard level start (Removed 'Endless' from here)
-    if (levelId === '0' || levelId === 'Level-Select' || levelId === 'World-2-Select' || levelId.endsWith('-1') || levelId.startsWith('W2')) {
-        player.hp = player.maxHp; 
-        player.damage = 2; 
-        log("Stats Reset/Healed.");
-    }
+    // Only reset stats on main menu or standard level start
+// Updated line:
+if (levelId === '0' || levelId === 'Level-Select' || levelId.endsWith('-1') || levelId.startsWith('W2') || levelData.fullHeal || levelId === 'Story-Select') {
+    player.hp = player.maxHp; 
+    player.damage = 2; // Warning: This resets attack power too! Remove this line if you want to keep weapon upgrades.
+    log("Stats Reset/Healed.");
+}
     
-    // Ensure HP doesn't exceed Max
     if (player.hp > player.maxHp) player.hp = player.maxHp;
 
     // --- ENEMY LOADING ---
@@ -944,6 +1203,8 @@ function loadLevel(levelId, startCoord) {
         levelData.enemies.forEach((data, index) => {
             const ePos = parseCoord(data.pos);
             let eHp = data.isBoss ? 50 : standardEnemyHp; 
+            
+            // Apply Type Penalties/Buffs
             if (data.type === 'ranged' || data.type === 'mage' || data.type === 'wraith') eHp = 6;
             if (data.type === 'fast') eHp = 4;
             if (data.type === 'leech') eHp = 8;
@@ -981,6 +1242,15 @@ function loadLevel(levelId, startCoord) {
         });
     }
 
+    // --- LOAD CRYSTALS ---
+    crystals = [];
+    if (levelData.crystals) {
+        levelData.crystals.forEach((pos, index) => {
+            const p = parseCoord(pos);
+            crystals.push({ x: p.x, y: p.y, ignited: false, id: index });
+        });
+    }
+
     boulders = [];
     if (levelData.boulders) {
         levelData.boulders.forEach(bPosStr => {
@@ -989,8 +1259,53 @@ function loadLevel(levelId, startCoord) {
         });
     }
 
+if (levelData.text) {
+        // You can add a 'speaker' property to levels too if you want!
+        startDialogue(levelData.text, levelData.speaker || "System");
+    }
+
+    if (levelId === '0' && !gameProgress.introSeen) {
+        
+        startDialogue([
+            "Welcome, Wizard! It seems you are a new player!",
+            "Your powers are weak, and the dungeon is dangerous.",
+            "Please press W or the up arrow to step into the '?' portal.",
+            "Good luck on your adventure!"
+        ], "Old Man");
+
+        // Mark it as seen so it doesn't show up again
+        gameProgress.introSeen = true;
+        saveGame(); 
+    }
+
     log(`Entered ${levelData.name}`);
     drawGrid(); updateStats(); saveGame(); 
+}
+
+function startDialogue(textData, speakerName = "Wizard") {
+    // textData can be a single string or an array of strings
+    if (Array.isArray(textData)) {
+        dialogueQueue = [...textData]; // Copy the array
+    } else {
+        dialogueQueue = [textData];
+    }
+
+    document.getElementById('dialogue-speaker').textContent = speakerName;
+    document.getElementById('dialogue-overlay').style.display = 'block';
+    isDialogueOpen = true;
+    advanceDialogue();
+}
+
+function advanceDialogue() {
+    if (dialogueQueue.length > 0) {
+        // Take the first line out of the queue and show it
+        const line = dialogueQueue.shift();
+        document.getElementById('dialogue-text').innerHTML = line;
+    } else {
+        // No lines left? Close the box.
+        document.getElementById('dialogue-overlay').style.display = 'none';
+        isDialogueOpen = false;
+    }
 }
 
 function rotatePoint(x, y, cx, cy, times) {
@@ -1009,19 +1324,34 @@ function drawGrid() {
     gridEl.className = ''; 
     const currentMap = LEVELS[currentLevelId];
 
+    // Theme Classes
     if (currentLevelId === 'Endless') gridEl.classList.add(currentMap.biome || 'biome-sewer');
     else if (currentLevelId.includes('EX-2')) gridEl.classList.add('biome-toxic'); 
     else if (currentLevelId.includes('EX-3')) gridEl.classList.add('biome-ice');
     else if (currentLevelId.includes('EX-4') || currentLevelId.includes('4-')) gridEl.classList.add('biome-castle');
     else if (currentLevelId.includes('5-')) gridEl.classList.add('biome-void');
     else if (currentLevelId.includes('1-') || currentLevelId.includes('EX-1')) gridEl.classList.add('biome-sewer');
-    else if (currentLevelId.includes('2-')) gridEl.classList.add('biome-forest');
-    else if (currentLevelId.includes('3-')) gridEl.classList.add('biome-mine'); 
+    else if (currentLevelId.includes('2-') || currentLevelId.includes('W2')) gridEl.classList.add('biome-forest');
+    else if (currentLevelId.includes('3-') || currentLevelId.includes('W3')) gridEl.classList.add('biome-magma'); 
 
     for (let y = 0; y < GRID_SIZE; y++) {
         for (let x = 0; x < GRID_SIZE; x++) {
             const cell = document.createElement('div');
             cell.classList.add('cell');
+
+            // Tooltip Logic
+            cell.onmouseenter = () => {
+                const tTip = document.getElementById('tooltip');
+                let text = "";
+                const e = enemies.find(en => en.x === x && en.y === y && en.alive);
+                const i = items.find(it => it.x === x && it.y === y && !it.collected);
+                const hazard = currentMap.hazards && currentMap.hazards.includes(`${ALPHABET[x]}${y+1}`);
+                if (e) text += `Target: ${e.type.toUpperCase()}\nHP: ${e.hp}/${e.maxHp}`;
+                if (i) text += `Item: ${i.name || i.type}\nMove onto to grab`;
+                if (hazard) text += "Warning: Hazardous Terrain!";
+                if (text) { tTip.textContent = text; tTip.style.display = 'block'; }
+            };
+            cell.onmouseleave = () => { document.getElementById('tooltip').style.display = 'none'; };
             
             const coordLabel = document.createElement('span');
             coordLabel.classList.add('coord-label');
@@ -1043,13 +1373,16 @@ function drawGrid() {
             }
             if (isVoidFloor) cell.classList.add('tile-void');
 
+            // Entity Checks
             const isPlayerHere = (x === player.x && y === player.y);
             const enemyHere = enemies.find(e => e.x === x && e.y === y && e.alive);
             const itemHere = items.find(i => i.x === x && i.y === y && !i.collected);
             const wallHere = isWall(x, y);
             const boulderHere = isBoulder(x, y); 
             const tempWallHere = tempWalls.some(w => w.x === x && w.y === y);
-            
+            const crystalHere = crystals.find(c => c.x === x && c.y === y); // Correctly found here
+
+            // Feature Checks
             const isHazard = currentMap.hazards && currentMap.hazards.includes(`${ALPHABET[x]}${y+1}`);
             const isThicket = currentMap.thickets && currentMap.thickets.includes(`${ALPHABET[x]}${y+1}`);
             const isRiver = currentMap.rivers && currentMap.rivers.includes(`${ALPHABET[x]}${y+1}`);
@@ -1057,11 +1390,12 @@ function drawGrid() {
             const isIce = currentMap.ice && currentMap.ice.includes(`${ALPHABET[x]}${y+1}`);
             const isWindWarning = currentMap.windWarnings && currentMap.windWarnings.includes(`${ALPHABET[x]}${y+1}`);
             const warpHere = currentMap.warps && currentMap.warps.find(w => w.pos === `${ALPHABET[x]}${y+1}`);
+            const isCrumble = currentMap.crumble && currentMap.crumble.includes(`${ALPHABET[x]}${y+1}`);
+            const isPit = currentMap.pits && currentMap.pits.includes(`${ALPHABET[x]}${y+1}`);
 
             const belt = currentMap.conveyors && currentMap.conveyors.find(b => b.y === y);
             const isLever = currentMap.levers && currentMap.levers.includes(`${ALPHABET[x]}${y+1}`);
             
-            // Check spikes with rotation logic
             let isSpikeActive = false;
             if (currentMap.spikes) {
                 if (currentLevelId === 'EX-4-Boss') {
@@ -1076,6 +1410,7 @@ function drawGrid() {
                 return c.x === x && c.y === y;
             });
 
+            // --- RENDERING ORDER ---
             if (isPlayerHere) {
                 const pIcon = document.createElement('span'); pIcon.textContent = 'P';
                 cell.classList.add('player');
@@ -1083,65 +1418,59 @@ function drawGrid() {
                 cell.appendChild(pIcon);
             } else if (enemyHere) {
                 const eIcon = document.createElement('span');
-
-                // --- CUSTOM IMAGE FOR NORMAL ENEMIES ---
-                if (!enemyHere.isBoss && enemyHere.type === 'melee') {
-                    cell.classList.add('enemy-normal');
-                    // No text content needed since we'll use a background image
-                }
-
+                if (!enemyHere.isBoss && enemyHere.type === 'melee') cell.classList.add('enemy-normal');
+                
                 if (enemyHere.isBoss) {
-                    if (enemyHere.type === 'entropy') {
-                        eIcon.textContent = 'Ø'; cell.classList.add('boss', 'boss-entropy');
-                    } else if (enemyHere.type === 'hydra') {
-                        eIcon.textContent = '🐍'; cell.classList.add('boss'); 
-                    } else if (enemyHere.type === 'gear') {
-                        eIcon.textContent = '⚙️'; cell.classList.add('boss', 'boss-gear');                         
-                    } else if (enemyHere.type === 'mud_monster') {
-                       eIcon.textContent = ''; cell.classList.add('boss', 'boss-mud');
-                    } else if (enemyHere.type === 'tangler') {
-                        eIcon.textContent = '🥀'; cell.classList.add('boss', 'boss-tangler');
-                    } else if (enemyHere.type === 'zephyr') {
-                        eIcon.textContent = ''; cell.classList.add('boss', 'boss-zephyr');
-                    } else {
-                        eIcon.textContent = 'B'; cell.classList.add('boss');
-                    }
-                    if (enemyHere.hp <= enemyHere.maxHp / 2) cell.classList.add('boss-enraged');
-                } else if (enemyHere.type === 'ranged') {
-                    eIcon.textContent = 'S'; cell.classList.add('enemy', 'enemy-ranged');
-                } else if (enemyHere.type === 'mage') {
-                    eIcon.textContent = 'M'; cell.classList.add('enemy', 'enemy-mage');
-                } else if (enemyHere.type === 'fast') {
-                    eIcon.textContent = ''; cell.classList.add('enemy', 'enemy-fast');
-                } else if (enemyHere.type === 'bat') {
-                    eIcon.textContent = 'W'; cell.classList.add('enemy', 'enemy-bat');
-                } else if (enemyHere.type === 'golem') {
-                    eIcon.textContent = 'G'; cell.classList.add('enemy', 'enemy-golem');
-                } else if (enemyHere.type === 'guard') {
-                    eIcon.textContent = 'K'; cell.classList.add('enemy', 'enemy-guard');
-                } else if (enemyHere.type === 'yeti') {
-                    eIcon.textContent = 'Y'; cell.classList.add('enemy', 'enemy-yeti');
-                } else if (enemyHere.type === 'wraith') {
-                    eIcon.textContent = '👻'; cell.classList.add('enemy', 'enemy-wraith');
-                } else if (enemyHere.type === 'leech') {
-                    eIcon.textContent = '●'; cell.classList.add('enemy', 'enemy-leech');
-                } else if (enemyHere.type === 'sentinel') {
-                    eIcon.textContent = '🧲'; cell.classList.add('enemy', 'enemy-sentinel');
-                } else if (enemyHere.type === 'welder') {
-                    eIcon.textContent = '🔥'; cell.classList.add('enemy', 'enemy-welder');
-                } else if (enemyHere.type === 'slime') {
-                    eIcon.textContent = ''; cell.classList.add('enemy', 'enemy-slime');
+                     if(enemyHere.type === 'entropy') { eIcon.textContent = 'Ø'; cell.classList.add('boss', 'boss-entropy'); }
+                     else if(enemyHere.type === 'hydra') { eIcon.textContent = '🐍'; cell.classList.add('boss'); }
+                     else if(enemyHere.type === 'gear') { eIcon.textContent = '⚙️'; cell.classList.add('boss', 'boss-gear'); }
+                     else if(enemyHere.type === 'mud_monster') { eIcon.textContent = ''; cell.classList.add('boss', 'boss-mud'); }
+                     else if(enemyHere.type === 'tangler') { eIcon.textContent = '🥀'; cell.classList.add('boss', 'boss-tangler'); }
+                     else if(enemyHere.type === 'zephyr') { eIcon.textContent = ''; cell.classList.add('boss', 'boss-zephyr'); }
+                     else { eIcon.textContent = 'B'; cell.classList.add('boss'); }
+                     if (enemyHere.hp <= enemyHere.maxHp / 2) cell.classList.add('boss-enraged');
                 } else {
-                    cell.classList.add('enemy'); 
+                     if(enemyHere.type === 'ranged') { eIcon.textContent = 'S'; cell.classList.add('enemy', 'enemy-ranged'); }
+                     else if(enemyHere.type === 'mage') { eIcon.textContent = 'M'; cell.classList.add('enemy', 'enemy-mage'); }
+                     else if(enemyHere.type === 'fast') { eIcon.textContent = ''; cell.classList.add('enemy', 'enemy-fast'); }
+                     else if(enemyHere.type === 'bat') { eIcon.textContent = 'W'; cell.classList.add('enemy', 'enemy-bat'); }
+                     else if(enemyHere.type === 'golem') { eIcon.textContent = 'G'; cell.classList.add('enemy', 'enemy-golem'); }
+                     else if(enemyHere.type === 'guard') { eIcon.textContent = 'K'; cell.classList.add('enemy', 'enemy-guard'); }
+                     else if(enemyHere.type === 'yeti') { eIcon.textContent = 'Y'; cell.classList.add('enemy', 'enemy-yeti'); }
+                     else if(enemyHere.type === 'wraith') { eIcon.textContent = '👻'; cell.classList.add('enemy', 'enemy-wraith'); }
+                     else if(enemyHere.type === 'leech') { eIcon.textContent = '●'; cell.classList.add('enemy', 'enemy-leech'); }
+                     else if(enemyHere.type === 'sentinel') { eIcon.textContent = '🧲'; cell.classList.add('enemy', 'enemy-sentinel'); }
+                     else if(enemyHere.type === 'welder') { eIcon.textContent = '🔥'; cell.classList.add('enemy', 'enemy-welder'); }
+                     else if(enemyHere.type === 'slime') { eIcon.textContent = ''; cell.classList.add('enemy', 'enemy-slime'); }
+                     else { cell.classList.add('enemy'); }
                 }
+                
                 if (enemyHere.wasHit) cell.classList.add('enemy-hit-anim');
                 cell.appendChild(eIcon);
+                if (enemyHere.hp < enemyHere.maxHp) {
+                    const hpCont = document.createElement('div');
+                    hpCont.className = 'enemy-hp-container';
+                    const hpFill = document.createElement('div');
+                    hpFill.className = 'enemy-hp-fill';
+                    hpFill.style.width = `${(enemyHere.hp / enemyHere.maxHp) * 100}%`;
+                    hpCont.appendChild(hpFill);
+                    cell.appendChild(hpCont);
+                }
             } else if (itemHere) {
                 const iIcon = document.createElement('span');
                 if (itemHere.type === 'weapon') { iIcon.textContent = '⚔️'; cell.classList.add('item-weapon'); } 
                 else if (itemHere.type === 'relic' || itemHere.type === 'heart_container') { iIcon.textContent = '🧿'; cell.classList.add('item-relic'); } 
                 else { iIcon.textContent = '+'; cell.classList.add('item-potion'); }
                 cell.appendChild(iIcon);
+            
+            // --- FIX: CRYSTALS ARE NOW HERE (Outside of Portals) ---
+            } else if (crystalHere) {
+                const cIcon = document.createElement('span');
+                cell.classList.add('crystal');
+                if (crystalHere.ignited) cell.classList.add('crystal-ignited');
+                cell.appendChild(cIcon);
+            // -----------------------------------------------------
+
             } else if (boulderHere) {
                 cell.classList.add('boulder'); if (boulderHere.hp <= 3) cell.classList.add('boulder-cracked');
             } else if (wallHere) {
@@ -1169,6 +1498,9 @@ function drawGrid() {
             if (isIce) cell.classList.add('tile-ice');
             if (isWindWarning) cell.classList.add('tile-wind-warning');
             if (warpHere) cell.classList.add('warp-tile');
+            if (isCrumble) cell.classList.add('tile-crumble');
+            if (isPit) cell.classList.add('tile-pit');
+
             if (isSpikeActive) {
                 if (spikesActive) cell.classList.add('spike-active');
                 else cell.classList.add('spike-safe');
@@ -1195,8 +1527,11 @@ function drawGrid() {
 }
 
 function updateStats() {
-    let hpText = player.hp + " / " + player.maxHp;
-    if (player.hasCharm) hpText += " 🧿";
+    let hpText = " ";
+    if (player.hasCharm) hpText += " ";
+
+    const hpPct = (player.hp / player.maxHp) * 100;
+document.getElementById('player-hp-fill').style.width = `${Math.max(0, hpPct)}%`;
 
     const scoreEl = document.getElementById('score-display');
     if (scoreEl) scoreEl.textContent = currentLevelScore;
@@ -1232,18 +1567,85 @@ function consumeAction() {
     if (playerActionsLeft <= 0) {
         drawGrid();
         setTimeout(() => {
+            
+            // --- EXPLOSION LOGIC STARTS HERE ---
+            let explosionOccurred = false;
+            
+            // We loop backwards so we can remove crystals from the list as they explode
+            for (let i = crystals.length - 1; i >= 0; i--) {
+                const c = crystals[i];
+                
+                // Only explode if the fuse was lit by playerAttack
+                if (c.ignited) {
+                    log("BOOM! The crystal explodes!");
+                    explosionOccurred = true;
+                    
+                    // 1. Visual Particles
+                    if(typeof triggerDeathParticles === "function") triggerDeathParticles(c.x, c.y, "#ff0000");
+                    document.getElementById('grid').classList.add('screen-shake');
+                    setTimeout(() => document.getElementById('grid').classList.remove('screen-shake'), 400);
+
+                    // 2. Blast Radius (3x3 area around the crystal)
+                    for (let dy = -1; dy <= 1; dy++) {
+                        for (let dx = -1; dx <= 1; dx++) {
+                            const tx = c.x + dx;
+                            const ty = c.y + dy;
+                            
+                            // Visual scratch effect on blast tiles
+                            if(tx >= 0 && tx < GRID_SIZE && ty >= 0 && ty < GRID_SIZE) {
+                                triggerAttackAnim(tx, ty, 'anim-scratch'); 
+                            }
+
+                            // A. Damage Player
+                            if (player.x === tx && player.y === ty) {
+                                player.hp -= 5;
+                                triggerDamage(player.x, player.y, 5, true);
+                                log("Caught in the blast! -5 HP");
+                            }
+
+                            // B. Kill Enemies (Instant 99 damage)
+                            const enemy = enemies.find(e => e.x === tx && e.y === ty && e.alive);
+                            if (enemy) {
+                                enemy.alive = false;
+                                enemy.hp = 0;
+                                triggerDamage(tx, ty, 99, false);
+                            }
+
+                            // C. Destroy Walls (Remove from Level Data temporarily)
+                            const wallCoord = `${ALPHABET[tx]}${ty+1}`;
+                            const lvl = LEVELS[currentLevelId];
+                            if (lvl.walls.includes(wallCoord)) {
+                                lvl.walls = lvl.walls.filter(w => w !== wallCoord);
+                            }
+                            
+                            // D. Destroy Boulders
+                            const bIdx = boulders.findIndex(b => b.x === tx && b.y === ty);
+                            if(bIdx !== -1) boulders.splice(bIdx, 1);
+                        }
+                    }
+                    
+                    // 3. Remove the exploded crystal from the game
+                    crystals.splice(i, 1);
+                }
+            }
+
+            // If something exploded, update the screen immediately so walls disappear
+            if (explosionOccurred) {
+                updateStats();
+                drawGrid(); 
+            }
+            // --- EXPLOSION LOGIC ENDS HERE ---
+
             log("-- Enemy Turn --");
 
-            // --- NEW: THE TANGLER PASSIVE (Thicket = Energy Sap) ---
+            // Tangler Boss Passive (World 2)
             if (currentLevelId === 'W2-2-4') {
                 const currentMap = LEVELS[currentLevelId];
-                // Check if player is standing on a thicket
                 if (currentMap.thickets && currentMap.thickets.includes(`${ALPHABET[player.x]}${player.y+1}`)) {
                     player.energySapped = true;
                     log("Vines wrap around your legs! (Energy Sapped)");
                 }
             }
-            // -------------------------------------------------------
 
             moveEnemies();
             
@@ -1255,6 +1657,7 @@ function consumeAction() {
                 playerActionsLeft = 2; 
             }
             
+            // Void Level 3 Shifting Walls
             if (currentLevelId === '5-3') {
                 turnCounter++;
                 if (turnCounter % 3 === 0) {
@@ -1270,6 +1673,7 @@ function consumeAction() {
                 }
             }
             
+            // EX-4 Boss Rotation
             if (currentLevelId === 'EX-4-Boss') {
                 bossRotation = (bossRotation + 1) % 4;
                 log("The room rotates!");
@@ -1309,6 +1713,16 @@ document.addEventListener('keydown', (e) => {
         gameProgress.w2l3s1 = true;
         gameProgress.w2l3s2 = true;
         gameProgress.w2l3s3 = true;
+
+        gameProgress.w2l4s1 = true;
+        gameProgress.w2l4s2 = true;
+        gameProgress.w2l4s3 = true;
+
+
+
+        gameProgress.w3l1s1 = true;
+        gameProgress.w3l1s2 = true;
+        gameProgress.w3l1s3 = true;
         // --- NEW: W2 L1 Complete ---
         gameProgress.w2l1Complete = true;
         
@@ -1369,6 +1783,15 @@ document.addEventListener('keydown', (e) => {
         drawGrid();
         saveGame();
     }
+
+if (isDialogueOpen) {
+        if (e.key === ' ' || e.key === 'Enter') {
+            e.preventDefault();
+            advanceDialogue();
+        }
+        return; // STOP everything else (moving/attacking)
+    }
+
     if (document.getElementById('tutorial-overlay').style.display === 'block') return;
     if (document.getElementById('inventory-overlay').style.display === 'block') return;
     if (player.hp <= 0) return;
@@ -1418,6 +1841,9 @@ function playerAttack() {
         const enemy = enemies.find(e => e.x === targetX && e.y === targetY && e.alive);
         const boulder = boulders.find(b => b.x === targetX && b.y === targetY && b.hp > 0);
         const tempWallIdx = tempWalls.findIndex(w => w.x === targetX && w.y === targetY);
+        
+        // FIX: Defined once here at the top.
+        const crystal = crystals.find(c => c.x === targetX && c.y === targetY); 
 
         if (enemy) {
             hitSomething = true;
@@ -1434,7 +1860,7 @@ function playerAttack() {
             triggerDamage(enemy.x, enemy.y, dmg, false);
             log(`Hit Enemy for ${dmg} damage!`);
 
-            // --- GLACIAL GEM (Applies if unlocked AND in World 1) ---
+            // --- GLACIAL GEM ---
             if (player.hasFrostHit && isWorld1 && enemy.hp > 0) {
                 if (Math.random() < 0.25) {
                     enemy.stunned = true;
@@ -1443,7 +1869,7 @@ function playerAttack() {
                 }
             }
 
-            // Mage Teleport Logic
+            // --- MAGE TELEPORT ---
             if (enemy.type === 'mage' && enemy.hp > 0) {
                 let safeSpots = [];
                 for(let my=0; my<9; my++) {
@@ -1451,7 +1877,6 @@ function playerAttack() {
                         if (!isWall(mx, my) && !isBoulder(mx, my) && !enemies.some(e=>e.x===mx && e.y===my && e.alive) && (mx!==player.x || my!==player.y)) {
                             safeSpots.push({x:mx, y:my});
                         }
-
                     }
                 }
                 if (safeSpots.length > 0) {
@@ -1459,10 +1884,10 @@ function playerAttack() {
                     enemy.x = spot.x; enemy.y = spot.y;
                     log("Mage blinked away!");
                 }
-                
-                // --- MUD MONSTER SPLIT MECHANIC ---
+            }
+            
+            // --- MUD MONSTER SPLIT ---
             if (enemy.type === 'mud_monster' && enemy.alive) {
-                // 50% chance to spawn a slime on hit
                 if (Math.random() < 0.5) {
                     const openSpots = [
                         {x: enemy.x-1, y: enemy.y}, {x: enemy.x+1, y: enemy.y}, 
@@ -1474,20 +1899,20 @@ function playerAttack() {
                         enemies.push({ 
                             id: enemies.length, 
                             x: spawn.x, y: spawn.y, 
-                            hp: 3, maxHp: 3, // Weak minions
+                            hp: 3, maxHp: 3, 
                             alive: true, type: 'slime', wasHit: false 
                         });
                         log("The boss splashes! A Slime spawns.");
                     }
                 }
             }
-            }
 
+            // --- DEATH LOGIC ---
             if (enemy.hp <= 0) {
                 enemy.alive = false;
                 log(enemy.isBoss ? "BOSS DEFEATED!" : "Enemy defeated!");
 
-                let points = 100; // Standard enemy
+                let points = 100; 
                 if (enemy.isBoss) points = 1000;
                 else if (enemy.type === 'fast' || enemy.type === 'slime' || enemy.type === 'bat') points = 50;
                 else if (enemy.type === 'golem' || enemy.type === 'guard') points = 150;
@@ -1499,7 +1924,7 @@ function playerAttack() {
                 else if (currentLevelId === 'EX-2-Boss' && enemy.isBoss) items.push({ id: items.length, x: 4, y: 5, type: "relic", value: 0, name: "Hydra Scale", collected: false });
                 else if (currentLevelId === 'EX-3-Boss' && enemy.isBoss) items.push({ id: items.length, x: 4, y: 5, type: "relic", value: 0, name: "Glacial Gem", collected: false });
                 
-                // --- VAMPIRIC CHARM (Applies if unlocked AND in World 1) ---
+                // Vampiric Charm
                 if (player.hasCharm && isWorld1 && player.hp < player.maxHp) {
                     player.hp += 1; triggerHeal(player.x, player.y, 1);
                 }
@@ -1510,37 +1935,16 @@ function playerAttack() {
             boulder.hp -= dmg; triggerDamage(boulder.x, boulder.y, dmg, false);
             if (boulder.hp <= 0) {
                 log("Boulder destroyed!");
-const roll = Math.random();
+                const roll = Math.random();
 
-                // 1. Chance to Spawn Enemy (e.g., 20%)
                 if (roll < 0.2) {
-                    enemies.push({
-                        id: enemies.length,
-                        x: boulder.x, 
-                        y: boulder.y,
-                        hp: 10, 
-                        maxHp: 10, 
-                        alive: true, 
-                        type: 'melee',
-                        wasHit: false 
-                    });
+                    enemies.push({ id: enemies.length, x: boulder.x, y: boulder.y, hp: 10, maxHp: 10, alive: true, type: 'melee', wasHit: false });
                     log("A Melee Enemy grew out of the rubble!");
                 } 
-
                 else if (roll >= 0.2 && roll < 0.3) {
-                    enemies.push({
-                        id: enemies.length,
-                        x: boulder.x, 
-                        y: boulder.y,
-                        hp: 15, 
-                        maxHp: 15, 
-                        alive: true, 
-                        type: 'golem',
-                        wasHit: false 
-                    });
+                    enemies.push({ id: enemies.length, x: boulder.x, y: boulder.y, hp: 15, maxHp: 15, alive: true, type: 'golem', wasHit: false });
                     log("A Golem erupted out of the rubble!");
                 }
-                // 2. Chance to Drop Loot (e.g., if no enemy spawned, 10% chance for potion)
                 else if (roll > 0.8) { 
                     items.push({ x: boulder.x, y: boulder.y, type: "potion", value: 3, name: "Small Potion", collected: false });
                     log("Found a small potion!");
@@ -1551,6 +1955,18 @@ const roll = Math.random();
             triggerAttackAnim(targetX, targetY, 'anim-slash');
             tempWalls.splice(tempWallIdx, 1);
             log("Smashed the iron wall!");
+        } 
+        
+        // --- CRYSTAL INTERACTION ---
+        else if (crystal) {
+            hitSomething = true;
+            if (!crystal.ignited) {
+                crystal.ignited = true;
+                triggerAttackAnim(crystal.x, crystal.y, 'anim-slash');
+                log("FUSE LIT! Get back!");
+            } else {
+                log("It's already going to blow!");
+            }
         }
     });
 
@@ -1560,6 +1976,9 @@ const roll = Math.random();
 }
 
 function handleTurn(dx, dy) {
+    const oldX = player.x; // Save previous position for crumbling logic
+    const oldY = player.y;
+
     const newX = player.x + dx;
     const newY = player.y + dy;
 
@@ -1614,26 +2033,26 @@ function handleTurn(dx, dy) {
     if (targetPortal && targetPortal.type === 'inventory') { openInventory(); return; }
     if (targetPortal && targetPortal.redirect) { window.location.href = targetPortal.redirect; return; }
     if (targetPortal) {
-        // --- NEW: Track World 2 Stage Completion ---
         if (currentLevelId === 'W2-1-1') gameProgress.w2l1s1 = true;
         if (currentLevelId === 'W2-1-2') gameProgress.w2l1s2 = true;
         if (currentLevelId === 'W2-1-3') gameProgress.w2l1s3 = true;
-
         if (currentLevelId === 'W2-2-1') gameProgress.w2l2s1 = true;
         if (currentLevelId === 'W2-2-2') gameProgress.w2l2s2 = true;
         if (currentLevelId === 'W2-2-3') gameProgress.w2l2s3 = true;
-
         if (currentLevelId === 'W2-3-1') gameProgress.w2l3s1 = true;
         if (currentLevelId === 'W2-3-2') gameProgress.w2l3s2 = true;
         if (currentLevelId === 'W2-3-3') gameProgress.w2l3s3 = true;
+        if (currentLevelId === 'W2-1-1') gameProgress.w2l4s1 = true;
+        if (currentLevelId === 'W2-1-2') gameProgress.w2l4s2 = true;
+        if (currentLevelId === 'W2-1-3') gameProgress.w2l4s3 = true;
 
-        // --- NEW: Boss 1 Completion ---
+        if (currentLevelId === 'W2-1-1') gameProgress.w3l1s1 = true;
+        if (currentLevelId === 'W2-1-2') gameProgress.w3l1s2 = true;
+        if (currentLevelId === 'W2-1-3') gameProgress.w3l1s3 = true;
+
         if (currentLevelId === 'W2-1-4') gameProgress.w2l1Complete = true; 
-
         if (currentLevelId === 'W2-2-4') gameProgress.w2l2Complete = true;
-
         if (currentLevelId === 'W2-3-4') gameProgress.w2l3Complete = true;
-        // -------------------------------------------
 
         if (LEVELS[currentLevelId].enemies && LEVELS[currentLevelId].enemies.length > 0) {
             const oldBest = highScores[currentLevelId] || 0;
@@ -1651,7 +2070,29 @@ function handleTurn(dx, dy) {
     player.x = finalX; player.y = finalY;
     playerActionsLeft -= moveCost;
 
-    currentLevelScore -= 2; // Lose 2 points for every step taken
+    // --- CRUMBLING FLOOR LOGIC ---
+    const oldCoord = `${ALPHABET[oldX]}${oldY+1}`;
+    if (currentMap.crumble && currentMap.crumble.includes(oldCoord)) {
+        currentMap.crumble = currentMap.crumble.filter(c => c !== oldCoord);
+        if (!currentMap.pits) currentMap.pits = [];
+        if (!currentMap.pits.includes(oldCoord)) {
+            currentMap.pits.push(oldCoord);
+        }
+        log("The floor crumbles into the abyss!");
+        if (typeof triggerDeathParticles === "function") triggerDeathParticles(oldX, oldY, "#5d4037"); 
+    }
+
+    // --- NEW: PIT DAMAGE LOGIC (Acts like Void) ---
+    if (currentMap.pits && currentMap.pits.includes(`${ALPHABET[finalX]}${finalY+1}`)) {
+         player.hp -= 5; 
+         triggerDamage(player.x, player.y, 5, true);
+         log("Fell into the abyss! -5 HP");
+         currentLevelScore -= 50;
+         updateStats();
+    }
+    // ---------------------------------------------
+
+    currentLevelScore -= 2; 
     updateStats();
 
     if (currentMap.levers && currentMap.levers.includes(`${ALPHABET[finalX]}${finalY+1}`)) {
@@ -1677,24 +2118,18 @@ function handleTurn(dx, dy) {
 
     if (currentMap.hazards && currentMap.hazards.includes(`${ALPHABET[finalX]}${finalY+1}`)) {
         player.hp -= 1; triggerDamage(player.x, player.y, 1, true); log("Toxic Sludge! -1 HP");
-
-        currentLevelScore -= 2; // Lose 2 points for every step taken
-    updateStats();
+        currentLevelScore -= 2; 
+        updateStats();
     }
-
-
 
     if (voidRadius > 0) {
         if (finalX < voidRadius || finalX >= GRID_SIZE - voidRadius || finalY < voidRadius || finalY >= GRID_SIZE - voidRadius) {
             player.hp -= 5; triggerDamage(player.x, player.y, 5, true);
             log("THE VOID CONSUMES YOU! -5 HP");
-
-            currentLevelScore -= 100; // Big penalty for void
+            currentLevelScore -= 100; 
             updateStats();
         }
     }
-
-    
 
     if (currentMap.rivers && currentMap.rivers.includes(`${ALPHABET[finalX]}${finalY+1}`)) {
         setTimeout(() => {
@@ -1705,12 +2140,6 @@ function handleTurn(dx, dy) {
         }, 300);
     }
 
-    if (targetPortal) {
-        if (currentLevelId.includes('-Boss')) gameProgress[`level${currentLevelId[0]}Complete`] = true;
-        loadLevel(targetPortal.targetLevel, targetPortal.targetPos);
-        return; 
-    }
-    
     const itemIdx = items.findIndex(i => i.x === finalX && i.y === finalY && !i.collected);
     if (itemIdx !== -1) {
         const item = items[itemIdx];
@@ -2238,23 +2667,25 @@ function moveEnemies() {
             const isHazard = currentMap.hazards && currentMap.hazards.includes(`${ALPHABET[enemy.x]}${enemy.y+1}`);
             const isSpike = currentMap.spikes && currentMap.spikes.includes(`${ALPHABET[enemy.x]}${enemy.y+1}`) && spikesActive;
 
-                // MODIFIED LINE: Added && enemy.type !== 'mud_monster' && enemy.type !== 'slime'
-                if ((isHazard || isSpike) && enemy.type !== 'wraith' && enemy.type !== 'bat' && enemy.type !== 'mud_monster' && enemy.type !== 'slime') {
+            // --- TRAP/HAZARD LOGIC ---
+            if ((isHazard || isSpike) && enemy.type !== 'wraith' && enemy.type !== 'bat' && enemy.type !== 'mud_monster' && enemy.type !== 'slime') {
                 if (!enemy.isBoss) {
-                    enemy.hp -= 1; triggerDamage(enemy.x, enemy.y, 1, false);
-if(enemy.hp <= 0) {
-    enemy.alive = false; log("Enemy died in trap!");
-    
-    // Check World 2 status
-    const isWorld2 = currentLevelId.startsWith('World-2') || currentLevelId.startsWith('W2');
-    
-    // Only heal if we have the charm AND we are NOT in World 2
-    if (player.hasCharm && !isWorld2 && player.hp < player.maxHp) { 
-        player.hp += 1; 
-        triggerHeal(player.x, player.y, 1); 
-    }
-    break;
-}
+                     enemy.hp -= 1; triggerDamage(enemy.x, enemy.y, 1, false);
+                     if(enemy.hp <= 0) {
+                        enemy.alive = false; log("Enemy died in trap!");
+                        
+                        // Check World 2 status
+                        const isWorld2 = currentLevelId.startsWith('World-2') || currentLevelId.startsWith('W2');
+                        
+                        // Only heal if we have the charm AND we are NOT in World 2
+                        if (player.hasCharm && !isWorld2 && player.hp < player.maxHp) { 
+                            player.hp += 1; 
+                            triggerHeal(player.x, player.y, 1); 
+                        }
+                        
+                        // FIX IS HERE: Changed 'break' to 'return' because we are inside a .forEach loop
+                        return; 
+                     }
                 }
             }
 
@@ -2347,6 +2778,41 @@ function showHighScores() {
 
 function closeScores() {
     document.getElementById('score-overlay').style.display = 'none';
+}
+
+// Add to rpg.js
+document.addEventListener('mousemove', (e) => {
+    const tooltip = document.getElementById('tooltip');
+    if (tooltip.style.display === 'block') {
+        tooltip.style.left = (e.pageX + 15) + 'px';
+        tooltip.style.top = (e.pageY + 15) + 'px';
+    }
+});
+
+function triggerDeathParticles(x, y, color = "#ef4444") {
+    const grid = document.getElementById('grid');
+    const rect = grid.getBoundingClientRect();
+    const centerX = rect.left + 4 + (x * 52) + 25;
+    const centerY = rect.top + 4 + (y * 52) + 25;
+
+    for (let i = 0; i < 8; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        p.style.backgroundColor = color;
+        
+        // Random trajectory
+        const tx = (Math.random() - 0.5) * 100 + "px";
+        const ty = (Math.random() - 0.5) * 100 + "px";
+        p.style.setProperty('--tx', tx);
+        p.style.setProperty('--ty', ty);
+        
+        p.style.left = centerX + "px";
+        p.style.top = centerY + "px";
+        p.style.position = 'fixed';
+        
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), 600);
+    }
 }
 
 initGame();
