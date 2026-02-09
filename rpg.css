@@ -35,9 +35,9 @@ body {
 /* 9x9 Grid */
 #grid {
     display: grid;
-    grid-template-columns: repeat(9, 50px);
-    grid-template-rows: repeat(9, 50px);
-    gap: 2px;
+    grid-template-columns: repeat(9, 60px);
+    grid-template-rows: repeat(9, 60px);
+    gap: 4px;
     background-color: #444;
     border: 4px solid #666;
     /* CRITICAL FOR ANIMATIONS TO ALIGN: */
@@ -45,8 +45,8 @@ body {
 }
 
 .cell {
-    width: 50px;
-    height: 50px;
+    width: 58px;
+    height: 58px;
     background-color: #333;
     display: flex;
     align-items: center;
@@ -147,14 +147,14 @@ body {
     background-repeat: no-repeat;
     image-rendering: pixelated; 
     z-index: 10;
-    transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: all 0.1s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .player span {
     display: none;
 }
 
-.enemy {color: white; transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275); }  
+.enemy {color: white; transition: all 0.1s cubic-bezier(0.34, 1.56, 0.64, 1); }  
 
 .enemy-normal {
     background-image: url('enemy.png');
@@ -171,6 +171,16 @@ body {
     background-repeat: no-repeat;
     image-rendering: pixelated;
     border-radius: 0; 
+    border: none !important;
+}
+
+.enemy-ranged {
+    background-image: url('ranged.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    image-rendering: pixelated;
+    border-radius: 0;
     border: none !important;
 }
 
@@ -191,7 +201,6 @@ body {
 }
 
 /* Enemy Variants */
-.enemy-ranged { background-color: #9333ea !important; border-radius: 50%; border: 2px solid #e9d5ff !important; }
 .enemy-bat { background-color: #4b5563 !important; border-radius: 50%; border: 2px solid #9ca3af !important; font-size: 20px; }
 
 .enemy-golem {
@@ -344,10 +353,23 @@ body {
 
 /* --- ATTACK ANIMATIONS --- */
 
+/* --- ATTACK ANIMATIONS --- */
+
+/* --- ATTACK ANIMATIONS --- */
+
 .attack-anim {
     position: absolute;
-    width: 50px; height: 50px; pointer-events: none; z-index: 50; 
-    display: flex; align-items: center; justify-content: center;
+    /* Match your new grid size of 60px */
+    width: 60px; 
+    height: 60px; 
+    
+    /* Center the effect inside the 60x60 box */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    pointer-events: none;
+    z-index: 50;
 }
 
 /* Player Attack: A white/yellow swipe */
@@ -376,10 +398,7 @@ body {
 }
 
 /* Ranged/Web: A purple splat */
-.anim-web {
-    background: radial-gradient(circle, rgba(147,51,234,1) 0%, rgba(0,0,0,0) 70%);
-    animation: webSplat 0.5s ease-out forwards; border-radius: 50%;
-}
+
 @keyframes webSplat {
     0% { transform: scale(0.2); opacity: 1; }
     50% { transform: scale(1.2); opacity: 0.8; }
@@ -705,8 +724,6 @@ body {
     from { transform: scale(1); }
     to { transform: scale(1.05); }
 }
-.player { animation: idleBob 1s infinite alternate ease-in-out; }
-.boss { animation: idleBob 0.6s infinite alternate ease-in-out; }
 
 /* --- HP BARS --- */
 .hp-bar-container {
@@ -872,3 +889,324 @@ body {
 
 .blink { animation: blinker 1s linear infinite; color: #888; }
 @keyframes blinker { 50% { opacity: 0; } }
+
+/* Add inside #ui-panel .stat-box */
+.xp-bar-container {
+    width: 100%; height: 8px; background: #222; 
+    border: 1px solid #444; margin-top: 5px; position: relative;
+}
+.xp-bar-fill {
+    height: 100%; background: #a855f7; /* Purple */ width: 0%;
+    transition: width 0.3s ease-out;
+}
+.level-badge {
+    float: right; color: #a855f7; font-weight: bold;
+}
+
+/* New Level Up Overlay */
+#levelup-overlay {
+    display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.9); z-index: 5000;
+    flex-direction: column; align-items: center; justify-content: center;
+    text-align: center;
+}
+.skill-card {
+    border: 2px solid #a855f7; background: #2d2d2d;
+    padding: 15px; margin: 10px; cursor: pointer; width: 200px;
+    transition: transform 0.2s;
+}
+.skill-card:hover { transform: scale(1.05); background: #3d3d3d; }
+.skill-icon { font-size: 24px; display: block; margin-bottom: 5px; }
+
+/* --- ENHANCED MAP OVERLAY --- */
+
+#map-overlay {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 380px;
+    
+    /* polished visual style */
+    background: rgba(15, 15, 20, 0.95); 
+    border: 2px solid #444;
+    border-radius: 12px;
+    padding: 25px;
+    z-index: 6000;
+    
+    /* fancy effects */
+    box-shadow: 0 0 50px rgba(0,0,0,0.8), inset 0 0 20px rgba(0,0,0,0.5);
+    backdrop-filter: blur(5px); /* Blurs the game behind it */
+    
+    /* Animation defaults */
+    animation: mapPopIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* The Pop-In Animation */
+@keyframes mapPopIn {
+    0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+    100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+
+/* Grid Container */
+#minimap-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px; /* Bigger gaps look cleaner */
+    margin: 20px 0;
+    padding: 10px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 8px;
+}
+
+/* Base Room Style (Unexplored/Uncleared) */
+.map-room {
+    aspect-ratio: 1 / 1;
+    background-color: #262626;
+    border: 2px solid #333;
+    border-radius: 6px;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+/* Cleared Room (Green) */
+.map-room.cleared {
+    background-color: #064e3b; /* Darker, richer green */
+    border-color: #10b981;     /* Bright green border */
+    box-shadow: inset 0 0 10px rgba(16, 185, 129, 0.2);
+}
+.map-room.cleared::after {
+    content: "✓";
+    color: #10b981;
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 14px;
+    opacity: 0.5;
+}
+
+/* Current Player Location (Gold) */
+.map-room.current {
+    background-color: #451a03; /* Dark orange/brown background */
+    border: 2px solid #fbbf24; /* Gold border */
+    box-shadow: 0 0 15px rgba(251, 191, 36, 0.4);
+    transform: scale(1.1); /* Slightly larger than others */
+    z-index: 10;
+}
+
+/* Player Icon */
+.map-room.current::after {
+    content: "🧙"; /* Wizard Icon */
+    font-size: 20px;
+    opacity: 1;
+    animation: bounceIcon 1s infinite alternate;
+}
+
+@keyframes bounceIcon {
+    from { transform: translate(-50%, -50%); }
+    to { transform: translate(-50%, -60%); }
+}
+
+/* --- ENHANCED MAP OVERLAY --- */
+
+#map-overlay {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    
+    /* NEW: Auto-sizing logic */
+    width: fit-content;  /* Wraps tight around the map */
+    height: fit-content; /* Wraps tight vertically */
+    
+    /* NEW: Safety limits so it doesn't go off-screen */
+    max-width: 95vw;     /* Max 95% of screen width */
+    max-height: 95vh;    /* Max 95% of screen height */
+    
+    /* Layout */
+    display: flex;
+    flex-direction: column; /* Stack Title -> Map -> Button */
+    
+    background: rgba(15, 15, 20, 0.98); 
+    border: 2px solid #fbbf24; /* Gold border looks better */
+    border-radius: 12px;
+    padding: 20px;
+    z-index: 6000;
+    
+    box-shadow: 0 0 50px rgba(0,0,0,0.8);
+    backdrop-filter: blur(5px);
+    
+    animation: mapPopIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* The Grid Container */
+#minimap-grid {
+    display: grid;
+    
+    /* Dynamic sizing for rows/cols */
+    grid-auto-columns: 40px; 
+    grid-auto-rows: 40px;
+    gap: 8px;
+    
+    margin: 15px 0;
+    padding: 15px;
+    
+    background: rgba(0,0,0,0.3);
+    border-radius: 8px;
+    
+    /* NEW: Scroll ONLY the grid if it hits the screen edge */
+    overflow: auto; 
+    
+    /* Center the rooms inside the scroll area */
+    justify-content: center;
+    align-content: center;
+}
+
+/* Keep the rest of your button/title styles below... */
+#map-overlay h2 {
+    margin: 0 0 10px 0;
+    flex-shrink: 0; /* Prevents title from squishing */
+}
+
+#map-overlay .btn {
+    flex-shrink: 0; /* Prevents button from squishing */
+    margin-top: 10px;
+}
+
+/* Achievement Toast */
+.achievement-toast {
+    position: fixed;
+    top: 20px;
+    right: -300px; /* Hidden by default */
+    width: 260px;
+    background: rgba(34, 34, 34, 0.95);
+    border: 2px solid #fbbf24;
+    border-radius: 8px;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    z-index: 10000;
+    transition: right 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    font-family: 'Inter', sans-serif;
+}
+
+.achievement-toast.show {
+    right: 20px;
+}
+
+/* PROFILE MENU STYLES */
+.profile-card {
+    background: #222;
+    border: 2px solid #555;
+    padding: 20px;
+    width: 150px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.profile-card:hover {
+    border-color: #fbbf24; /* Gold */
+    background: #333;
+    transform: scale(1.05);
+}
+
+.profile-card h4 {
+    color: #fbbf24;
+    margin: 0 0 10px 0;
+}
+
+.profile-info {
+    color: #ccc;
+    font-size: 12px;
+}
+
+.profile-empty {
+    color: #666;
+    font-style: italic;
+}
+
+/* ACHIEVEMENTS MENU */
+#achievements-overlay {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #1a1a1a;
+    border: 2px solid #fbbf24;
+    padding: 20px;
+    z-index: 8000;
+    width: 80%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+    border-radius: 12px;
+    box-shadow: 0 0 30px rgba(0,0,0,0.8);
+}
+
+#achievements-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 10px;
+}
+
+.ach-card {
+    background: #333;
+    padding: 10px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    border: 1px solid #444;
+}
+
+.ach-card.unlocked {
+    border-color: #fbbf24;
+    background: #2d2d2d;
+}
+
+.ach-card.locked {
+    opacity: 0.5;
+    filter: grayscale(100%);
+}
+
+.ach-icon {
+    font-size: 30px;
+    min-width: 40px;
+    text-align: center;
+}
+
+.ach-info h4 {
+    margin: 0;
+    font-size: 14px;
+    color: #fff;
+}
+
+.ach-info p {
+    margin: 5px 0 0 0;
+    font-size: 11px;
+    color: #aaa;
+}
+
+.boss-dragonfly {
+    /* Overwrite the standard red boss color */
+    background: linear-gradient(135deg, #064e3b 0%, #10b981 100%) !important; 
+    
+    /* Neon Green Border */
+    border: 3px double #34d399 !important;
+    
+    /* Glowing Effect */
+    box-shadow: 0 0 20px #10b981, inset 0 0 10px #064e3b;
+    
+    /* Unique Shape: Rounded top (wings) and pointed bottom */
+    border-radius: 50% 50% 10% 10% !important; 
+    
+    /* Animation: Hovering up and down */
+    animation: dragonflyHover 0.3s infinite alternate ease-in-out;
+    z-index: 20;
+}
+
+@keyframes dragonflyHover {
+    from { transform: translateY(0); }
+    to { transform: translateY(-4px); }
+}
