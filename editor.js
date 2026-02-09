@@ -14,6 +14,8 @@ let levelData = {
     boulders: [],
     spikes: [],
     warps: [],     // Starts as a simple list of coordinates ["A1", "B2"]
+    crystals: [],
+    crumble: [],
     playerStart: null, 
     door: null 
 };
@@ -73,6 +75,8 @@ function handleCellClick(x, y, coord) {
     else if (currentTool === 'ice') levelData.ice.push(coord);
     else if (currentTool === 'boulder') levelData.boulders.push(coord);
     else if (currentTool === 'spike') levelData.spikes.push(coord);
+    else if (currentTool === 'crumble') levelData.crumble.push(coord);
+    else if (currentTool === 'crystal') levelData.crystals.push(coord);
 
     // --- BOSSES ---
     else if (currentTool.startsWith('boss-')) {
@@ -107,6 +111,8 @@ function removeFromData(coord) {
     levelData.ice = levelData.ice.filter(w => w !== coord);
     levelData.boulders = levelData.boulders.filter(w => w !== coord);
     levelData.spikes = levelData.spikes.filter(w => w !== coord);
+    levelData.crumble = levelData.crumble.filter(w => w !== coord);
+    levelData.crystals = levelData.crystals.filter(w => w !== coord);
     levelData.warps = levelData.warps.filter(w => w !== coord);
     
     levelData.enemies = levelData.enemies.filter(e => e.pos !== coord);
@@ -131,7 +137,9 @@ function renderGrid() {
         if (levelData.ice.includes(coord)) cell.classList.add('tile-ice');
         if (levelData.boulders.includes(coord)) cell.classList.add('boulder');
         if (levelData.spikes.includes(coord)) cell.classList.add('spike-safe');
-        
+        if (levelData.crumble.includes(coord)) cell.classList.add('tile-crumble');
+        if (levelData.crystals.includes(coord)) cell.classList.add('crystal');
+
         // Warps (Void)
         if (levelData.warps.includes(coord)) {
             cell.classList.add('warp-tile'); // This triggers the purple animation
@@ -158,7 +166,6 @@ function renderGrid() {
             if(enemy.type === 'sentinel') { cell.classList.add('enemy-sentinel'); icon.textContent = "🧲"; }
             if(enemy.type === 'welder') { cell.classList.add('enemy-welder'); icon.textContent = "🔥"; }
             if(enemy.type === 'wraith') { cell.classList.add('enemy-wraith'); icon.textContent = "👻"; }
-            if(enemy.type === 'yeti') { cell.classList.add('enemy-yeti'); icon.textContent = "Y"; }
 
             // Bosses
             if(enemy.type === 'mud_monster') { cell.classList.add('boss-mud'); icon.textContent = "☣"; }
@@ -175,10 +182,19 @@ function renderGrid() {
             cell.appendChild(icon);
         }
 
-        if (levelData.items.find(i => i.pos === coord)) {
+const item = levelData.items.find(i => i.pos === coord);
+        if (item) {
             const icon = document.createElement('span');
-            icon.textContent = "🎁";
-            cell.classList.add('item-potion');
+            
+            if (item.type === 'potion') { 
+                cell.classList.add('item-potion'); 
+                icon.textContent = "+"; // or "❤️"
+            }
+            else if (item.type === 'weapon') { 
+                cell.classList.add('item-weapon'); 
+                icon.textContent = "⚔️"; 
+            }
+            
             cell.appendChild(icon);
         }
 
@@ -225,6 +241,8 @@ function exportLevel() {
     if(exportData.spikes.length === 0) delete exportData.spikes;
     if(exportData.items.length === 0) delete exportData.items;
     if(exportData.warps && exportData.warps.length === 0) delete exportData.warps;
+    if(exportData.crystals.length === 0) delete exportData.crystals;
+    if(exportData.crumble.length === 0) delete exportData.crumble;
 
     const json = JSON.stringify(exportData);
     const output = document.getElementById('level-code');
