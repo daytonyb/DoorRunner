@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en"></html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wacky Wizard Level Maker</title>
+    <title>Wacky Wizard Level Maker v1.0</title>
     <link rel="stylesheet" href="rpg.css">
     <style>
         body { flex-direction: row; gap: 30px; align-items: flex-start; padding: 20px; box-sizing: border-box; }
@@ -30,8 +30,8 @@
         #editor-grid {
             border: 4px solid #666;
             display: grid;
-            grid-template-columns: repeat(9, 50px);
-            grid-template-rows: repeat(9, 50px);
+            grid-template-columns: repeat(9, 60px);
+            grid-template-rows: repeat(9, 60px);
             gap: 2px;
             background-color: #444;
         }
@@ -59,6 +59,8 @@
         <button class="tool-btn" onclick="setTool('ice')">❄ Ice (Slide)</button>
         <button class="tool-btn" onclick="setTool('boulder')">🪨 Boulder (Break)</button>
         <button class="tool-btn" onclick="setTool('spike')">▲ Spikes (Timed)</button>
+        <button class="tool-btn" onclick="setTool('crumble')">🕳️ Pit / Void</button>
+        <button class="tool-btn" onclick="setTool('crystal')">💎 Crystal (Bomb)</button>
 
         <h3>Enemies</h3>
         <button class="tool-btn" onclick="setTool('enemy-melee')">💀 Melee (Basic)</button>
@@ -72,7 +74,6 @@
         <button class="tool-btn" onclick="setTool('enemy-sentinel')">🧲 Sentinel (Pull)</button>
         <button class="tool-btn" onclick="setTool('enemy-welder')">🔥 Welder</button>
         <button class="tool-btn" onclick="setTool('enemy-wraith')">👻 Wraith</button>
-        <button class="tool-btn" onclick="setTool('enemy-yeti')">☃️ Yeti</button>
 
         <h3>Bosses</h3>
         <button class="tool-btn" onclick="setTool('boss-mud_monster')">☣ Mud Monster</button>
@@ -100,5 +101,4 @@
 
     <script src="editor.js"></script>
 </body>
-
 </html>
