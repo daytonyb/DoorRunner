@@ -1,37 +1,75 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Wacky Wizard</title>
+    <title>The Wacky Wizard v1.0</title>
     <link rel="stylesheet" href="rpg.css">
 </head>
 <body>
 
     <h1>Coordinate RPG</h1>
 
+    <div id="profile-overlay" style="display:flex; flex-direction:column; position:fixed; top:0; left:0; width:100%; height:100%; background:#111; z-index:9000; align-items:center; justify-content:center;">
+    <h2 style="color:#fbbf24; margin-bottom:20px;">Select Save Profile</h2>
+    <div id="profile-list" style="display:flex; gap:20px;">
+        </div>
+</div>
+
     <div id="game-container">
-        <div id="grid"></div>
+        <div id="main-game-col">
+            <div id="boss-hud">
+                <div class="boss-name-label" id="boss-name">BOSS</div>
+                <div class="boss-bar-container"><div class="boss-bar-fill" id="boss-fill"></div></div>
+            </div>
+            <div id="grid"></div>
+        </div>
         
-<div id="ui-panel">
-<div class="stat-box">
-    <h3>Stats</h3>
-    <p>HP: <span id="player-hp"></span></p>
-    <div class="hp-bar-container">
-        <div id="player-hp-fill" class="hp-bar-fill"></div>
-    </div>
-    <p>Enemies: <span id="enemy-count">0</span></p>
-    <p>Score: <span id="score-display" style="color: #fbbf24;">0</span></p>
+        <div id="ui-panel">
+            <div class="stat-box">
+                <h3>Stats</h3>
+                
+                <p>HP: <span id="player-hp"></span></p>
+                <div class="hp-bar-container">
+                    <div id="player-hp-fill" class="hp-bar-fill"></div>
+                </div>
+
+                <p style="margin-top: 10px;">
+                    Level: <span id="player-level" style="color:#a855f7; font-weight:bold;">1</span> 
+                    <span class="level-badge" id="xp-text" style="float:right; font-size:10px;">0/100</span>
+                </p>
+                <div class="xp-bar-container">
+                    <div id="player-xp-fill" class="xp-bar-fill"></div>
+                </div>
+
+                <div id="ability-bar" style="margin-top:10px; display:flex; gap:5px; flex-wrap:wrap; font-size:10px;">
+                    </div>
+
+                <p style="margin-top: 10px;">Enemies: <span id="enemy-count">0</span></p>
+                <p>Score: <span id="score-display" style="color: #fbbf24;">0</span></p>
+            </div>
+
+            <div class="log-box" id="game-log">
+                <div class="log-entry">System ready.</div>
+            </div>
+
+<div style="margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+    
+    <button class="btn" onclick="showHighScores()" style="font-size: 11px; padding: 8px 4px;">
+        Scores
+    </button>
+    
+    <button class="btn" onclick="showAchievements()" style="font-size: 11px; padding: 8px 4px; background: #d97706;">
+        Achievements
+    </button>
+    
+    <button class="btn" onclick="if(confirm('Restart this slot?')) resetGame()" style="grid-column: span 2; font-size: 11px; background:#444; margin-top: 2px;">
+        Reset File
+    </button>
+
 </div>
-    <div class="log-box" id="game-log">
-        <div class="log-entry">Setup complete.</div>
+            </div>
     </div>
-    <div style="margin-top: 10px; display: flex; gap: 5px;">
-        <button class="btn" onclick="showHighScores()" style="font-size: 12px; flex: 1;">🏆 Scores</button>
-        <button class="btn" onclick="if(confirm('Restart?')) resetGame()" style="font-size: 12px; flex: 1; background:#555;">Reset</button>
-    </div>
-</div>
 
     <div id="combat-screen">
         <h2 style="color: #ef4444;">COMBAT!</h2>
@@ -48,11 +86,25 @@
         <button class="btn" onclick="location.reload()">Play Again</button>
     </div>
 
+    <div id="map-overlay" style="display: none;">
+    <h2 style="color: #fbbf24; text-align: center; margin-bottom: 20px;">Dungeon Map</h2>
+    <div id="minimap-grid">
+        </div>
+    <p style="text-align: center; color: #888; margin-top: 10px;">(Current Location in Gold)</p>
+    <button class="btn" onclick="toggleMap()" style="display: block; margin: 20px auto;">Close (M)</button>
+</div>
+
     <div id="inventory-overlay">
         <h2 id="inventory-title">Permanent Relics</h2>
-        <ul id="inventory-list">
-            </ul>
+        <ul id="inventory-list"></ul>
         <button id="close-inv-btn" onclick="closeInventory()">Close</button>
+    </div>
+
+    <div id="levelup-overlay">
+        <h2 style="color:#a855f7; margin-bottom: 10px;">LEVEL UP!</h2>
+        <p style="color: #eee; margin-bottom: 20px;">Choose a reward:</p>
+        <div id="skill-choices" style="display:flex; flex-wrap:wrap; justify-content:center; gap: 10px;">
+            </div>
     </div>
 
     <div id="tutorial-overlay">
@@ -62,31 +114,37 @@
     </div>
 
     <div id="dialogue-overlay">
-    <div id="dialogue-box">
-        <h3 id="dialogue-speaker">???</h3> <p id="dialogue-text">...</p>
-        <small class="blink">Press SPACE to continue ▼</small>
+        <div id="dialogue-box">
+            <h3 id="dialogue-speaker">???</h3> 
+            <p id="dialogue-text">...</p>
+            <small class="blink">Press SPACE to continue ▼</small>
+        </div>
     </div>
+
+    <div id="score-overlay" style="display:none;">
+        <h2 id="score-title">Level Records</h2>
+        <div id="score-list-container">
+            <ul id="score-list"></ul>
+        </div>
+        <button class="btn" onclick="closeScores()">Close</button>
+
+    </div>
+    <div id="achievements-overlay" style="display:none;">
+    <h2 style="color: #fbbf24; text-align: center; margin-bottom: 20px;">Achievements</h2>
+    <div id="achievements-list">
+        </div>
+    <button class="btn" onclick="closeAchievements()" style="display: block; margin: 20px auto; width: 200px;">Close</button>
 </div>
+
+    <div id="tooltip"></div>
 
     <audio id="bgm" loop>
         <source src="Eternal Spiral.mp3" type="audio/mpeg">
         Your browser does not support the audio element.
     </audio>
 
-    <div id="score-overlay" style="display:none;">
-    <h2 id="score-title">Level Records</h2>
-    <div id="score-list-container">
-        <ul id="score-list"></ul>
-    </div>
-    <button class="btn" onclick="closeScores()">Close</button>
-</div>
-
-        <div id="tooltip"></div>
-
-        <script src="story_levels.js"></script>
-
-    <script src="rpg.js"></script>
+<script src="story_levels.js"></script>
+<script src="achievements.js"></script> <script src="rpg.js"></script>
     
 </body>
 </html>
-
